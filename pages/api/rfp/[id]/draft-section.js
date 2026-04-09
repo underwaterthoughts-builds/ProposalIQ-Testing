@@ -39,6 +39,15 @@ async function handler(req, res) {
   const winningLanguage = safe(scan.winning_language, []);
   const executiveBrief = safe(scan.executive_brief, null);
 
+  // Load confirmed org profile so drafts stay grounded in what we actually do
+  let orgProfile = null;
+  try {
+    const row = db.prepare("SELECT * FROM organisation_profile WHERE id = 'default'").get();
+    if (row) {
+      orgProfile = { ...row, confirmed_profile: safe(row.confirmed_profile, {}) };
+    }
+  } catch {}
+
   if (!matches.length) {
     return res.status(400).json({ error: 'No matched proposals available — drafts must be source-linked.' });
   }
@@ -68,7 +77,8 @@ async function handler(req, res) {
       matches,
       winStrategy,
       winningLanguage,
-      executiveBrief
+      executiveBrief,
+      orgProfile
     );
   } catch (e) {
     console.error(`[draft ${id}/${body.section_id}] generation error:`, e.message);

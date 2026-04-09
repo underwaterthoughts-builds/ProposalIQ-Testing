@@ -156,6 +156,23 @@ export default function Settings() {
                     </div>
                   </div>
                 </Card>
+                <Card className="p-5" style={{ background: '#fbf9f4' }}>
+                  <div className="flex items-start gap-4">
+                    <div className="flex-1">
+                      <h2 className="font-serif text-base mb-1">Organisation Profile</h2>
+                      <p className="text-xs mb-3" style={{ color: '#6b6456' }}>
+                        Tell ProposalIQ what you actually do. The AI will scan your website and pull
+                        out services, client types, and positioning — you confirm the list. Your confirmed
+                        profile cascades into gap analysis, win strategy, executive brief, and section
+                        drafts so recommendations are grounded in your real capabilities.
+                      </p>
+                      <a href="/onboarding/profile" className="text-xs font-medium inline-flex items-center gap-1" style={{ color: '#1e4a52' }}>
+                        Set up your profile →
+                      </a>
+                    </div>
+                    <div className="text-3xl opacity-30">★</div>
+                  </div>
+                </Card>
                 <div className="flex justify-end">
                   <Btn variant="teal" onClick={save} disabled={saving}>
                     {saving ? <><Spinner size={12} /> Saving…</> : 'Save Settings'}
