@@ -51,6 +51,7 @@ export default function RFPResults() {
   const [generatingTemplate, setGeneratingTemplate] = useState(false);
   const [templateDraftMode, setTemplateDraftMode] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [rescanning, setRescanning] = useState(false);
   const [clientIntel, setClientIntel] = useState(null);
   const [checkpoints, setCheckpoints] = useState({ rfp: false, gaps: false, strategy: false });
   const [editingRfp, setEditingRfp] = useState(false);
@@ -95,6 +96,27 @@ export default function RFPResults() {
       else setToast('Delete failed');
     } catch { setToast('Delete failed'); }
     setDeleting(false);
+  }
+
+  async function rescan() {
+    if (!confirm('Re-run the full intelligence pipeline against this RFP?\n\nExisting results stay visible until the new ones are ready (~60 seconds).')) return;
+    setRescanning(true);
+    try {
+      const r = await fetch(`/api/rfp/${id}/rescan`, { method: 'POST' });
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        setToast(d.error || 'Re-analysis failed to start');
+        setRescanning(false);
+        return;
+      }
+      setToast('Re-analysis started — refreshing every 3s…');
+      // Update local scan state to reflect processing — fetchScan already polls
+      setScan(s => s ? { ...s, status: 'processing' } : s);
+      fetchScan();
+    } catch (e) {
+      setToast('Re-analysis failed: ' + e.message);
+    }
+    setRescanning(false);
   }
 
   async function generateTemplate(draftOverride) {
@@ -365,6 +387,10 @@ ${sectionHtml('Winning Language', languageHtml)}
               </Btn>
             </div>
             <Btn variant="ghost" onClick={() => router.push('/rfp')}>← All Scans</Btn>
+            <Btn variant="ghost" onClick={rescan} disabled={rescanning || scan?.status === 'processing'}
+              title="Re-run the full intelligence pipeline against this RFP">
+              {rescanning || scan?.status === 'processing' ? <><Spinner size={12}/> Re-analysing…</> : '⟳ Re-analyse'}
+            </Btn>
             <Btn variant="ghost" onClick={deleteScan} disabled={deleting}
               style={{ color:'#b04030', borderColor:'#f5c6c0' }}>
               {deleting ? <><Spinner size={12}/> Deleting…</> : '✕ Delete Scan'}
@@ -422,6 +448,11 @@ ${sectionHtml('Winning Language', languageHtml)}
               <button onClick={generateTemplate} disabled={generatingTemplate}
                 className="flex-1 py-2 text-xs font-medium rounded-lg text-white" style={{ background:'#1e4a52' }}>
                 {generatingTemplate ? 'Building…' : '📄 Template'}
+              </button>
+              <button onClick={rescan} disabled={rescanning || scan?.status === 'processing'}
+                className="px-3 py-2 text-xs font-medium rounded-lg border" style={{ borderColor:'#ddd5c4', color:'#1e4a52' }}
+                title="Re-analyse">
+                {rescanning || scan?.status === 'processing' ? '…' : '⟳'}
               </button>
               <button onClick={deleteScan} disabled={deleting}
                 className="px-3 py-2 text-xs font-medium rounded-lg border" style={{ borderColor:'#f5c6c0', color:'#b04030' }}>
