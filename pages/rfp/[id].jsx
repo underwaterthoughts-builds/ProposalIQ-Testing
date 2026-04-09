@@ -280,17 +280,9 @@ ${sectionHtml('Winning Language', languageHtml)}
     setExporting(false);
   }
 
-  if (authLoading) return null;
-  if (!user) return null;
-
-  if (loading) return (
-    <div className="flex items-center justify-center h-screen" style={{ background: '#faf7f2' }}>
-      <div className="text-center"><Spinner size={32} /><p className="text-sm mt-3" style={{ color: '#6b6456' }}>Loading…</p></div>
-    </div>
-  );
-  if (!scan) return <div className="p-8 text-center">Scan not found. <Link href="/rfp" className="underline">Back</Link></div>;
-
-  // Load checkpoint state
+  // Load checkpoint state — MUST be declared before any early returns to
+  // satisfy the rules of hooks. Guarded by `if (!scan) return` inside the
+  // effect body so it's a no-op until the scan finishes loading.
   useEffect(() => {
     if (!scan) return;
     setCheckpoints({
@@ -300,6 +292,16 @@ ${sectionHtml('Winning Language', languageHtml)}
     });
     setRfpEditData(scan.rfp_data_edited || scan.rfp_data || {});
   }, [scan]);
+
+  if (authLoading) return null;
+  if (!user) return null;
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-screen" style={{ background: '#faf7f2' }}>
+      <div className="text-center"><Spinner size={32} /><p className="text-sm mt-3" style={{ color: '#6b6456' }}>Loading…</p></div>
+    </div>
+  );
+  if (!scan) return <div className="p-8 text-center">Scan not found. <Link href="/rfp" className="underline">Back</Link></div>;
 
   async function approveCheckpoint(checkpoint, editedData) {
     setSavingCheckpoint(checkpoint);
