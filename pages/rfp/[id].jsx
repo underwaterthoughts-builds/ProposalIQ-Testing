@@ -1088,6 +1088,196 @@ ${sectionHtml('Winning Language', languageHtml)}
 }
 
 
+// ── Section Draft Panel — Wave 4 source-linked drafting ──────────────────
+// Inline panel that appears below a section in the Assembly tab when the
+// user has generated a draft. Shows:
+//   · Confidence badge (high/medium/low) with the model's reason
+//   · Editable draft text with [#1] and [EVIDENCE NEEDED:...] highlighting
+//   · "Sources used" panel listing the matched proposals + winning language
+//     snippets the model cited (clickable in the matches case)
+//   · Edit / Regenerate / Accept / Discard controls
+//
+// Source links: the draft text uses [#1] [#2] markers — the panel resolves
+// these to the actual proposals from the matches array via index. We
+// preserve the markers in the editable text rather than rewriting them
+// inline so the writer always sees what was cited.
+function SectionDraftPanel({ draft, matches, winningLanguage, onUpdateText, onAccept, onRegenerate, onDiscard, onClose, regenerating }) {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState(draft.draft_text || '');
+  const [saving, setSaving] = useState(false);
+
+  // Sync text when draft changes (e.g. after regenerate)
+  useEffect(() => { setText(draft.draft_text || ''); }, [draft.id, draft.draft_text]);
+
+  // Resolve cited matches: the AI returns the IDs it actually cited.
+  // Match those against the matches array to get the names/details.
+  const citedMatches = (draft.cited_match_ids || [])
+    .map(id => matches.find(m => m.id === id))
+    .filter(Boolean);
+
+  // Resolve cited language by L-index — winningLanguage is an array
+  const citedLanguage = (draft.cited_language_ids || [])
+    .map(id => {
+      const idx = parseInt(String(id).replace(/^L/i, ''), 10) - 1;
+      return idx >= 0 && idx < (winningLanguage || []).length ? winningLanguage[idx] : null;
+    })
+    .filter(Boolean);
+
+  const confColor = draft.confidence === 'high' ? '#3d5c3a' :
+                    draft.confidence === 'low'  ? '#b04030' : '#b8962e';
+  const isAccepted = draft.status === 'accepted';
+
+  async function handleSaveEdits() {
+    setSaving(true);
+    await onUpdateText(text);
+    setSaving(false);
+    setEditing(false);
+  }
+
+  // Highlighting helper — wraps [#N] match citations and [EVIDENCE NEEDED]
+  // markers in coloured spans so the writer can see what's a placeholder.
+  function renderHighlighted(t) {
+    if (!t) return null;
+    // Split by markers but keep them
+    const parts = t.split(/(\[#\d+\]|\[EVIDENCE NEEDED[^\]]*\])/g);
+    return parts.map((part, i) => {
+      if (/^\[#\d+\]$/.test(part)) {
+        return <span key={i} className="font-mono text-[11px] px-1 rounded" style={{ background: 'rgba(30,74,82,.12)', color: '#1e4a52' }}>{part}</span>;
+      }
+      if (/^\[EVIDENCE NEEDED/.test(part)) {
+        return <span key={i} className="font-mono text-[11px] px-1 rounded" style={{ background: 'rgba(184,150,46,.18)', color: '#8a6200' }}>{part}</span>;
+      }
+      return <span key={i}>{part}</span>;
+    });
+  }
+
+  return (
+    <div className="border-t" style={{ borderColor: '#f0ebe0', background: '#faf7f2' }}>
+      <div className="px-4 py-3">
+        <div className="flex items-baseline justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#6b6456' }}>AI Draft</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full" style={{ background: confColor + '14', color: confColor, border: `1px solid ${confColor}40` }}>
+              {draft.confidence} confidence
+            </span>
+            {isAccepted && (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full" style={{ background: '#3d5c3a', color: 'white' }}>
+                ✓ accepted
+              </span>
+            )}
+          </div>
+          <button onClick={onClose} className="text-[11px]" style={{ color: '#9b8e80' }}>hide</button>
+        </div>
+
+        {draft.confidence_reason && (
+          <p className="text-[11px] italic mb-3" style={{ color: '#6b6456' }}>{draft.confidence_reason}</p>
+        )}
+
+        {/* Draft body */}
+        <div className="rounded-lg p-4 mb-3" style={{ background: 'white', border: '1px solid #ddd5c4' }}>
+          {editing ? (
+            <textarea value={text} onChange={e => setText(e.target.value)}
+              rows={Math.max(8, text.split('\n').length + 2)}
+              className="w-full text-sm leading-relaxed outline-none resize-y font-serif"
+              style={{ color: '#1a1816' }} />
+          ) : (
+            <p className="text-sm leading-relaxed font-serif whitespace-pre-wrap" style={{ color: '#1a1816' }}>
+              {renderHighlighted(text)}
+            </p>
+          )}
+        </div>
+
+        {/* Action bar */}
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
+          {!editing && !isAccepted && (
+            <button onClick={() => setEditing(true)}
+              className="text-[11px] px-2.5 py-1.5 rounded border" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+              ✎ Edit
+            </button>
+          )}
+          {editing && (
+            <>
+              <button onClick={handleSaveEdits} disabled={saving}
+                className="text-[11px] px-2.5 py-1.5 rounded font-medium" style={{ background: '#1e4a52', color: 'white' }}>
+                {saving ? 'Saving…' : 'Save edits'}
+              </button>
+              <button onClick={() => { setText(draft.draft_text || ''); setEditing(false); }}
+                className="text-[11px] px-2.5 py-1.5 rounded" style={{ color: '#6b6456' }}>
+                Cancel
+              </button>
+            </>
+          )}
+          {!editing && (
+            <>
+              <button onClick={() => navigator.clipboard.writeText(text)}
+                className="text-[11px] px-2.5 py-1.5 rounded border" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+                ⎘ Copy
+              </button>
+              <button onClick={onRegenerate} disabled={regenerating}
+                className="text-[11px] px-2.5 py-1.5 rounded border" style={{ borderColor: '#ddd5c4', color: '#1e4a52' }}>
+                {regenerating ? 'Regenerating…' : '⟳ Regenerate'}
+              </button>
+              {!isAccepted && (
+                <button onClick={onAccept}
+                  className="text-[11px] px-2.5 py-1.5 rounded font-medium" style={{ background: '#3d5c3a', color: 'white' }}>
+                  ✓ Accept draft
+                </button>
+              )}
+              <button onClick={onDiscard}
+                className="text-[11px] px-2.5 py-1.5 rounded border ml-auto" style={{ borderColor: '#f5c6c0', color: '#b04030' }}>
+                ✕ Discard
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Sources panel */}
+        {(citedMatches.length > 0 || citedLanguage.length > 0 || (draft.evidence_needed || []).length > 0) && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
+            {citedMatches.length > 0 && (
+              <div className="rounded p-3" style={{ background: 'rgba(30,74,82,.06)', border: '1px solid rgba(30,74,82,.15)' }}>
+                <div className="font-mono uppercase tracking-widest mb-1.5" style={{ color: '#1e4a52' }}>Matches cited</div>
+                <ul className="space-y-1">
+                  {citedMatches.map((m, i) => (
+                    <li key={m.id}>
+                      <Link href={`/repository/${m.id}`} className="hover:underline" style={{ color: '#1e4a52' }}>
+                        [#{i + 1}] {m.name}
+                      </Link>
+                      <span className="ml-1 opacity-60">({m.outcome})</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {citedLanguage.length > 0 && (
+              <div className="rounded p-3" style={{ background: 'rgba(184,150,46,.08)', border: '1px solid rgba(184,150,46,.2)' }}>
+                <div className="font-mono uppercase tracking-widest mb-1.5" style={{ color: '#8a6200' }}>Language patterns</div>
+                <ul className="space-y-1">
+                  {citedLanguage.map((s, i) => (
+                    <li key={i} className="italic" style={{ color: '#5a4810' }}>
+                      "{(s.adapted || s.text || '').slice(0, 100)}{(s.adapted || s.text || '').length > 100 ? '…' : ''}"
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {(draft.evidence_needed || []).length > 0 && (
+              <div className="rounded p-3" style={{ background: 'rgba(176,64,48,.05)', border: '1px solid rgba(176,64,48,.15)' }}>
+                <div className="font-mono uppercase tracking-widest mb-1.5" style={{ color: '#b04030' }}>Writer must fill in</div>
+                <ul className="space-y-1" style={{ color: '#7a3023' }}>
+                  {(draft.evidence_needed || []).slice(0, 6).map((e, i) => (
+                    <li key={i}>· {e}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Outcome Capture Modal — Wave 3 closed feedback loop ───────────────────
 // Active capture form for the bid outcome. Records what happened with the
 // bid, whether ProposalIQ contributed materially, and free-text on what was
@@ -1231,6 +1421,101 @@ const STATUS_COLORS = { 'not started':'#ddd5c4', 'in progress':'#b8962e', 'draft
 function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast }) {
   const rfpData = scan?.rfp_data || {};
   const storageKey = `piq_assembly_${scan?.id}`;
+  // Wave 4 — section drafts state
+  const [drafts, setDrafts] = useState({});  // section_id → draft object
+  const [generating, setGenerating] = useState(null); // section_id currently generating
+  const [openDraftId, setOpenDraftId] = useState(null); // section_id whose panel is expanded
+
+  // Load existing drafts on mount
+  useEffect(() => {
+    if (!scan?.id) return;
+    fetch(`/api/rfp/${scan.id}/drafts`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.drafts) {
+          const map = {};
+          d.drafts.forEach(x => { map[x.section_id] = x; });
+          setDrafts(map);
+        }
+      })
+      .catch(() => {});
+  }, [scan?.id]);
+
+  async function generateDraft(section, force = false) {
+    if (scan.status !== 'complete') {
+      onToast('Wait for the full scan to complete before drafting sections.');
+      return;
+    }
+    setGenerating(section.id);
+    try {
+      const r = await fetch(`/api/rfp/${scan.id}/draft-section`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          section_id: section.id,
+          section_name: section.title,
+          section_description: section.description,
+          force,
+        }),
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        onToast(err.error || 'Draft generation failed');
+        setGenerating(null);
+        return;
+      }
+      const d = await r.json();
+      setDrafts(prev => ({ ...prev, [section.id]: d.draft }));
+      setOpenDraftId(section.id);
+      onToast('✓ Draft ready');
+    } catch (e) {
+      onToast('Draft generation failed: ' + e.message);
+    }
+    setGenerating(null);
+  }
+
+  async function updateDraft(section, fields) {
+    const draft = drafts[section.id];
+    if (!draft) return;
+    try {
+      const r = await fetch(`/api/rfp/${scan.id}/drafts`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draft_id: draft.id, ...fields }),
+      });
+      if (!r.ok) { onToast('Failed to save'); return; }
+      // Optimistic local update
+      setDrafts(prev => ({ ...prev, [section.id]: { ...prev[section.id], ...fields } }));
+      if (fields.status === 'accepted') {
+        onToast('✓ Draft accepted');
+        updateSection(section.id, { status: 'draft ready' });
+      }
+    } catch (e) {
+      onToast('Save failed');
+    }
+  }
+
+  async function discardDraft(section) {
+    const draft = drafts[section.id];
+    if (!draft) return;
+    if (!confirm('Discard this draft? You can regenerate later.')) return;
+    try {
+      await fetch(`/api/rfp/${scan.id}/drafts`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draft_id: draft.id }),
+      });
+      setDrafts(prev => {
+        const next = { ...prev };
+        delete next[section.id];
+        return next;
+      });
+      setOpenDraftId(null);
+      onToast('Draft discarded');
+    } catch {
+      onToast('Discard failed');
+    }
+  }
 
   const defaultSections = [
     { id:'cover', title:'Cover Page', description:'Client name, project title, submission date, contact details', status:'not started', source:null, notes:'' },
@@ -1348,7 +1633,43 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast })
                   style={{ borderColor:'#ddd5c4', color:'#3a3530' }}
                 />
               </div>
+              {/* Wave 4 — Draft section button */}
+              <div className="pt-2 flex-shrink-0">
+                {drafts[s.id] ? (
+                  <button onClick={() => setOpenDraftId(openDraftId === s.id ? null : s.id)}
+                    className="text-[11px] px-2.5 py-1.5 rounded border transition-colors flex items-center gap-1.5"
+                    style={{
+                      borderColor: drafts[s.id].status === 'accepted' ? '#3d5c3a' : '#1e4a52',
+                      background: drafts[s.id].status === 'accepted' ? 'rgba(61,92,58,.08)' : 'rgba(30,74,82,.06)',
+                      color: drafts[s.id].status === 'accepted' ? '#3d5c3a' : '#1e4a52',
+                    }}>
+                    {drafts[s.id].status === 'accepted' ? '✓' : '✎'} {openDraftId === s.id ? 'Hide draft' : 'View draft'}
+                  </button>
+                ) : (
+                  <button onClick={() => generateDraft(s)} disabled={generating === s.id || scan.status !== 'complete'}
+                    className="text-[11px] px-2.5 py-1.5 rounded border transition-colors flex items-center gap-1.5 disabled:opacity-40"
+                    style={{ borderColor: '#1e4a52', color: '#1e4a52' }}
+                    title={scan.status !== 'complete' ? 'Wait for full scan to complete' : 'AI-draft this section'}>
+                    {generating === s.id ? <><Spinner size={10} /> Drafting…</> : '✍ Draft section'}
+                  </button>
+                )}
+              </div>
             </div>
+
+            {/* Wave 4 — inline draft panel */}
+            {openDraftId === s.id && drafts[s.id] && (
+              <SectionDraftPanel
+                draft={drafts[s.id]}
+                matches={matches}
+                winningLanguage={scan.winning_language || []}
+                onUpdateText={(text) => updateDraft(s, { draft_text: text })}
+                onAccept={() => updateDraft(s, { status: 'accepted' })}
+                onRegenerate={() => generateDraft(s, true)}
+                onDiscard={() => discardDraft(s)}
+                onClose={() => setOpenDraftId(null)}
+                regenerating={generating === s.id}
+              />
+            )}
           </div>
         );
       })}
