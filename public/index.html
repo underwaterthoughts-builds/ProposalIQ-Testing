@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProposalIQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0f0e0c;--paper:#faf7f2;--cream:#f0ebe0;--gold:#b8962e;--gold-lt:#d4b458;
+  --teal:#1e4a52;--teal-lt:#2d6b78;--rust:#b04030;--muted:#6b6456;--border:#ddd5c4;
+}
+html,body{height:100%;font-family:'Instrument Sans',system-ui,sans-serif;background:var(--paper);color:var(--ink);}
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+
+.shell{display:grid;grid-template-columns:1fr 1fr;width:100%;max-width:900px;min-height:560px;border-radius:16px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.18);}
+
+/* Left panel */
+.left{background:var(--ink);padding:52px 48px;display:flex;flex-direction:column;position:relative;overflow:hidden;}
+.left::before{content:'';position:absolute;top:-60px;right:-60px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(184,150,46,.18),transparent 65%);pointer-events:none;}
+.left::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--teal-lt));}
+.logo-mark{display:flex;align-items:center;gap:10px;margin-bottom:52px;}
+.logo-icon{width:36px;height:36px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:18px;color:var(--ink);font-weight:700;}
+.logo-name{font-family:'Fraunces',serif;font-size:20px;color:white;}
+.left-title{font-family:'Fraunces',serif;font-size:36px;font-weight:700;color:white;line-height:1.1;margin-bottom:16px;}
+.left-title span{color:var(--gold-lt);}
+.left-desc{font-size:14px;color:rgba(255,255,255,.45);line-height:1.7;margin-bottom:auto;}
+.left-pillars{display:flex;flex-direction:column;gap:12px;margin-top:36px;}
+.pillar{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:rgba(255,255,255,.55);}
+.pillar-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:5px;}
+
+/* Right panel */
+.right{background:white;padding:48px 44px;display:flex;flex-direction:column;justify-content:center;}
+.form-title{font-family:'Fraunces',serif;font-size:22px;margin-bottom:4px;}
+.form-sub{font-size:13px;color:var(--muted);margin-bottom:28px;}
+.form-row{margin-bottom:16px;}
+.form-row label{display:block;font-size:11px;font-weight:600;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:5px;}
+.form-row input{width:100%;padding:10px 13px;border:1px solid var(--border);border-radius:7px;font-family:'Instrument Sans',sans-serif;font-size:13.5px;background:var(--paper);color:var(--ink);outline:none;transition:border-color .15s;}
+.form-row input:focus{border-color:var(--teal);background:white;}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.btn-primary{width:100%;padding:11px;background:var(--teal);color:white;border:none;border-radius:7px;font-family:'Instrument Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s;margin-top:4px;}
+.btn-primary:hover{background:var(--teal-lt);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.switch-link{text-align:center;margin-top:14px;font-size:13px;color:var(--muted);}
+.switch-link a{color:var(--teal);cursor:pointer;text-decoration:none;font-weight:500;}
+.switch-link a:hover{text-decoration:underline;}
+.error-msg{background:rgba(176,64,48,.08);border:1px solid rgba(176,64,48,.2);border-radius:6px;padding:9px 12px;font-size:12.5px;color:var(--rust);margin-bottom:14px;display:none;}
+.error-msg.show{display:block;}
+.divider{display:flex;align-items:center;gap:10px;margin:18px 0;font-size:11px;color:var(--border);}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* Loading overlay */
+.loading{position:fixed;inset:0;background:rgba(15,14,12,.6);display:none;align-items:center;justify-content:center;z-index:100;}
+.loading.show{display:flex;}
+.spin{width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="left">
+    <div class="logo-mark">
+      <div class="logo-icon">P</div>
+      <span class="logo-name">ProposalIQ</span>
+    </div>
+    <div class="left-title">Win more.<br>Know <span>why</span> you won.</div>
+    <div class="left-desc">A knowledge-driven proposal intelligence system that surfaces your best previous work every time you face a new bid.</div>
+    <div class="left-pillars">
+      <div class="pillar"><div class="pillar-dot"></div><span>Retrieve and rank your most relevant past proposals</span></div>
+      <div class="pillar"><div class="pillar-dot"></div><span>Identify gaps and opportunities in new RFPs</span></div>
+      <div class="pillar"><div class="pillar-dot"></div><span>Build financial models from real team day rates</span></div>
+      <div class="pillar"><div class="pillar-dot"></div><span>Every suggestion traced to a source and outcome</span></div>
+    </div>
+  </div>
+
+  <div class="right">
+    <!-- SETUP FORM -->
+    <div id="view-setup">
+      <div class="form-title">Set up your workspace</div>
+      <div class="form-sub">Create your organisation and first account</div>
+      <div class="error-msg" id="setup-err"></div>
+      <div class="form-row">
+        <label>Organisation Name</label>
+        <input id="s-org" type="text" placeholder="e.g. Acme Consulting Ltd">
+      </div>
+      <div class="divider">Your account</div>
+      <div class="form-row">
+        <label>Your Name</label>
+        <input id="s-name" type="text" placeholder="Full name">
+      </div>
+      <div class="form-row">
+        <label>Email</label>
+        <input id="s-email" type="email" placeholder="you@company.com">
+      </div>
+      <div class="form-row">
+        <label>Password <span style="font-weight:300;text-transform:none;">(min 8 characters)</span></label>
+        <input id="s-pw" type="password" placeholder="Choose a strong password">
+      </div>
+      <button class="btn-primary" onclick="doSetup()">Create Workspace →</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="view-login" style="display:none;">
+      <div class="form-title">Welcome back</div>
+      <div class="form-sub" id="login-org-name">Sign in to your workspace</div>
+      <div class="error-msg" id="login-err"></div>
+      <div class="form-row">
+        <label>Email</label>
+        <input id="l-email" type="email" placeholder="you@company.com" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="form-row">
+        <label>Password</label>
+        <input id="l-pw" type="password" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Sign In →</button>
+      <div class="switch-link">New team member? <a onclick="showRegister()">Create an account</a></div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="view-register" style="display:none;">
+      <div class="form-title">Create an account</div>
+      <div class="form-sub">Join your team's ProposalIQ workspace</div>
+      <div class="error-msg" id="reg-err"></div>
+      <div class="form-row">
+        <label>Your Name</label>
+        <input id="r-name" type="text" placeholder="Full name">
+      </div>
+      <div class="form-row">
+        <label>Email</label>
+        <input id="r-email" type="email" placeholder="you@company.com">
+      </div>
+      <div class="form-row">
+        <label>Password <span style="font-weight:300;text-transform:none;">(min 8 characters)</span></label>
+        <input id="r-pw" type="password" placeholder="Choose a strong password" onkeydown="if(event.key==='Enter')doRegister()">
+      </div>
+      <button class="btn-primary" onclick="doRegister()">Create Account →</button>
+      <div class="switch-link">Already have an account? <a onclick="showLogin()">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<div class="loading" id="loading"><div class="spin"></div></div>
+
+<script>
+const loading = document.getElementById('loading');
+const show = (id) => ['view-setup','view-login','view-register'].forEach(v => document.getElementById(v).style.display = v === id ? 'block' : 'none');
+const showErr = (id, msg) => { const el = document.getElementById(id); el.textContent = msg; el.classList.add('show'); };
+const clearErr = (id) => document.getElementById(id).classList.remove('show');
+const showLogin = () => show('view-login');
+const showRegister = () => show('view-register');
+
+async function api(url, opts = {}) {
+  const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  return res.json();
+}
+
+// Determine which view to show on load
+(async () => {
+  try {
+    const data = await api('/api/auth/check');
+    if (data.authenticated) return window.location.href = '/app.html';
+    if (data.needsSetup) return show('view-setup');
+    // Has org but not logged in
+    show('view-login');
+    if (data.orgName) document.getElementById('login-org-name').textContent = `Sign in to ${data.orgName}`;
+  } catch { show('view-setup'); }
+})();
+
+async function doSetup() {
+  clearErr('setup-err');
+  const org = document.getElementById('s-org').value.trim();
+  const name = document.getElementById('s-name').value.trim();
+  const email = document.getElementById('s-email').value.trim();
+  const pw = document.getElementById('s-pw').value;
+  if (!org || !name || !email || !pw) return showErr('setup-err', 'All fields are required.');
+  loading.classList.add('show');
+  const data = await api('/api/auth/setup', { method: 'POST', body: JSON.stringify({ orgName: org, name, email, password: pw }) });
+  loading.classList.remove('show');
+  if (data.error) return showErr('setup-err', data.error);
+  window.location.href = '/app.html?firstrun=1';
+}
+
+async function doLogin() {
+  clearErr('login-err');
+  const email = document.getElementById('l-email').value.trim();
+  const pw = document.getElementById('l-pw').value;
+  if (!email || !pw) return showErr('login-err', 'Email and password are required.');
+  loading.classList.add('show');
+  const data = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password: pw }) });
+  loading.classList.remove('show');
+  if (data.error) return showErr('login-err', data.error);
+  window.location.href = '/app.html';
+}
+
+async function doRegister() {
+  clearErr('reg-err');
+  const name = document.getElementById('r-name').value.trim();
+  const email = document.getElementById('r-email').value.trim();
+  const pw = document.getElementById('r-pw').value;
+  if (!name || !email || !pw) return showErr('reg-err', 'All fields are required.');
+  loading.classList.add('show');
+  const data = await api('/api/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password: pw }) });
+  loading.classList.remove('show');
+  if (data.error) return showErr('reg-err', data.error);
+  window.location.href = '/app.html';
+}
+</script>
+</body>
+</html>

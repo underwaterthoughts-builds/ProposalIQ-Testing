@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["nodejs_22", "python3", "gcc", "gnumake"]
+
+[phases.install]
+cmds = ["npm install --ignore-scripts", "npm rebuild better-sqlite3 --build-from-source"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[variables]
+NEXT_TELEMETRY_DISABLED = "1"
+
+[start]
+cmd = "npx next start -p ${PORT:-3000}"

@@ -1,0 +1,32 @@
+{
+  "name": "proposaliq",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/ensure-dirs.js && next dev",
+    "build": "next build",
+    "start": "next start -p ${PORT:-3000}"
+  },
+  "dependencies": {
+    "next": "14.2.35",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "better-sqlite3": "^9.6.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "@google/generative-ai": "^0.15.0",
+    "pdf-parse": "^1.1.1",
+    "mammoth": "^1.8.0",
+    "formidable": "^3.5.1",
+    "uuid": "^10.0.0",
+    "xlsx": "^0.18.5",
+    "cookie": "^0.6.0",
+    "openai": "^4.100.0",
+    "docx": "^9.0.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4"
+  }
+}

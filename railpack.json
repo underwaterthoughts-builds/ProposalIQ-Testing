@@ -1,0 +1,9 @@
+{
+  "provider": "node",
+  "build": {
+    "cmd": "npm ci && npm run build"
+  },
+  "start": {
+    "cmd": "npm start"
+  }
+}
