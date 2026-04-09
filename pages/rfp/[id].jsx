@@ -44,7 +44,7 @@ export default function RFPResults() {
   const { isQuick, isPro } = useMode();
   const [scan, setScan] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('matches');
+  const [activeTab, setActiveTab] = useState('brief');
   const [expandedMatches, setExpandedMatches] = useState({});
   const [toast, setToast] = useState('');
   const [exporting, setExporting] = useState(false);
@@ -331,9 +331,11 @@ ${sectionHtml('Winning Language', languageHtml)}
   const narrativeText = scan.narrative_advice?.text || (typeof scan.narrative_advice === 'string' ? scan.narrative_advice : '') || '';
   const proposalStructure = scan.narrative_advice?.proposal_structure || null;
   const bidScore = scan.bid_score || null;
+  const executiveBrief = scan.executive_brief || null;
   const goodMatchCount = matches.filter(m => m.outcome === 'won').length;
 
   const tabs = [
+    { id:'brief', label:'Brief', badge: executiveBrief?.verdict?.decision ? '★' : null },
     { id:'matches', label:'Matched Proposals', count:matches.length },
     { id:'gaps', label:'Opportunity Gaps', count:gaps.length },
     { id:'writing', label:'Writing Insights', count:writingInsights.length },
@@ -464,6 +466,8 @@ ${sectionHtml('Winning Language', languageHtml)}
             <div className="flex-1 overflow-y-auto p-4 md:p-4">
               {scan.status !== 'complete' && scan.status !== 'error' ? (
                 <div className="py-16 text-center"><Spinner size={32}/><p className="text-sm mt-4" style={{ color:'#6b6456' }}>Running intelligence pipeline…</p></div>
+              ) : activeTab === 'brief' ? (
+                <ExecutiveBrief brief={executiveBrief} bidScore={bidScore} matches={matches} onJumpTab={setActiveTab} />
               ) : activeTab === 'matches' ? (
                 <div>
                   {isPro && (
@@ -1122,6 +1126,214 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast })
         style={{ borderColor:'#ddd5c4', color:'#1e4a52' }}>
         ⊡ Copy Assembly Plan to Clipboard
       </button>
+    </div>
+  );
+}
+
+// ── Executive Bid Brief — synthesis layer landing page ────────────────────
+// The default tab. Renders the verdict at the top, then top priorities,
+// risks, recommended assets, and immediate next actions. Designed so the
+// bid director can read it in 90 seconds and walk away with a decision.
+function ExecutiveBrief({ brief, bidScore, matches, onJumpTab }) {
+  if (!brief) {
+    return (
+      <div className="py-16 text-center">
+        <div className="text-3xl mb-3 opacity-25">★</div>
+        <p className="text-sm" style={{ color: '#6b6456' }}>Executive brief not available for this scan.</p>
+        <p className="text-xs mt-2" style={{ color: '#9b8e80' }}>Re-run the scan to generate one.</p>
+      </div>
+    );
+  }
+
+  const verdict = brief.verdict || {};
+  const decision = String(verdict.decision || '').toUpperCase();
+  const decisionColor =
+    decision.includes('STRONG') ? '#3d5c3a' :
+    decision.includes('NO BID') ? '#b04030' :
+    decision.includes('CONDITIONAL') ? '#b8962e' :
+    decision.includes('BID') ? '#1e4a52' : '#6b6456';
+  const decisionBg = decisionColor + '14';
+
+  const priorities = Array.isArray(brief.top_3_priorities) ? brief.top_3_priorities : [];
+  const risks = Array.isArray(brief.top_3_risks) ? brief.top_3_risks : [];
+  const assets = Array.isArray(brief.recommended_assets_to_use) ? brief.recommended_assets_to_use : [];
+  const nextActions = Array.isArray(brief.immediate_next_actions) ? brief.immediate_next_actions : [];
+  const deprioritise = Array.isArray(brief.what_to_deprioritise) ? brief.what_to_deprioritise : [];
+
+  return (
+    <div className="space-y-5 max-w-5xl mx-auto">
+      {/* ── VERDICT BANNER ── */}
+      <div className="rounded-xl p-5 border-2" style={{ borderColor: decisionColor, background: decisionBg }}>
+        <div className="flex items-baseline justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: decisionColor, opacity: 0.7 }}>Verdict</span>
+            <span className="text-sm font-semibold px-3 py-1 rounded-full" style={{ background: decisionColor, color: 'white' }}>
+              {decision || 'CONDITIONAL'}
+            </span>
+            {verdict.confidence && (
+              <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: decisionColor, opacity: 0.6 }}>
+                {verdict.confidence} confidence
+              </span>
+            )}
+          </div>
+          {bidScore?.score != null && (
+            <div className="text-right">
+              <div className="font-serif text-2xl" style={{ color: decisionColor }}>{bidScore.score}<span className="text-sm opacity-50">/100</span></div>
+              <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: decisionColor, opacity: 0.6 }}>Bid score</div>
+            </div>
+          )}
+        </div>
+        {verdict.headline && (
+          <p className="text-base leading-relaxed font-serif" style={{ color: '#1a1816' }}>{verdict.headline}</p>
+        )}
+        {verdict.score_summary && (
+          <p className="text-xs mt-2 italic" style={{ color: '#6b6456' }}>{verdict.score_summary}</p>
+        )}
+      </div>
+
+      {/* ── WINNING THESIS ── */}
+      {brief.winning_thesis_one_liner && (
+        <div className="rounded-lg p-4" style={{ background: '#1e4a52', color: 'white' }}>
+          <div className="text-[10px] font-mono uppercase tracking-widest mb-2 opacity-70">Winning Thesis</div>
+          <p className="text-sm leading-relaxed italic">"{brief.winning_thesis_one_liner}"</p>
+        </div>
+      )}
+
+      {/* ── WHAT IT'S REALLY ASKING / FIT ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {brief.what_this_brief_is_really_asking_for && (
+          <div className="rounded-lg p-4 border" style={{ background: 'white', borderColor: '#ddd5c4' }}>
+            <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#6b6456' }}>What this RFP is really asking for</div>
+            <p className="text-sm leading-relaxed" style={{ color: '#1a1816' }}>{brief.what_this_brief_is_really_asking_for}</p>
+          </div>
+        )}
+        {brief.are_we_a_strong_fit && (
+          <div className="rounded-lg p-4 border" style={{ background: 'white', borderColor: '#ddd5c4' }}>
+            <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#6b6456' }}>Are we a strong fit?</div>
+            <p className="text-sm leading-relaxed" style={{ color: '#1a1816' }}>{brief.are_we_a_strong_fit}</p>
+          </div>
+        )}
+      </div>
+
+      {/* ── PRIORITIES + RISKS ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {priorities.length > 0 && (
+          <div className="rounded-lg p-4 border" style={{ background: '#edf3ec', borderColor: 'rgba(61,92,58,.25)' }}>
+            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: '#3d5c3a' }}>Top 3 priorities</div>
+            <ol className="space-y-3">
+              {priorities.slice(0, 3).map((p, i) => (
+                <li key={i} className="text-sm">
+                  <div className="flex gap-2">
+                    <span className="font-mono font-bold flex-shrink-0" style={{ color: '#3d5c3a' }}>{i + 1}.</span>
+                    <div className="flex-1">
+                      <div className="font-medium" style={{ color: '#1a1816' }}>{p.priority || p}</div>
+                      {p.why_it_matters && <div className="text-xs mt-1 italic" style={{ color: '#3d5c3a' }}>Why: {p.why_it_matters}</div>}
+                      {p.evidence && <div className="text-xs mt-0.5 font-mono" style={{ color: '#6b6456' }}>Evidence: {p.evidence}</div>}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+        {risks.length > 0 && (
+          <div className="rounded-lg p-4 border" style={{ background: '#faeeeb', borderColor: 'rgba(176,64,48,.25)' }}>
+            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: '#b04030' }}>Top 3 risks</div>
+            <ol className="space-y-3">
+              {risks.slice(0, 3).map((r, i) => (
+                <li key={i} className="text-sm">
+                  <div className="flex gap-2">
+                    <span className="font-mono font-bold flex-shrink-0" style={{ color: '#b04030' }}>{i + 1}.</span>
+                    <div className="flex-1">
+                      <div className="font-medium" style={{ color: '#1a1816' }}>{r.risk || r}</div>
+                      {r.mitigation && <div className="text-xs mt-1" style={{ color: '#b04030' }}>→ {r.mitigation}</div>}
+                      {r.owner && <div className="text-[10px] mt-0.5 font-mono uppercase tracking-wide" style={{ color: '#6b6456' }}>{r.owner}</div>}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+      </div>
+
+      {/* ── STYLE / STRUCTURE ── */}
+      {(brief.best_fit_style || brief.best_fit_structure) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {brief.best_fit_style && (
+            <div className="rounded-lg p-4 border" style={{ background: '#faf4e2', borderColor: 'rgba(184,150,46,.3)' }}>
+              <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#8a6200' }}>Best-fit style</div>
+              <p className="text-sm" style={{ color: '#5a4810' }}>{brief.best_fit_style}</p>
+            </div>
+          )}
+          {brief.best_fit_structure && (
+            <div className="rounded-lg p-4 border" style={{ background: '#faf4e2', borderColor: 'rgba(184,150,46,.3)' }}>
+              <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#8a6200' }}>Best-fit structure</div>
+              <p className="text-sm" style={{ color: '#5a4810' }}>{brief.best_fit_structure}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── RECOMMENDED ASSETS ── */}
+      {assets.length > 0 && (
+        <div className="rounded-lg p-4 border" style={{ background: 'white', borderColor: '#ddd5c4' }}>
+          <div className="flex items-baseline justify-between mb-3">
+            <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#1e4a52' }}>Past assets to use</div>
+            <button onClick={() => onJumpTab && onJumpTab('matches')} className="text-[11px] font-mono" style={{ color: '#1e4a52' }}>
+              See all matches →
+            </button>
+          </div>
+          <div className="space-y-2">
+            {assets.slice(0, 5).map((a, i) => (
+              <div key={i} className="flex gap-3 text-sm py-2 border-b last:border-0" style={{ borderColor: '#f0ebe0' }}>
+                <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: '#1e4a52' }}>◆</span>
+                <div className="flex-1">
+                  <div className="font-medium" style={{ color: '#1a1816' }}>{a.name}</div>
+                  {a.why && <div className="text-xs mt-0.5" style={{ color: '#6b6456' }}>{a.why}</div>}
+                  {a.use_for && <div className="text-[10px] mt-0.5 font-mono uppercase tracking-wide" style={{ color: '#9b8e80' }}>Use for: {a.use_for}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── DEPRIORITISE ── */}
+      {deprioritise.length > 0 && (
+        <div className="rounded-lg p-4 border" style={{ background: '#f8f6f2', borderColor: '#ddd5c4' }}>
+          <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#6b6456' }}>Do not waste effort on</div>
+          <ul className="space-y-1">
+            {deprioritise.map((d, i) => (
+              <li key={i} className="text-sm flex gap-2" style={{ color: '#6b6456' }}>
+                <span className="flex-shrink-0">✕</span>
+                <span>{d}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* ── IMMEDIATE NEXT ACTIONS ── */}
+      {nextActions.length > 0 && (
+        <div className="rounded-lg p-4 border-2" style={{ background: '#1e4a52', borderColor: '#1e4a52', color: 'white' }}>
+          <div className="text-[10px] font-mono uppercase tracking-widest mb-3 opacity-70">Do these today</div>
+          <ol className="space-y-2">
+            {nextActions.slice(0, 5).map((a, i) => (
+              <li key={i} className="flex gap-3 text-sm">
+                <span className="font-mono font-bold opacity-60 flex-shrink-0">{i + 1}.</span>
+                <div className="flex-1">
+                  <div>{a.action || a}</div>
+                  <div className="flex gap-3 mt-0.5 text-[10px] font-mono uppercase tracking-wide opacity-70">
+                    {a.owner && <span>👤 {a.owner}</span>}
+                    {a.deadline && <span>⏱ {a.deadline}</span>}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
     </div>
   );
 }

@@ -217,17 +217,24 @@ export default function QuickView({ scan, scanId, onExport, onTemplate, onDelete
   const winningLanguage = scan.winning_language || [];
   const bidScore = scan.bid_score || null;
   const writingInsights = (scan.writing_insights || []).slice(0, 5);
+  // Executive brief is the synthesis layer — prefer its outputs when present,
+  // fall back to win strategy + gaps as the legacy source.
+  const brief = scan.executive_brief || null;
 
   // Pull the best style from top matched won proposal
   const topWon = matches.find(m => m.outcome === 'won' && m.style_classification);
   const recommendedStyle = topWon?.style_classification || null;
 
-  // Curate top 3 priorities and risks
-  const topPriorities = (winStrategy?.priorities || []).slice(0, 3);
-  const topRisks = [
-    ...(winStrategy?.risks || []).slice(0, 2),
-    ...(gaps.filter(g => g.priority === 'high').slice(0, 1)),
-  ].slice(0, 3);
+  // Curate top 3 priorities and risks — prefer the executive brief output
+  const topPriorities = brief?.top_3_priorities?.length
+    ? brief.top_3_priorities.slice(0, 3)
+    : (winStrategy?.priorities || []).slice(0, 3);
+  const topRisks = brief?.top_3_risks?.length
+    ? brief.top_3_risks.slice(0, 3)
+    : [
+        ...(winStrategy?.risks || []).slice(0, 2),
+        ...(gaps.filter(g => g.priority === 'high').slice(0, 1)),
+      ].slice(0, 3);
 
   // Best useful line — prefer adapted
   const bestLine = winningLanguage.find(s => s.adapted) || winningLanguage[0] || null;
@@ -330,9 +337,22 @@ export default function QuickView({ scan, scanId, onExport, onTemplate, onDelete
           />
         )}
 
-        {/* Winning thesis */}
-        {winStrategy?.winning_thesis && <ThesisBlock text={winStrategy.winning_thesis} />}
-        {!winStrategy?.winning_thesis && winStrategy?.opening_narrative && <ThesisBlock text={winStrategy.opening_narrative} />}
+        {/* Verdict headline (from the executive brief) */}
+        {brief?.verdict?.headline && (
+          <div className="rounded-lg p-4 mb-4 border" style={{ background: '#faf7f2', borderColor: '#ddd5c4' }}>
+            <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#6b6456' }}>Bid Director Verdict</div>
+            <p className="text-base font-serif leading-relaxed" style={{ color: '#1a1816' }}>{brief.verdict.headline}</p>
+          </div>
+        )}
+
+        {/* Winning thesis — prefer brief's one-liner, fall back to win strategy */}
+        {brief?.winning_thesis_one_liner ? (
+          <ThesisBlock text={brief.winning_thesis_one_liner} />
+        ) : winStrategy?.winning_thesis ? (
+          <ThesisBlock text={winStrategy.winning_thesis} />
+        ) : winStrategy?.opening_narrative ? (
+          <ThesisBlock text={winStrategy.opening_narrative} />
+        ) : null}
 
         {/* Priorities */}
         {topPriorities.length > 0 && (
