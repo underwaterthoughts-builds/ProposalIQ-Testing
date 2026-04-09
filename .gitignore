@@ -1,6 +1,7 @@
 node_modules/
 .next/
-data/
+data/*
+!data/seed-data.js
 .env.local
 .env
 *.env
