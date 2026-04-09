@@ -477,14 +477,19 @@ ${sectionHtml('Winning Language', languageHtml)}
                   <p className="text-sm mb-4" style={{ color:'#6b6456' }}>
                     {scan.status_detail === 'awaiting_rfp_review' && isPro
                       ? '⚑ Approve the RFP extraction above before gap analysis runs.'
-                      : 'Ranked by semantic similarity × AI re-ranking × quality rating × outcome. Click a match to expand.'}
+                      : 'Grouped by industry fit. Direct matches are at the top; cross-sector references are hidden by default — click to reveal.'}
                   </p>
-                  {matches.length === 0 ? <div className="text-center py-12"><p className="text-sm" style={{ color:'#6b6456' }}>No matches found. Add more proposals to your repository.</p></div>
-                  : <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {matches.map((m, i) => (
-                        <MatchCard key={m.id} match={m} expanded={expandedMatches[i]} onToggle={() => setExpandedMatches(e => ({ ...e, [i]:!e[i] }))} onSuppress={() => suppress(m.id)} onToast={setToast} />
-                      ))}
-                    </div>}
+                  {matches.length === 0 ? (
+                    <div className="text-center py-12"><p className="text-sm" style={{ color:'#6b6456' }}>No matches found. Add more proposals to your repository.</p></div>
+                  ) : (
+                    <TieredMatches
+                      matches={matches}
+                      expandedMatches={expandedMatches}
+                      setExpandedMatches={setExpandedMatches}
+                      suppress={suppress}
+                      setToast={setToast}
+                    />
+                  )}
                 </div>
               ) : activeTab === 'gaps' ? (
                 <div>
@@ -1118,6 +1123,144 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast })
         ⊡ Copy Assembly Plan to Clipboard
       </button>
     </div>
+  );
+}
+
+// ── Tiered match grouping ────────────────────────────────────────────────
+// Groups matches by their taxonomy_tier and renders each group as a section.
+// Direct-fit tiers (1, 2, 3) are always expanded. The "different sector"
+// group (tier 5) is collapsed by default behind a click-to-reveal button so
+// off-sector noise doesn't drown out direct matches. Untagged (tier 4) is
+// shown when present but framed as a neutral fallback.
+function TieredMatches({ matches, expandedMatches, setExpandedMatches, suppress, setToast }) {
+  const [showCrossSector, setShowCrossSector] = useState(false);
+
+  // Bucket by tier — keep within-tier ordering as the API delivered it.
+  const tier1 = matches.filter(m => m.taxonomy_tier === 1);
+  const tier2 = matches.filter(m => m.taxonomy_tier === 2);
+  const tier3 = matches.filter(m => m.taxonomy_tier === 3);
+  const tier4 = matches.filter(m => m.taxonomy_tier === 4);
+  const tier5 = matches.filter(m => m.taxonomy_tier === 5);
+
+  // Top-fit = tiers 1+2+3 — anything that has at least one taxonomy axis
+  // matching the RFP. Renders together at the top.
+  const topFit = [...tier1, ...tier2, ...tier3];
+
+  function renderGroup(label, sublabel, items, accentColor) {
+    if (!items.length) return null;
+    return (
+      <div className="mb-6">
+        <div className="flex items-baseline justify-between mb-3">
+          <div>
+            <div className="text-[11px] font-mono uppercase tracking-widest" style={{ color: accentColor }}>
+              {label}
+            </div>
+            <div className="text-xs mt-0.5" style={{ color: '#6b6456' }}>{sublabel}</div>
+          </div>
+          <div className="text-[11px] font-mono" style={{ color: '#9b8e80' }}>{items.length} {items.length === 1 ? 'match' : 'matches'}</div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {items.map((m) => {
+            // Use the global index from `matches` so expand state stays consistent.
+            const i = matches.indexOf(m);
+            return (
+              <MatchCard key={m.id} match={m}
+                expanded={expandedMatches[i]}
+                onToggle={() => setExpandedMatches(e => ({ ...e, [i]: !e[i] }))}
+                onSuppress={() => suppress(m.id)}
+                onToast={setToast} />
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state — nothing matched at all
+  if (matches.length === 0) {
+    return <div className="text-center py-12"><p className="text-sm" style={{ color: '#6b6456' }}>No matches found. Add more proposals to your repository.</p></div>;
+  }
+
+  return (
+    <>
+      {/* Direct-fit groupings — always expanded */}
+      {renderGroup(
+        '◆ Direct fit · same sector and same type of work',
+        'Strongest matches — same client industry and same service line as this RFP.',
+        tier1, '#3d5c3a'
+      )}
+      {renderGroup(
+        '◆ Same sector · different type of work',
+        'Same client industry but a different service line.',
+        tier2, '#8a6200'
+      )}
+      {renderGroup(
+        '◈ Same type of work · different sector',
+        'Same service line, but the client was in a different industry.',
+        tier3, '#1e4a52'
+      )}
+      {renderGroup(
+        '◌ Untagged proposals',
+        'Industry could not be inferred from the proposal text — re-analyse to classify.',
+        tier4, '#9b8e80'
+      )}
+
+      {/* Cross-sector — hidden by default */}
+      {tier5.length > 0 && (
+        <div className="mt-6 border-t pt-5" style={{ borderColor: '#ddd5c4' }}>
+          {!showCrossSector ? (
+            <button
+              onClick={() => setShowCrossSector(true)}
+              className="w-full py-4 rounded-lg border border-dashed transition-all hover:bg-white"
+              style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+              <div className="text-sm font-medium mb-1">
+                Show {tier5.length} cross-sector {tier5.length === 1 ? 'proposal' : 'proposals'}
+              </div>
+              <div className="text-[11px]" style={{ color: '#9b8e80' }}>
+                Different industry and different service line. May still be useful for tone, structure, or rhetorical approach — but not for direct content reuse.
+              </div>
+            </button>
+          ) : (
+            <>
+              <div className="flex items-baseline justify-between mb-3">
+                <div>
+                  <div className="text-[11px] font-mono uppercase tracking-widest" style={{ color: '#9b8e80' }}>
+                    ◌ Cross-sector references
+                  </div>
+                  <div className="text-xs mt-0.5" style={{ color: '#6b6456' }}>
+                    Different industry — useful for tone, structure or approach only.
+                  </div>
+                </div>
+                <button onClick={() => setShowCrossSector(false)}
+                  className="text-[11px] font-mono" style={{ color: '#9b8e80' }}>
+                  hide
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {tier5.map((m) => {
+                  const i = matches.indexOf(m);
+                  return (
+                    <MatchCard key={m.id} match={m}
+                      expanded={expandedMatches[i]}
+                      onToggle={() => setExpandedMatches(e => ({ ...e, [i]: !e[i] }))}
+                      onSuppress={() => suppress(m.id)}
+                      onToast={setToast} />
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Banner if everything is in tier 4/5 — likely means the user hasn't
+          re-analysed proposals against the new taxonomy yet */}
+      {topFit.length === 0 && (tier4.length > 0 || tier5.length > 0) && (
+        <div className="mt-4 rounded-lg p-3 text-xs border" style={{ background: '#faf4e2', borderColor: 'rgba(184,150,46,.3)', color: '#7a5800' }}>
+          <strong>No direct sector matches yet.</strong> Re-analyse your repository so proposals get tagged against the new taxonomy — until then matching falls back to text inference and may be less precise.
+        </div>
+      )}
+    </>
   );
 }
 

@@ -2,6 +2,33 @@ import { v4 as uuid } from 'uuid';
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { safe } from '../../../lib/embeddings';
+import { inferTaxonomyFromProposal } from '../../../lib/taxonomy';
+
+// Compute tier label for a single match against the RFP's taxonomy.
+// Mirrors lib/embeddings.js taxonomyTier so existing scans benefit from
+// the inference fallback without needing a re-scan.
+function computeTier(match, rfpClient, rfpService) {
+  let propClient = match.client_industry || null;
+  let propService = match.service_industry || null;
+  let inferred = !!match.taxonomy_inferred;
+
+  if (!propClient || !propService) {
+    const inf = inferTaxonomyFromProposal(match);
+    if (!propClient && inf.client_industry) { propClient = inf.client_industry; inferred = true; }
+    if (!propService && inf.service_industry) { propService = inf.service_industry; inferred = true; }
+  }
+
+  if (!rfpClient && !rfpService) return { tier: 4, label: 'untagged', inferred, propClient, propService };
+  if (!propClient && !propService) return { tier: 4, label: 'untagged', inferred, propClient, propService };
+
+  const clientMatch = propClient && rfpClient && propClient === rfpClient;
+  const serviceMatch = propService && rfpService && propService === rfpService;
+
+  if (clientMatch && serviceMatch) return { tier: 1, label: 'full', inferred, propClient, propService };
+  if (clientMatch) return { tier: 2, label: 'client', inferred, propClient, propService };
+  if (serviceMatch) return { tier: 3, label: 'service', inferred, propClient, propService };
+  return { tier: 5, label: 'cross', inferred, propClient, propService };
+}
 
 function handler(req, res) {
   const db = getDb();
@@ -30,11 +57,34 @@ function handler(req, res) {
       narrativeText = scan.narrative_advice || '';
     }
 
+    // Recompute tier on read so existing scans benefit from improved
+    // inference logic without a re-scan. The RFP's taxonomy comes from
+    // the scan row itself; proposal taxonomy either comes from the saved
+    // match data or is inferred from text on the fly.
+    const rfpClient = scan.client_industry || null;
+    const rfpService = scan.service_industry || null;
+    const rawMatches = safe(scan.matched_proposals, []).filter(p => !suppressed.has(p.id));
+    const matchedProposals = rawMatches.map(p => {
+      const tier = computeTier(p, rfpClient, rfpService);
+      return {
+        ...p,
+        taxonomy_tier: tier.tier,
+        taxonomy_match: tier.label,
+        taxonomy_inferred: tier.inferred,
+        client_industry: tier.propClient || p.client_industry || null,
+        service_industry: tier.propService || p.service_industry || null,
+      };
+    }).sort((a, b) => {
+      // Tier asc first, then by match_score desc within tier.
+      if (a.taxonomy_tier !== b.taxonomy_tier) return a.taxonomy_tier - b.taxonomy_tier;
+      return (b.match_score || 0) - (a.match_score || 0);
+    });
+
     return res.status(200).json({
       scan: {
         ...scan,
         rfp_data: safe(scan.rfp_data, {}),
-        matched_proposals: safe(scan.matched_proposals, []).filter(p => !suppressed.has(p.id)),
+        matched_proposals: matchedProposals,
         gaps: safe(scan.gaps, []),
         news: safe(scan.news, []),
         team_suggestions: safe(scan.team_suggestions, []),
