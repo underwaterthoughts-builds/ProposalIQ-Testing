@@ -78,7 +78,11 @@ export default function RFPResults() {
     const d = await r.json();
     setScan(d.scan);
     setLoading(false);
-    if (d.scan.status === 'processing') setTimeout(fetchScan, 3000);
+    // Keep polling on both processing (no data yet) and fast_ready
+    // (verdict is shown but deep pass still running in background).
+    if (d.scan.status === 'processing' || d.scan.status === 'fast_ready') {
+      setTimeout(fetchScan, 3000);
+    }
   }
 
   async function suppress(projectId) {
@@ -339,7 +343,7 @@ ${sectionHtml('Winning Language', languageHtml)}
     { id:'matches', label:'Matched Proposals', count:matches.length },
     { id:'gaps', label:'Opportunity Gaps', count:gaps.length },
     { id:'writing', label:'Writing Insights', count:writingInsights.length },
-    { id:'news', label:'Industry News', count:news.length },
+    { id:'news', label:'Market Context', count:news.length },
     { id:'approach', label:'Suggested Approach', count:suggestedApproach?.suggested_phases?.length||0 },
     { id:'strategy', label:'Win Strategy', badge: winStrategy ? '⚡' : null },
     { id:'language', label:'Winning Language', count:winningLanguage.length },
@@ -406,7 +410,12 @@ ${sectionHtml('Winning Language', languageHtml)}
           <div className="flex-1 flex flex-col overflow-hidden md:border-r" style={{ borderColor:'#ddd5c4' }}>
             {scan.status === 'processing' && (
               <div className="flex items-center gap-3 px-5 py-3 text-sm border-b" style={{ background:'#faf4e2', borderColor:'rgba(184,150,46,.3)', color:'#7a5800' }}>
-                <Spinner size={14}/><span>AI scanning your repository — 30–60 seconds…</span>
+                <Spinner size={14}/><span>Fast pass running — verdict in ~30s, full analysis in ~90s…</span>
+              </div>
+            )}
+            {scan.status === 'fast_ready' && (
+              <div className="flex items-center gap-3 px-5 py-3 text-sm border-b" style={{ background:'#e8f2f4', borderColor:'rgba(30,74,82,.25)', color:'#1e4a52' }}>
+                <Spinner size={14}/><span>Verdict ready — deep analysis (gaps, win strategy, winning language, news, approach) running in background…</span>
               </div>
             )}
             {scan.status === 'error' && (
@@ -464,8 +473,8 @@ ${sectionHtml('Winning Language', languageHtml)}
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 md:p-4">
-              {scan.status !== 'complete' && scan.status !== 'error' ? (
-                <div className="py-16 text-center"><Spinner size={32}/><p className="text-sm mt-4" style={{ color:'#6b6456' }}>Running intelligence pipeline…</p></div>
+              {scan.status === 'processing' ? (
+                <div className="py-16 text-center"><Spinner size={32}/><p className="text-sm mt-4" style={{ color:'#6b6456' }}>Running intelligence pipeline — fast brief in ~30s…</p></div>
               ) : activeTab === 'brief' ? (
                 <ExecutiveBrief brief={executiveBrief} bidScore={bidScore} matches={matches} onJumpTab={setActiveTab} />
               ) : activeTab === 'matches' ? (
@@ -575,13 +584,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                   )}
                 </div>
               ) : activeTab === 'news' ? (
-                <div>
-                  <p className="text-sm mb-4" style={{ color:'#6b6456' }}>Recent industry developments relevant to this bid.</p>
-                  {news.length === 0 ? <div className="text-center py-12"><p className="text-sm" style={{ color:'#6b6456' }}>No news items.</p></div>
-                  : <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {news.map((n, i) => <NewsCard key={i} item={n} />)}
-                    </div>}
-                </div>
+                <MarketContext news={news} />
               ) : activeTab === 'approach' ? (
                 <div className="space-y-4">
                   <p className="text-sm" style={{ color:'#6b6456' }}>A suggested delivery approach and indicative budget grounded in your matched won proposals and rate card.</p>
@@ -1603,6 +1606,120 @@ function GapCard({ gap: g }) {
         <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:'#f0ebe0', color:'#6b6456' }}>Impact: {g.impact}</span>
         <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:'#f0ebe0', color:'#6b6456' }}>{g.suggested_action}</span>
       </div>
+    </Card>
+  );
+}
+
+// Market Context — categorised, scored, strategically framed news.
+// Replaces the old "Industry News" tab. News items are grouped by category
+// (programme/buyer/tech_reg/competitive) so the user can scan by relevance
+// type, not just by date. Anything below 50% relevance has been filtered out
+// upstream — the UI never shows junk results.
+const CATEGORY_META = {
+  programme: { label: 'Programme & Procurement', icon: '◆', color: '#3d5c3a', desc: 'News directly about the named programme, framework, or contract vehicle' },
+  buyer:     { label: 'Buyer & Issuing Body',    icon: '◈', color: '#1e4a52', desc: 'News about the issuing organisation — leadership, budget, restructure' },
+  tech_reg:  { label: 'Technology & Regulation', icon: '◇', color: '#8a6200', desc: 'New standards, regulations, or capability announcements' },
+  competitive: { label: 'Competitive Landscape', icon: '◉', color: '#b04030', desc: 'Competitor wins, M&A, market shifts in the supplier base' },
+};
+
+function MarketContext({ news }) {
+  if (!news || news.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-3xl mb-3 opacity-25">◆</div>
+        <p className="text-sm" style={{ color: '#6b6456' }}>No relevant market context found.</p>
+        <p className="text-xs mt-2 max-w-md mx-auto" style={{ color: '#9b8e80' }}>
+          We searched for news tied to specific programmes, frameworks, regulators and competitors — none scored above the relevance threshold. Better empty than misleading.
+        </p>
+      </div>
+    );
+  }
+
+  // Group by category
+  const groups = {};
+  news.forEach(n => {
+    const cat = n.category || 'tech_reg';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(n);
+  });
+
+  return (
+    <div className="space-y-6">
+      <p className="text-sm" style={{ color: '#6b6456' }}>
+        News scored against this RFP's specific entities. Each item is tagged with where to use it in the bid and what argument it strengthens.
+      </p>
+
+      {['programme', 'buyer', 'tech_reg', 'competitive'].map(cat => {
+        const items = groups[cat];
+        if (!items || items.length === 0) return null;
+        const meta = CATEGORY_META[cat];
+        return (
+          <div key={cat}>
+            <div className="flex items-baseline justify-between mb-3">
+              <div>
+                <div className="text-[11px] font-mono uppercase tracking-widest" style={{ color: meta.color }}>
+                  {meta.icon} {meta.label}
+                </div>
+                <div className="text-xs mt-0.5" style={{ color: '#6b6456' }}>{meta.desc}</div>
+              </div>
+              <div className="text-[11px] font-mono" style={{ color: '#9b8e80' }}>
+                {items.length} {items.length === 1 ? 'item' : 'items'}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {items.map((n, i) => <MarketContextCard key={i} item={n} accent={meta.color} />)}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function MarketContextCard({ item: n, accent }) {
+  return (
+    <Card className="overflow-hidden flex flex-col">
+      <div className="p-4 flex-1">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background: accent + '14', color: accent }}>{n.source}</span>
+          <span className="text-[10px] font-mono" style={{ color: '#6b6456' }}>{n.date}</span>
+          <span className="ml-auto text-[10px] font-mono font-semibold" style={{ color: accent }}>{n.relevance_score}/100</span>
+        </div>
+        <h3 className="text-sm font-semibold mb-1.5 leading-snug">{n.title}</h3>
+        <p className="text-xs leading-relaxed mb-3" style={{ color: '#6b6456' }}>{n.snippet}</p>
+
+        {n.why_it_matters && (
+          <div className="rounded-md p-3 text-xs leading-relaxed mb-2" style={{ background: '#faf4e2' }}>
+            <span className="font-semibold" style={{ color: '#8a6200' }}>Why this matters: </span>
+            <span style={{ color: '#5a4810' }}>{n.why_it_matters}</span>
+          </div>
+        )}
+
+        {(n.where_to_use_in_bid || n.tone_supported) && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {n.where_to_use_in_bid && (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border"
+                style={{ borderColor: 'rgba(30,74,82,.3)', color: '#1e4a52' }}>
+                Use in: {n.where_to_use_in_bid}
+              </span>
+            )}
+            {n.tone_supported && (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border"
+                style={{ borderColor: 'rgba(184,150,46,.3)', color: '#8a6200' }}>
+                Supports: {n.tone_supported}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+      {n.url && (
+        <a href={n.url} target="_blank" rel="noopener noreferrer"
+          className="flex items-center gap-2 px-4 py-2.5 border-t text-xs transition-colors hover:bg-[#f0f8ff]"
+          style={{ borderColor: '#f0ebe0', color: '#1e4a52' }}>
+          <span className="flex-1 truncate">{n.url.replace(/^https?:\/\/(www\.)?/, '')}</span>
+          <span className="flex-shrink-0">↗</span>
+        </a>
+      )}
     </Card>
   );
 }
