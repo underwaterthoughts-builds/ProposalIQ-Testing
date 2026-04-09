@@ -2,6 +2,7 @@ import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { safe } from '../../../lib/embeddings';
 import { generateSectionDraft } from '../../../lib/gemini';
+import { currencySymbol } from '../../../lib/format';
 import path from 'path';
 import fs from 'fs';
 
@@ -148,7 +149,7 @@ async function handler(req, res) {
   // Commercials
   if (suggestedApproach?.indicative_budget) {
     const b = suggestedApproach.indicative_budget;
-    const sym = b.currency === 'GBP' ? '£' : '$';
+    const sym = currencySymbol(b.currency);
     sections.push({
       type: 'section',
       heading: 'Commercial Proposal',

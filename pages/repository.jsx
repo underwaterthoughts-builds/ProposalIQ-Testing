@@ -4,6 +4,7 @@ import Head from 'next/head';
 import Layout from '../components/Layout';
 import { Btn, Card, Stars, OutcomeLabel, FileChip, Spinner, Toast } from '../components/ui';
 import { useUser } from '../lib/useUser';
+import { formatMoney } from '../lib/format';
 
 const OUTCOMES = ['won','lost','pending','active','withdrawn'];
 const DEFAULT_SECTORS = ['Government & Public Sector','Healthcare & NHS','Aerospace & Defence','Financial Services','Technology','Retail & Consumer','Other'];
@@ -216,7 +217,7 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
       </div>
       <div className="flex items-center justify-between px-4 py-2.5 border-t" style={{borderColor:'#f0ebe0'}}>
         <div className="text-sm font-mono font-medium" style={{color:'#1e4a52'}}>
-          {p.currency==='GBP'?'£':'$'}{p.contract_value>=1000000?(p.contract_value/1000000).toFixed(1)+'M':(p.contract_value/1000).toFixed(0)+'K'}
+          {formatMoney(p.contract_value, p.currency)}
         </div>
         <OutcomeLabel outcome={p.outcome}/>
       </div>

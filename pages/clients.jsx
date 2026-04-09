@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Layout from '../components/Layout';
 import { Btn, Card, OutcomeLabel, Spinner, Toast } from '../components/ui';
 import { useUser } from '../lib/useUser';
+import { formatMoney } from '../lib/format';
 
 export default function Clients() {
   const { user, loading: authLoading } = useUser();
@@ -207,7 +208,7 @@ export default function Clients() {
                             <div className="text-xs mt-0.5" style={{ color:'#6b6456' }}>{p.date_submitted?.slice(0,4)} · {p.sector}</div>
                           </div>
                           <div className="text-sm font-mono font-medium flex-shrink-0" style={{ color:'#1e4a52' }}>
-                            {p.currency==='GBP'?'£':'$'}{p.contract_value>=1000000?(p.contract_value/1000000).toFixed(1)+'M':(p.contract_value/1000).toFixed(0)+'K'}
+                            {formatMoney(p.contract_value, p.currency)}
                           </div>
                           <span className="text-xs" style={{ color:'#1e4a52' }}>→</span>
                         </Card>

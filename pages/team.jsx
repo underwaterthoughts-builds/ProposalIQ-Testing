@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Layout from '../components/Layout';
 import { Btn, Card, Spinner, Toast, Input, Select, Textarea } from '../components/ui';
 import { useUser } from '../lib/useUser';
+import { currencySymbol } from '../lib/format';
 
 const AVAILS = ['Available — Full time','Available — Part time','Partially Available','On Project (available next quarter)','Unavailable'];
 const COLORS = ['#2d6b78','#3d5c3a','#8b3a5c','#5c4a2a','#4a2a5c','#2a4a3c','#7a3a1c','#1c3a7a'];
@@ -552,8 +553,8 @@ export default function Team() {
                                       <button onClick={()=>{if(!roleSelectMode){setEditingRoleId(role.id);setEditingRoleField({role_name:role.role_name,grade:role.grade,day_rate_client:role.day_rate_client,day_rate_cost:role.day_rate_cost});}}}
                                         className="text-left hover:text-teal transition-colors font-medium text-sm">{role.role_name}</button>
                                       <span className="text-xs font-mono" style={{color:'#6b6456'}}>{role.grade}</span>
-                                      <span className="font-mono text-sm">{role.currency==='GBP'?'£':'$'}{(role.day_rate_client||0).toLocaleString()}</span>
-                                      <span className="font-mono text-sm" style={{color:'#6b6456'}}>{role.currency==='GBP'?'£':'$'}{(role.day_rate_cost||0).toLocaleString()}</span>
+                                      <span className="font-mono text-sm">{currencySymbol(role.currency)}{(role.day_rate_client||0).toLocaleString()}</span>
+                                      <span className="font-mono text-sm" style={{color:'#6b6456'}}>{currencySymbol(role.currency)}{(role.day_rate_cost||0).toLocaleString()}</span>
                                       <span className="font-mono text-sm font-medium" style={{color:margin>=40?'#3d5c3a':margin>=20?'#b8962e':'#b04030'}}>{margin}%</span>
                                     </>
                                   )}

@@ -5,6 +5,9 @@ import Link from 'next/link';
 import Layout from '../../components/Layout';
 import { Btn, Card, Stars, OutcomeLabel, FileChip, Spinner, Toast } from '../../components/ui';
 import { useUser } from '../../lib/useUser';
+import { formatMoney, currencySymbol } from '../../lib/format';
+
+const CURRENCY_OPTIONS = ['GBP','USD','EUR','AUD','CAD','NZD','CHF','JPY','CNY','SGD','HKD','AED','SAR','ZAR','INR','KRW','TRY','BRL','MXN','RUB'];
 
 // ── COLOUR-CODED INDICATOR ────────────────────────────────────────────────────
 function Indicator({ type, children }) {
@@ -93,6 +96,144 @@ function TagList({ items = [], onSave, color = '#1e4a52', bg = '#e8f2f4' }) {
         </button>
       )}
     </div>
+  );
+}
+
+// ── Editable project details ──────────────────────────────────────────────
+// Collapsible panel that lets users edit the top-level project fields that
+// drive ranking + display: name, client, sector, contract value, currency,
+// outcome, rating, project type, date submitted. Wraps the existing PATCH
+// /api/projects/[id] endpoint (which already accepts all these fields).
+//
+// Collapsed by default so it doesn't take up space on the overview tab —
+// click "Edit details" to expand. Each field saves on blur.
+function ProjectDetailsEditor({ project, onSave }) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState({});
+
+  // Reset local draft when the project changes
+  useEffect(() => { setDraft({}); }, [project.id]);
+
+  function field(key) {
+    return draft[key] !== undefined ? draft[key] : (project[key] ?? '');
+  }
+
+  function setField(key, value) {
+    setDraft(d => ({ ...d, [key]: value }));
+  }
+
+  function commit(key, parser = (v) => v) {
+    const current = project[key];
+    const next = parser(draft[key]);
+    if (draft[key] === undefined) return;
+    if (next === current) return;
+    onSave(key, next);
+    setDraft(d => { const n = { ...d }; delete n[key]; return n; });
+  }
+
+  const outcomes = ['won', 'lost', 'pending', 'active', 'withdrawn'];
+  const ratings = [0, 1, 2, 3, 4, 5];
+
+  return (
+    <Card className="mb-4" style={{ background: 'white' }}>
+      <button onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left">
+        <div>
+          <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#6b6456' }}>Project details</div>
+          <div className="text-sm mt-0.5" style={{ color: '#1a1816' }}>
+            {project.client} · {formatMoney(project.contract_value, project.currency)} · {project.date_submitted || '—'}
+          </div>
+        </div>
+        <span className="text-xs font-mono" style={{ color: '#9b8e80' }}>
+          {open ? '▴ Hide' : '▾ Edit'}
+        </span>
+      </button>
+
+      {open && (
+        <div className="px-4 pb-4 border-t" style={{ borderColor: '#f0ebe0' }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 mt-3">
+            {/* Name */}
+            <div className="md:col-span-2">
+              <label className="text-[10px] font-mono uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>Project name</label>
+              <input value={field('name')} onChange={e => setField('name', e.target.value)} onBlur={() => commit('name')}
+                className="w-full text-sm px-2.5 py-1.5 border rounded outline-none" style={{ borderColor: '#ddd5c4' }} />
+            </div>
+
+            {/* Client */}
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>Client</label>
+              <input value={field('client')} onChange={e => setField('client', e.target.value)} onBlur={() => commit('client')}
+                className="w-full text-sm px-2.5 py-1.5 border rounded outline-none" style={{ borderColor: '#ddd5c4' }} />
+            </div>
+
+            {/* Sector */}
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>Sector (legacy)</label>
+              <input value={field('sector')} onChange={e => setField('sector', e.target.value)} onBlur={() => commit('sector')}
+                className="w-full text-sm px-2.5 py-1.5 border rounded outline-none" style={{ borderColor: '#ddd5c4' }} />
+            </div>
+
+            {/* Contract value */}
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>Contract value</label>
+              <div className="flex gap-1">
+                <select value={field('currency') || 'GBP'}
+                  onChange={e => { setField('currency', e.target.value); onSave('currency', e.target.value); }}
+                  className="text-sm px-2 py-1.5 border rounded outline-none bg-white" style={{ borderColor: '#ddd5c4', width: 90 }}>
+                  {CURRENCY_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <input type="number" value={field('contract_value')}
+                  onChange={e => setField('contract_value', e.target.value)}
+                  onBlur={() => commit('contract_value', v => parseFloat(v) || 0)}
+                  className="flex-1 text-sm px-2.5 py-1.5 border rounded outline-none font-mono" style={{ borderColor: '#ddd5c4' }}
+                  placeholder="0" />
+              </div>
+              <div className="text-[10px] font-mono mt-1" style={{ color: '#9b8e80' }}>
+                Shows as: {formatMoney(field('contract_value') || 0, field('currency') || 'GBP')}
+              </div>
+            </div>
+
+            {/* Project type */}
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>Project type</label>
+              <input value={field('project_type')} onChange={e => setField('project_type', e.target.value)} onBlur={() => commit('project_type')}
+                className="w-full text-sm px-2.5 py-1.5 border rounded outline-none" style={{ borderColor: '#ddd5c4' }}
+                placeholder="e.g. Consultancy, Film Production" />
+            </div>
+
+            {/* Date submitted */}
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>Date submitted</label>
+              <input type="date" value={field('date_submitted')} onChange={e => setField('date_submitted', e.target.value)} onBlur={() => commit('date_submitted')}
+                className="w-full text-sm px-2.5 py-1.5 border rounded outline-none" style={{ borderColor: '#ddd5c4' }} />
+            </div>
+
+            {/* Outcome */}
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>Outcome</label>
+              <select value={field('outcome') || 'pending'}
+                onChange={e => { setField('outcome', e.target.value); onSave('outcome', e.target.value); }}
+                className="w-full text-sm px-2.5 py-1.5 border rounded outline-none bg-white" style={{ borderColor: '#ddd5c4' }}>
+                {outcomes.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+
+            {/* User rating */}
+            <div>
+              <label className="text-[10px] font-mono uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>Star rating (ranking weight)</label>
+              <select value={field('user_rating') || 0}
+                onChange={e => { const v = parseInt(e.target.value, 10) || 0; setField('user_rating', v); onSave('user_rating', v); }}
+                className="w-full text-sm px-2.5 py-1.5 border rounded outline-none bg-white" style={{ borderColor: '#ddd5c4' }}>
+                {ratings.map(r => <option key={r} value={r}>{r === 0 ? '— not rated —' : '★'.repeat(r) + '☆'.repeat(5 - r) + '  ' + r + '/5'}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="text-[10px] font-mono mt-3" style={{ color: '#9b8e80' }}>
+            Changes save on blur (click out of a field) or immediately for dropdowns.
+          </div>
+        </div>
+      )}
+    </Card>
   );
 }
 
@@ -313,6 +454,22 @@ export default function ProjectDetail() {
     setToast('Saved');
   }
 
+  // Save top-level project fields (name, client, contract_value, currency, etc).
+  // Optimistic local update so the UI reflects the change immediately.
+  async function saveProjectField(field, value) {
+    const r = await fetch(`/api/projects/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [field]: value }),
+    });
+    if (r.ok) {
+      setProject(p => ({ ...p, [field]: value }));
+      setToast('Saved');
+    } else {
+      setToast('Save failed');
+    }
+  }
+
   // Save taxonomy fields. Server snaps to canonical and marks taxonomy_source='user'.
   async function saveTaxonomy(updates) {
     const r = await fetch(`/api/projects/${id}`, {
@@ -476,9 +633,7 @@ export default function ProjectDetail() {
                   <span className="text-xs font-mono" style={{ color: '#b8962e' }}>AI weight: {Math.round((project.ai_weight || 0.4) * 100)}%</span>
                 </div>
                 <div className="text-sm" style={{ color: '#6b6456' }}>
-                  {project.project_type} · {project.currency === 'GBP' ? '£' : '$'}{project.contract_value >= 1000000
-                    ? (project.contract_value / 1000000).toFixed(1) + 'M'
-                    : (project.contract_value / 1000).toFixed(0) + 'K'} · {project.date_submitted}
+                  {project.project_type} · {formatMoney(project.contract_value, project.currency)} · {project.date_submitted}
                 </div>
               </div>
               <div className="flex gap-2">{files.map(f => <FileChip key={f.id} type={f.file_type} />)}</div>
@@ -508,6 +663,9 @@ export default function ProjectDetail() {
                 <Btn variant="teal" onClick={reindex} className="ml-4 flex-shrink-0">⟳ Run Analysis</Btn>
               </div>
             )}
+
+            {/* Editable project details — cost, currency, client, etc */}
+            <ProjectDetailsEditor project={project} onSave={saveProjectField} />
 
             {/* Writing scores bar */}
             {hasWritingAnalysis && (

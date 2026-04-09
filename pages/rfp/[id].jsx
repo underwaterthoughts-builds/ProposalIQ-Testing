@@ -7,6 +7,7 @@ import { Card, ScoreRing, Stars, OutcomeLabel, Badge, Spinner, ProgressBar, Btn,
 import QuickView from '../../components/QuickView';
 import { useMode } from '../../lib/useMode';
 import { useUser } from '../../lib/useUser';
+import { formatMoney, currencySymbol } from '../../lib/format';
 
 const PRIORITY_COLOR = { high:'#b04030', med:'#b8962e', low:'#2d6b78' };
 
@@ -211,7 +212,7 @@ export default function RFPResults() {
           <span class="label ${m.outcome}">${m.outcome}</span>
           <span class="match-label">${m.match_label||'Match'}</span>
         </div>
-        <div class="meta">${m.client} · ${m.sector} · ${m.currency==='GBP'?'£':'$'}${m.contract_value>=1000000?(m.contract_value/1000000).toFixed(1)+'M':(m.contract_value/1000).toFixed(0)+'K'} · ${m.date_submitted?.slice(0,4)||'?'}</div>
+        <div class="meta">${m.client} · ${m.sector} · ${formatMoney(m.contract_value, m.currency)} · ${m.date_submitted?.slice(0,4)||'?'}</div>
         ${wq?.overall_score?`<div class="scores">Writing: ${wq.overall_score}/100 · Approach: ${m.ai_metadata?.approach_quality?.overall_score||'—'}/100 · Credibility: ${m.ai_metadata?.credibility_signals?.overall_score||'—'}/100</div>`:''}
       </div>`;
     }).join('');
@@ -729,7 +730,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                               <div key={label} className="text-center rounded-lg p-3" style={{ background:'#f8f6f2' }}>
                                 <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color:'#6b6456' }}>{label}</div>
                                 <div className="font-mono font-bold text-lg" style={{ color:'#1e4a52' }}>
-                                  {suggestedApproach.indicative_budget.currency==='GBP'?'£':'$'}{((val||0)/1000).toFixed(0)}K
+                                  {currencySymbol(suggestedApproach.indicative_budget.currency)}{((val||0)/1000).toFixed(0)}K
                                 </div>
                               </div>
                             ))}
@@ -2124,7 +2125,7 @@ function MatchCard({ match: m, expanded, onToggle, onSuppress, onToast, onLog })
             <span>·</span>
             <span>{m.date_submitted?.slice(0,4) || 'Date unknown'}</span>
             <span>·</span>
-            <span>{m.currency==='GBP'?'£':'$'}{(m.contract_value/1000).toFixed(0)}K</span>
+            <span>{formatMoney(m.contract_value, m.currency)}</span>
             {m.llm_relevance && (
               <span className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ background: m.llm_relevance==='high'?'#edf3ec':m.llm_relevance==='medium'?'#faf4e2':'#f0ebe0', color: m.llm_relevance==='high'?'#3d5c3a':m.llm_relevance==='medium'?'#7a5800':'#6b6456' }}>
                 ◈ {m.llm_relevance} relevance
