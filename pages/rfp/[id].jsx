@@ -1904,13 +1904,34 @@ function ExecutiveBrief({ brief, bidScore, matches, onJumpTab }) {
 // shown when present but framed as a neutral fallback.
 function TieredMatches({ matches, expandedMatches, setExpandedMatches, suppress, setToast, onLog }) {
   const [showCrossSector, setShowCrossSector] = useState(false);
+  // Filter mode: 'all' shows the full tier hierarchy, 'sector' shows only
+  // matches that share the RFP's client industry, 'service' shows only
+  // matches that share the RFP's service industry.
+  const [filterMode, setFilterMode] = useState('all');
+
+  // Pre-filter the matches array based on the active filter button
+  const filteredMatches = (() => {
+    if (filterMode === 'sector') {
+      // Same client industry = tiers 1 and 2
+      return matches.filter(m => m.taxonomy_tier === 1 || m.taxonomy_tier === 2);
+    }
+    if (filterMode === 'service') {
+      // Same service industry = tiers 1 and 3
+      return matches.filter(m => m.taxonomy_tier === 1 || m.taxonomy_tier === 3);
+    }
+    return matches;
+  })();
+
+  // Counts for the filter button labels — based on full matches, not filtered
+  const sectorCount = matches.filter(m => m.taxonomy_tier === 1 || m.taxonomy_tier === 2).length;
+  const serviceCount = matches.filter(m => m.taxonomy_tier === 1 || m.taxonomy_tier === 3).length;
 
   // Bucket by tier — keep within-tier ordering as the API delivered it.
-  const tier1 = matches.filter(m => m.taxonomy_tier === 1);
-  const tier2 = matches.filter(m => m.taxonomy_tier === 2);
-  const tier3 = matches.filter(m => m.taxonomy_tier === 3);
-  const tier4 = matches.filter(m => m.taxonomy_tier === 4);
-  const tier5 = matches.filter(m => m.taxonomy_tier === 5);
+  const tier1 = filteredMatches.filter(m => m.taxonomy_tier === 1);
+  const tier2 = filteredMatches.filter(m => m.taxonomy_tier === 2);
+  const tier3 = filteredMatches.filter(m => m.taxonomy_tier === 3);
+  const tier4 = filteredMatches.filter(m => m.taxonomy_tier === 4);
+  const tier5 = filteredMatches.filter(m => m.taxonomy_tier === 5);
 
   // Top-fit = tiers 1+2+3 — anything that has at least one taxonomy axis
   // matching the RFP. Renders together at the top.
@@ -1954,6 +1975,40 @@ function TieredMatches({ matches, expandedMatches, setExpandedMatches, suppress,
 
   return (
     <>
+      {/* Filter buttons — match by sector / type of work / all */}
+      <div className="flex flex-wrap items-center gap-2 mb-5">
+        <span className="text-[11px] font-mono uppercase tracking-widest mr-1" style={{ color: '#9b8e80' }}>Filter:</span>
+        {[
+          { val: 'all',     label: 'All matches',         count: matches.length, color: '#6b6456' },
+          { val: 'sector',  label: 'Same client sector',  count: sectorCount,    color: '#8a6200' },
+          { val: 'service', label: 'Same type of work',   count: serviceCount,   color: '#1e4a52' },
+        ].map(opt => {
+          const active = filterMode === opt.val;
+          return (
+            <button key={opt.val} onClick={() => setFilterMode(opt.val)}
+              className="text-[11px] px-3 py-1.5 rounded-full border transition-colors flex items-center gap-1.5"
+              style={{
+                borderColor: active ? opt.color : '#ddd5c4',
+                background: active ? opt.color + '14' : 'white',
+                color: active ? opt.color : '#6b6456',
+                fontWeight: active ? 600 : 400,
+              }}>
+              {opt.label}
+              <span className="font-mono text-[10px] opacity-70">{opt.count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Empty state for filter that produced no results */}
+      {filteredMatches.length === 0 && (
+        <div className="text-center py-10 rounded-lg border border-dashed" style={{ borderColor: '#ddd5c4' }}>
+          <p className="text-sm" style={{ color: '#6b6456' }}>
+            No matches in this filter. Try "All matches" to see everything.
+          </p>
+        </div>
+      )}
+
       {/* Direct-fit groupings — always expanded */}
       {renderGroup(
         '◆ Direct fit · same sector and same type of work',
