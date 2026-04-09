@@ -40,12 +40,17 @@ async function handler(req, res) {
 
     sql += ' GROUP BY p.id ORDER BY p.created_at DESC';
 
-    let projects = db.prepare(sql).all(...params).map(p => ({
-      ...p,
-      ai_metadata: safe(p.ai_metadata, {}),
-      taxonomy: safe(p.taxonomy, {}),
-      file_types: p.file_types ? p.file_types.split(',') : [],
-    }));
+    let projects = db.prepare(sql).all(...params).map(p => {
+      // Strip the embedding blob — only used server-side for semantic search,
+      // and bloats every response by tens of KB per row.
+      const { embedding, ...rest } = p;
+      return {
+        ...rest,
+        ai_metadata: safe(p.ai_metadata, {}),
+        taxonomy: safe(p.taxonomy, {}),
+        file_types: p.file_types ? p.file_types.split(',') : [],
+      };
+    });
 
     // Semantic search — re-rank by embedding similarity
     if (semanticSearch) {

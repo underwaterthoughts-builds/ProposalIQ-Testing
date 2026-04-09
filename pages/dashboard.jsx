@@ -99,6 +99,18 @@ export default function Dashboard() {
             ))}
           </div>
 
+          {/* Loading skeleton — shown until /api/projects returns */}
+          {loading && (
+            <div className="space-y-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[0, 1, 2].map(i => (
+                  <div key={i} className="rounded-lg p-4 animate-pulse" style={{ background: '#ece6d6', height: 96 }} />
+                ))}
+              </div>
+              <div className="rounded-lg animate-pulse" style={{ background: '#ece6d6', height: 180 }} />
+            </div>
+          )}
+
           {/* Seed banner */}
           {!loading && needsSeed && (
             <div className="mb-6 rounded-lg p-5 border" style={{ background: '#faf4e2', borderColor: 'rgba(184,150,46,.3)' }}>

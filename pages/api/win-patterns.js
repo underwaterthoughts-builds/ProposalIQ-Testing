@@ -30,7 +30,10 @@ async function handler(req, res) {
   if (forceRefresh) { try { fs.unlinkSync(CACHE_PATH); } catch {} }
 
   const cached = readCache();
-  if (cached) return res.status(200).json(cached);
+  if (cached) {
+    res.setHeader('Cache-Control', 'private, max-age=300');
+    return res.status(200).json(cached);
+  }
 
   let db;
   try { db = getDb(); } catch (e) {
@@ -112,6 +115,8 @@ async function handler(req, res) {
   };
 
   writeCache(result);
+  // 5-minute browser cache so dashboard reloads don't re-hit the DB
+  res.setHeader('Cache-Control', 'private, max-age=300');
   return res.status(200).json(result);
 }
 

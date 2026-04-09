@@ -39,7 +39,7 @@ export default function BottomNav() {
         {NAV.map(item => {
           const active = router.pathname === item.href || router.pathname.startsWith(item.href + '/');
           return (
-            <Link key={item.href} href={item.href}
+            <Link key={item.href} href={item.href} prefetch={false}
               className="flex-1 flex flex-col items-center justify-center py-2 transition-all"
               style={{ color: active ? '#1e4a52' : '#9b8e80', minHeight: '56px' }}>
               <span className="text-base leading-none mb-0.5"

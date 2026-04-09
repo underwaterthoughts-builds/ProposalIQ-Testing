@@ -70,7 +70,7 @@ export default function Layout({ children, title, subtitle, actions, user }) {
             {NAV.map(item => {
               const active = isActive(item.href);
               return (
-                <Link key={item.href} href={item.href}
+                <Link key={item.href} href={item.href} prefetch={false}
                   className={`px-3 py-1.5 rounded-md text-[12.5px] transition-all no-min-h ${active ? 'text-amber-300' : 'text-white/45 hover:text-white/80 hover:bg-white/6'}`}
                   style={active ? { background: 'rgba(184,150,46,.2)' } : {}}>
                   {item.label}
@@ -196,7 +196,7 @@ export default function Layout({ children, title, subtitle, actions, user }) {
               {NAV.map(item => {
                 const active = isActive(item.href);
                 return (
-                  <Link key={item.href} href={item.href}
+                  <Link key={item.href} href={item.href} prefetch={false}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all relative ${active ? 'text-amber-300' : 'text-white/50 hover:text-white/80 hover:bg-white/5'}`}
                     style={active ? { background: 'rgba(184,150,46,.18)' } : {}}>
                     {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r" style={{ background: '#b8962e' }} />}

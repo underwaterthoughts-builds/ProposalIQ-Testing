@@ -50,3 +50,7 @@ export default function Page() {
     </>
   );
 }
+
+export async function getStaticProps() {
+  return { props: {} };
+}
