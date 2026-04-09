@@ -57,6 +57,10 @@ export default function RFPResults() {
   const [editingRfp, setEditingRfp] = useState(false);
   const [rfpEditData, setRfpEditData] = useState(null);
   const [savingCheckpoint, setSavingCheckpoint] = useState(null);
+  // Wave 3 — outcome capture state
+  const [outcome, setOutcome] = useState(null);
+  const [usageSummary, setUsageSummary] = useState({});
+  const [showOutcomeModal, setShowOutcomeModal] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -71,6 +75,53 @@ export default function RFPResults() {
       .then(d => { if (d?.client || d?.projects?.length) setClientIntel(d); })
       .catch(() => {});
   }, [scan?.rfp_data?.client]);
+
+  // Wave 3 — load existing outcome + usage summary once scan is complete
+  useEffect(() => {
+    if (!id || scan?.status !== 'complete') return;
+    fetch(`/api/rfp/${id}/outcome`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d) {
+          setOutcome(d.outcome || null);
+          setUsageSummary(d.usage_summary || {});
+        }
+      })
+      .catch(() => {});
+  }, [id, scan?.status]);
+
+  // Wave 3 — fire-and-forget usage event logger. Used by passive hooks.
+  function logUsage(eventType, opts = {}) {
+    if (!id) return;
+    fetch(`/api/rfp/${id}/usage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_type: eventType,
+        target_type: opts.target_type || null,
+        target_id: opts.target_id || null,
+        payload: opts.payload || null,
+      }),
+    }).catch(() => {});
+  }
+
+  async function saveOutcome(form) {
+    try {
+      const r = await fetch(`/api/rfp/${id}/outcome`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!r.ok) { setToast('Failed to save outcome'); return; }
+      setToast('✓ Outcome saved — thanks. This improves future ranking.');
+      setShowOutcomeModal(false);
+      // Refresh outcome state
+      const fresh = await fetch(`/api/rfp/${id}/outcome`).then(x => x.json()).catch(() => null);
+      if (fresh?.outcome) setOutcome(fresh.outcome);
+    } catch (e) {
+      setToast('Failed to save outcome');
+    }
+  }
 
   async function fetchScan() {
     const r = await fetch(`/api/rfp/${id}`);
@@ -126,6 +177,7 @@ export default function RFPResults() {
   async function generateTemplate(draftOverride) {
     const useDraft = draftOverride !== undefined ? draftOverride : templateDraftMode;
     if (draftOverride !== undefined) setTemplateDraftMode(draftOverride);
+    logUsage(useDraft ? 'template_drafted' : 'template_generated', { target_type: 'briefing', target_id: id });
     setGeneratingTemplate(true);
     try {
       const r = await fetch(`/api/rfp/template?id=${id}&draft=${useDraft}`, { method: 'POST' });
@@ -144,6 +196,7 @@ export default function RFPResults() {
   }
 
   async function exportBriefing() {
+    logUsage('briefing_exported', { target_type: 'briefing', target_id: id });
     setExporting(true);
     const s = scan;
     const rd = rfpData;
@@ -418,6 +471,41 @@ ${sectionHtml('Winning Language', languageHtml)}
                 <Spinner size={14}/><span>Verdict ready — deep analysis (gaps, win strategy, winning language, news, approach) running in background…</span>
               </div>
             )}
+            {/* Wave 3 — outcome capture banner. Shown once scan is complete
+                if no outcome has been captured yet, OR shows a small badge
+                with the captured outcome if it exists. */}
+            {scan.status === 'complete' && !outcome && (
+              <div className="flex items-center gap-3 px-5 py-3 text-sm border-b" style={{ background:'#fbf9f4', borderColor:'#ddd5c4', color:'#5a4810' }}>
+                <span style={{ fontSize: 16 }}>✦</span>
+                <span className="flex-1">
+                  How did this bid go? Capturing the outcome trains future ranking — won proposals get boosted in similar future scans.
+                </span>
+                <button onClick={() => setShowOutcomeModal(true)}
+                  className="text-xs px-3 py-1.5 rounded font-medium"
+                  style={{ background:'#1e4a52', color:'white' }}>
+                  Capture outcome →
+                </button>
+              </div>
+            )}
+            {scan.status === 'complete' && outcome && (
+              <div className="flex items-center gap-3 px-5 py-3 text-xs border-b" style={{
+                background: outcome.outcome === 'won' ? '#edf3ec' : outcome.outcome === 'lost' ? '#faeeeb' : '#f8f6f2',
+                borderColor: outcome.outcome === 'won' ? 'rgba(61,92,58,.25)' : outcome.outcome === 'lost' ? 'rgba(176,64,48,.25)' : '#ddd5c4',
+                color: outcome.outcome === 'won' ? '#3d5c3a' : outcome.outcome === 'lost' ? '#b04030' : '#6b6456',
+              }}>
+                <span style={{ fontSize: 14 }}>
+                  {outcome.outcome === 'won' ? '★' : outcome.outcome === 'lost' ? '✕' : '◌'}
+                </span>
+                <span className="font-mono uppercase tracking-wide">
+                  Outcome: {outcome.outcome}
+                  {outcome.piq_used_materially ? ' · ProposalIQ contributed' : ''}
+                </span>
+                <button onClick={() => setShowOutcomeModal(true)}
+                  className="ml-auto text-[11px] underline opacity-70 hover:opacity-100">
+                  edit
+                </button>
+              </div>
+            )}
             {scan.status === 'error' && (
               <div className="px-5 py-3 text-sm border-b" style={{ background:'#faeeeb', borderColor:'rgba(176,64,48,.2)', color:'#b04030' }}>
                 <div className="font-semibold mb-1">⚠ Scan error</div>
@@ -501,6 +589,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                       setExpandedMatches={setExpandedMatches}
                       suppress={suppress}
                       setToast={setToast}
+                      onLog={logUsage}
                     />
                   )}
                 </div>
@@ -985,10 +1074,155 @@ ${sectionHtml('Winning Language', languageHtml)}
         </div>
       </Layout>
       <Toast msg={toast} onClose={() => setToast('')} />
+      {showOutcomeModal && (
+        <OutcomeCaptureModal
+          existing={outcome}
+          usageSummary={usageSummary}
+          scanName={scan.name}
+          onSave={saveOutcome}
+          onClose={() => setShowOutcomeModal(false)}
+        />
+      )}
     </>
   );
 }
 
+
+// ── Outcome Capture Modal — Wave 3 closed feedback loop ───────────────────
+// Active capture form for the bid outcome. Records what happened with the
+// bid, whether ProposalIQ contributed materially, and free-text on what was
+// useful / what was missing. Feeds into lib/feedback.js to bias future
+// ranking toward proposals that have actually been used in winning bids.
+function OutcomeCaptureModal({ existing, usageSummary, scanName, onSave, onClose }) {
+  const [outcome, setOutcomeVal] = useState(existing?.outcome || 'pending');
+  const [submitted, setSubmitted] = useState(existing?.submitted ? true : false);
+  const [piqUsed, setPiqUsed] = useState(existing?.piq_used_materially ? true : false);
+  const [mostUseful, setMostUseful] = useState(existing?.most_useful || '');
+  const [whatMissing, setWhatMissing] = useState(existing?.what_was_missing || '');
+  const [clientFeedback, setClientFeedback] = useState(existing?.client_feedback || '');
+  const [saving, setSaving] = useState(false);
+
+  // Build a usage hint string from the summary so the user remembers what
+  // they actually did with the scan.
+  const usageHint = (() => {
+    const bits = [];
+    if (usageSummary.briefing_exported) bits.push(`exported briefing × ${usageSummary.briefing_exported}`);
+    if (usageSummary.template_generated) bits.push(`generated template × ${usageSummary.template_generated}`);
+    if (usageSummary.template_drafted) bits.push(`AI drafted template × ${usageSummary.template_drafted}`);
+    if (usageSummary.reference_copied) bits.push(`copied reference × ${usageSummary.reference_copied}`);
+    if (usageSummary.match_opened) bits.push(`opened ${usageSummary.match_opened} match${usageSummary.match_opened > 1 ? 'es' : ''}`);
+    if (usageSummary.match_downloaded) bits.push(`downloaded ${usageSummary.match_downloaded} match${usageSummary.match_downloaded > 1 ? 'es' : ''}`);
+    if (usageSummary.snippet_copied) bits.push(`copied ${usageSummary.snippet_copied} snippet${usageSummary.snippet_copied > 1 ? 's' : ''}`);
+    return bits.join(' · ');
+  })();
+
+  async function handleSave() {
+    setSaving(true);
+    await onSave({
+      outcome, submitted, piq_used_materially: piqUsed,
+      most_useful: mostUseful, what_was_missing: whatMissing,
+      client_feedback: clientFeedback,
+    });
+    setSaving(false);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(15,14,12,.55)' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="rounded-xl bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="px-6 py-5 border-b flex items-baseline justify-between" style={{ borderColor: '#ddd5c4' }}>
+          <div>
+            <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#6b6456' }}>Bid outcome</div>
+            <h2 className="font-serif text-xl mt-0.5">{scanName}</h2>
+          </div>
+          <button onClick={onClose} className="text-2xl leading-none" style={{ color: '#9b8e80' }}>×</button>
+        </div>
+
+        <div className="px-6 py-5 space-y-5">
+          {usageHint && (
+            <div className="rounded-lg p-3 text-xs" style={{ background: '#fbf9f4', color: '#6b6456' }}>
+              <span className="font-semibold" style={{ color: '#1a1816' }}>You used this scan to: </span>{usageHint}
+            </div>
+          )}
+
+          {/* Outcome */}
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wide block mb-2" style={{ color: '#6b6456' }}>Outcome</label>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { val: 'won',     label: '★ Won',         color: '#3d5c3a' },
+                { val: 'lost',    label: '✕ Lost',        color: '#b04030' },
+                { val: 'pending', label: '◷ Pending',     color: '#b8962e' },
+                { val: 'no_bid',  label: '✕ Did not bid', color: '#6b6456' },
+              ].map(opt => (
+                <button key={opt.val} onClick={() => setOutcomeVal(opt.val)}
+                  className="text-xs py-2 rounded-lg border-2 transition-all"
+                  style={{
+                    borderColor: outcome === opt.val ? opt.color : '#ddd5c4',
+                    background: outcome === opt.val ? opt.color + '14' : 'white',
+                    color: outcome === opt.val ? opt.color : '#6b6456',
+                    fontWeight: outcome === opt.val ? 600 : 400,
+                  }}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Submitted + PIQ used checkboxes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <label className="flex items-start gap-2 text-xs cursor-pointer p-3 rounded-lg border" style={{ borderColor: '#ddd5c4' }}>
+              <input type="checkbox" checked={submitted} onChange={e => setSubmitted(e.target.checked)} className="mt-0.5" />
+              <div>
+                <div className="font-medium" style={{ color: '#1a1816' }}>Submitted to client</div>
+                <div className="text-[11px] mt-0.5" style={{ color: '#6b6456' }}>Tick if the bid was actually submitted (not just drafted).</div>
+              </div>
+            </label>
+            <label className="flex items-start gap-2 text-xs cursor-pointer p-3 rounded-lg border" style={{ borderColor: '#ddd5c4' }}>
+              <input type="checkbox" checked={piqUsed} onChange={e => setPiqUsed(e.target.checked)} className="mt-0.5" />
+              <div>
+                <div className="font-medium" style={{ color: '#1a1816' }}>ProposalIQ contributed materially</div>
+                <div className="text-[11px] mt-0.5" style={{ color: '#6b6456' }}>Used the verdict, copied snippets, applied recommendations, etc.</div>
+              </div>
+            </label>
+          </div>
+
+          {/* Free text */}
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>What was most useful?</label>
+            <textarea value={mostUseful} onChange={e => setMostUseful(e.target.value)}
+              rows={2} placeholder="e.g. The matched proposals from the HMRC contract, the gap analysis flagging DSPT compliance, the win strategy opening narrative…"
+              className="w-full text-sm px-3 py-2 rounded-lg border outline-none resize-y"
+              style={{ borderColor: '#ddd5c4' }} />
+          </div>
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>What was missing or wrong?</label>
+            <textarea value={whatMissing} onChange={e => setWhatMissing(e.target.value)}
+              rows={2} placeholder="e.g. Should have flagged the social value requirement, off-sector matches in cross-sector list, win strategy too generic…"
+              className="w-full text-sm px-3 py-2 rounded-lg border outline-none resize-y"
+              style={{ borderColor: '#ddd5c4' }} />
+          </div>
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>Client feedback (optional)</label>
+            <textarea value={clientFeedback} onChange={e => setClientFeedback(e.target.value)}
+              rows={2} placeholder="e.g. Strong on technical, weak on commercials. They noted the 47-trust scale claim specifically."
+              className="w-full text-sm px-3 py-2 rounded-lg border outline-none resize-y"
+              style={{ borderColor: '#ddd5c4' }} />
+          </div>
+        </div>
+
+        <div className="px-6 py-4 border-t flex items-center justify-end gap-2" style={{ borderColor: '#ddd5c4', background: '#faf7f2' }}>
+          <button onClick={onClose} className="text-xs px-3 py-2 rounded-lg" style={{ color: '#6b6456' }}>Cancel</button>
+          <button onClick={handleSave} disabled={saving}
+            className="text-xs px-4 py-2 rounded-lg font-medium disabled:opacity-50"
+            style={{ background: '#1e4a52', color: 'white' }}>
+            {saving ? 'Saving…' : 'Save outcome'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── PROPOSAL ASSEMBLY TAB ─────────────────────────────────────────────────────
 const SECTION_STATUSES = ['not started', 'in progress', 'draft ready', 'complete'];
@@ -1347,7 +1581,7 @@ function ExecutiveBrief({ brief, bidScore, matches, onJumpTab }) {
 // group (tier 5) is collapsed by default behind a click-to-reveal button so
 // off-sector noise doesn't drown out direct matches. Untagged (tier 4) is
 // shown when present but framed as a neutral fallback.
-function TieredMatches({ matches, expandedMatches, setExpandedMatches, suppress, setToast }) {
+function TieredMatches({ matches, expandedMatches, setExpandedMatches, suppress, setToast, onLog }) {
   const [showCrossSector, setShowCrossSector] = useState(false);
 
   // Bucket by tier — keep within-tier ordering as the API delivered it.
@@ -1383,7 +1617,8 @@ function TieredMatches({ matches, expandedMatches, setExpandedMatches, suppress,
                 expanded={expandedMatches[i]}
                 onToggle={() => setExpandedMatches(e => ({ ...e, [i]: !e[i] }))}
                 onSuppress={() => suppress(m.id)}
-                onToast={setToast} />
+                onToast={setToast}
+                onLog={onLog} />
             );
           })}
         </div>
@@ -1479,7 +1714,7 @@ function TieredMatches({ matches, expandedMatches, setExpandedMatches, suppress,
   );
 }
 
-function MatchCard({ match: m, expanded, onToggle, onSuppress, onToast }) {
+function MatchCard({ match: m, expanded, onToggle, onSuppress, onToast, onLog }) {
   const meta = m.ai_metadata || {};
   const wq = meta.writing_quality;
   const labelColor = m.match_label==='Strong'?'#3d5c3a':m.match_label==='Good'?'#1e4a52':m.match_label==='Partial'?'#b8962e':'#6b6456';
@@ -1491,6 +1726,19 @@ function MatchCard({ match: m, expanded, onToggle, onSuppress, onToast }) {
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="font-semibold text-sm">{m.name}</div>
             <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Wave 3 — feedback signal: how often this proposal has been
+                  used in past scans, and how many of those scans were won */}
+              {(m.won_count > 0 || m.used_count > 0) && (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border"
+                  style={{
+                    borderColor: m.won_count > 0 ? 'rgba(61,92,58,.4)' : 'rgba(30,74,82,.3)',
+                    background: m.won_count > 0 ? 'rgba(61,92,58,.08)' : 'rgba(30,74,82,.06)',
+                    color: m.won_count > 0 ? '#3d5c3a' : '#1e4a52',
+                  }}
+                  title={`Used in ${m.used_count} past scans, ${m.won_count} of which won`}>
+                  {m.won_count > 0 ? `★ used in ${m.won_count} won bid${m.won_count > 1 ? 's' : ''}` : `· used ${m.used_count}×`}
+                </span>
+              )}
               <OutcomeLabel outcome={m.outcome} />
               <button onClick={(e) => { e.stopPropagation(); onSuppress(); }} className="text-[10px] px-2 py-0.5 rounded border transition-colors hover:bg-red-50" style={{ borderColor:'#ddd5c4', color:'#6b6456' }} title="Exclude from this scan">Exclude</button>
             </div>
@@ -1559,13 +1807,19 @@ function MatchCard({ match: m, expanded, onToggle, onSuppress, onToast }) {
         </div>
       )}
       <div className="flex items-center gap-2 px-4 py-2.5 border-t" style={{ borderColor:'#f0ebe0', background:'#faf7f2' }}>
-        <Btn variant="ghost" size="sm" onClick={onToggle}>{expanded?'▴ Less':'▾ More detail'}</Btn>
-        <button onClick={() => { navigator.clipboard.writeText(`Reference: "${m.name}" (${m.outcome}, ${m.date_submitted?.slice(0,4)}) — ${m.went_well||m.client}`); onToast('Reference copied to clipboard'); }}
+        <Btn variant="ghost" size="sm" onClick={() => { onToggle(); if (!expanded && onLog) onLog('match_expanded', { target_type: 'project', target_id: m.id }); }}>{expanded?'▴ Less':'▾ More detail'}</Btn>
+        <button onClick={() => {
+          navigator.clipboard.writeText(`Reference: "${m.name}" (${m.outcome}, ${m.date_submitted?.slice(0,4)}) — ${m.went_well||m.client}`);
+          onToast('Reference copied to clipboard');
+          if (onLog) onLog('reference_copied', { target_type: 'project', target_id: m.id });
+        }}
           className="text-xs px-2 py-1 rounded border transition-colors hover:bg-white" style={{ borderColor:'#ddd5c4', color:'#6b6456' }}>Copy Reference</button>
         <a href={`/api/projects/${m.id}/download`} target="_blank" rel="noopener noreferrer"
           className="text-xs px-2 py-1 rounded border transition-colors hover:bg-white" style={{ borderColor:'#ddd5c4', color:'#1e4a52' }}
-          onClick={e => e.stopPropagation()}>↓ Download</a>
-        <Link href={`/repository/${m.id}`} className="ml-auto text-xs" style={{ color:'#1e4a52' }}>Open →</Link>
+          onClick={e => { e.stopPropagation(); if (onLog) onLog('match_downloaded', { target_type: 'project', target_id: m.id }); }}>↓ Download</a>
+        <Link href={`/repository/${m.id}`}
+          onClick={() => { if (onLog) onLog('match_opened', { target_type: 'project', target_id: m.id }); }}
+          className="ml-auto text-xs" style={{ color:'#1e4a52' }}>Open →</Link>
       </div>
     </Card>
   );

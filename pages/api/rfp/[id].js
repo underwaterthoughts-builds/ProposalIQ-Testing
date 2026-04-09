@@ -3,6 +3,7 @@ import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { safe } from '../../../lib/embeddings';
 import { inferTaxonomyFromProposal } from '../../../lib/taxonomy';
+import { getProjectUsageStats } from '../../../lib/feedback';
 
 // Compute tier label for a single match against the RFP's taxonomy.
 // Mirrors lib/embeddings.js taxonomyTier so existing scans benefit from
@@ -64,8 +65,12 @@ function handler(req, res) {
     const rfpClient = scan.client_industry || null;
     const rfpService = scan.service_industry || null;
     const rawMatches = safe(scan.matched_proposals, []).filter(p => !suppressed.has(p.id));
+    // Wave 3 — load feedback stats once and stamp them on each match so
+    // existing scans show "used in N winning bids" badges immediately.
+    const usageStats = getProjectUsageStats(db);
     const matchedProposals = rawMatches.map(p => {
       const tier = computeTier(p, rfpClient, rfpService);
+      const stats = usageStats.get(p.id);
       return {
         ...p,
         taxonomy_tier: tier.tier,
@@ -73,6 +78,8 @@ function handler(req, res) {
         taxonomy_inferred: tier.inferred,
         client_industry: tier.propClient || p.client_industry || null,
         service_industry: tier.propService || p.service_industry || null,
+        used_count: stats?.used_count || p.used_count || 0,
+        won_count: stats?.won_count || p.won_count || 0,
       };
     }).sort((a, b) => {
       // Tier asc first, then by match_score desc within tier.
