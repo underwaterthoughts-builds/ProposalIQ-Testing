@@ -177,9 +177,24 @@ export default function OnboardingProfile() {
       <Layout title="Organisation Profile" subtitle="Tell ProposalIQ what your organisation actually does — so recommendations match your real capabilities." user={user}>
         <div className="max-w-4xl mx-auto p-6">
 
+          {/* Existing-profile banner — only when returning to edit */}
+          {existing && existing.confirmed_profile?.offerings?.length > 0 && (
+            <div className="rounded-lg p-3 mb-5 text-xs flex items-center gap-3"
+              style={{ background: '#edf3ec', border: '1px solid rgba(61,92,58,.25)', color: '#3d5c3a' }}>
+              <span style={{ fontSize: 14 }}>✓</span>
+              <span className="flex-1">
+                Editing the confirmed profile for <strong>{existing.org_name || 'your organisation'}</strong>.
+                Changes save when you click "Save confirmed profile" at the bottom.
+                To switch to a different company entirely, use <a href="/settings" className="underline">Settings → Danger Zone</a>.
+              </span>
+            </div>
+          )}
+
           {/* Step 1: website URL + scan */}
           <Card className="p-6 mb-6">
-            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: '#6b6456' }}>Step 1 · Tell us where to look</div>
+            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: '#6b6456' }}>
+              {existing?.confirmed_profile?.offerings?.length > 0 ? 'Re-scan website (optional)' : 'Step 1 · Tell us where to look'}
+            </div>
 
             <label className="text-xs font-medium block mb-1.5" style={{ color: '#1a1816' }}>Organisation name</label>
             <input value={orgName} onChange={e => setOrgName(e.target.value)}

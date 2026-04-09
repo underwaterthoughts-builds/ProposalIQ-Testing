@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Layout from '../components/Layout';
 import { Card, Btn, Input, Select, Spinner, Toast } from '../components/ui';
 import { useUser } from '../lib/useUser';
 
+const WIPE_CONFIRM_PHRASE = 'DELETE ALL DATA';
+
 export default function Settings() {
+  const router = useRouter();
   const { user, loading: authLoading } = useUser();
   const [form, setForm] = useState({ org_name: '', target_margin: '30', default_currency: 'GBP' });
+  const [showWipeModal, setShowWipeModal] = useState(false);
+  const [wipeConfirmText, setWipeConfirmText] = useState('');
+  const [wiping, setWiping] = useState(false);
   const [info, setInfo] = useState({});
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
@@ -121,6 +128,34 @@ export default function Settings() {
 
   const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
+  // Nuclear wipe — deletes all company data and redirects to fresh onboarding.
+  // The typed confirmation phrase must match exactly; modal stays open otherwise.
+  async function wipeData() {
+    if (wipeConfirmText !== WIPE_CONFIRM_PHRASE) return;
+    setWiping(true);
+    try {
+      const r = await fetch('/api/onboarding/wipe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirm: WIPE_CONFIRM_PHRASE }),
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        setToast(err.error || 'Wipe failed');
+        setWiping(false);
+        return;
+      }
+      // Clear local form state and redirect to onboarding
+      setForm({ org_name: '', target_margin: '30', default_currency: 'GBP' });
+      setShowWipeModal(false);
+      setWipeConfirmText('');
+      router.push('/onboarding/profile');
+    } catch (e) {
+      setToast('Wipe failed: ' + e.message);
+      setWiping(false);
+    }
+  }
+
   if (authLoading) return null;
   if (!user) return null;
 
@@ -166,9 +201,14 @@ export default function Settings() {
                         profile cascades into gap analysis, win strategy, executive brief, and section
                         drafts so recommendations are grounded in your real capabilities.
                       </p>
-                      <a href="/onboarding/profile" className="text-xs font-medium inline-flex items-center gap-1" style={{ color: '#1e4a52' }}>
-                        Set up your profile →
-                      </a>
+                      <div className="flex gap-3 flex-wrap">
+                        <a href="/onboarding/profile" className="text-xs font-medium inline-flex items-center gap-1" style={{ color: '#1e4a52' }}>
+                          Set up or edit your profile →
+                        </a>
+                        <a href="/onboarding/profile" className="text-xs inline-flex items-center gap-1" style={{ color: '#6b6456' }}>
+                          Change company details
+                        </a>
+                      </div>
                     </div>
                     <div className="text-3xl opacity-30">★</div>
                   </div>
@@ -178,6 +218,29 @@ export default function Settings() {
                     {saving ? <><Spinner size={12} /> Saving…</> : 'Save Settings'}
                   </Btn>
                 </div>
+
+                {/* ── Danger Zone ─────────────────────────────────────── */}
+                <Card className="p-5 mt-8" style={{ borderColor: 'rgba(176,64,48,.3)', background: '#faeeeb' }}>
+                  <div className="flex items-start gap-4">
+                    <div className="flex-1">
+                      <h2 className="font-serif text-base mb-1" style={{ color: '#b04030' }}>Danger zone</h2>
+                      <p className="text-xs mb-3" style={{ color: '#8a3628' }}>
+                        Delete all company data and start fresh — useful when switching
+                        to a different organisation or clearing out test data. This
+                        permanently removes all proposals, uploaded files, RFP scans,
+                        drafts, team members, folders, outcomes, feedback history, and
+                        your organisation profile. Your login and AI configuration are
+                        kept. This cannot be undone.
+                      </p>
+                      <button onClick={() => { setShowWipeModal(true); setWipeConfirmText(''); }}
+                        className="text-xs px-3 py-2 rounded border font-medium"
+                        style={{ borderColor: '#b04030', color: '#b04030', background: 'white' }}>
+                        ✕ Delete all company data and start fresh
+                      </button>
+                    </div>
+                    <div className="text-3xl opacity-30" style={{ color: '#b04030' }}>⚠</div>
+                  </div>
+                </Card>
               </div>
             )}
 
@@ -373,6 +436,60 @@ export default function Settings() {
         </div>
       </Layout>
       <Toast msg={toast} onClose={() => setToast('')} />
+
+      {/* Wipe confirmation modal — requires typed phrase */}
+      {showWipeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(15,14,12,.65)' }}
+          onClick={(e) => { if (e.target === e.currentTarget && !wiping) setShowWipeModal(false); }}>
+          <div className="rounded-xl bg-white w-full max-w-md shadow-2xl">
+            <div className="px-6 py-5 border-b" style={{ borderColor: '#ddd5c4' }}>
+              <div className="flex items-center gap-3">
+                <div className="text-2xl" style={{ color: '#b04030' }}>⚠</div>
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#b04030' }}>Danger · irreversible</div>
+                  <h2 className="font-serif text-xl mt-0.5">Delete all company data?</h2>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-5">
+              <p className="text-sm mb-4" style={{ color: '#1a1816' }}>
+                This will permanently delete:
+              </p>
+              <ul className="text-xs mb-4 space-y-1" style={{ color: '#6b6456' }}>
+                <li>· All projects and uploaded files</li>
+                <li>· All RFP scans, gaps, strategies, drafts, feedback</li>
+                <li>· Team members, folders, client profiles, rate card</li>
+                <li>· Your confirmed organisation profile</li>
+              </ul>
+              <p className="text-xs mb-5" style={{ color: '#6b6456' }}>
+                Your login and AI configuration are kept. <strong style={{ color: '#b04030' }}>This cannot be undone.</strong>
+              </p>
+              <label className="text-xs font-medium block mb-1.5" style={{ color: '#1a1816' }}>
+                Type <code className="font-mono px-1.5 py-0.5 rounded" style={{ background: '#f0ebe0' }}>{WIPE_CONFIRM_PHRASE}</code> to confirm
+              </label>
+              <input value={wipeConfirmText} onChange={e => setWipeConfirmText(e.target.value)}
+                placeholder={WIPE_CONFIRM_PHRASE}
+                className="w-full text-sm px-3 py-2 border rounded outline-none font-mono"
+                style={{ borderColor: wipeConfirmText === WIPE_CONFIRM_PHRASE ? '#b04030' : '#ddd5c4' }}
+                autoFocus />
+            </div>
+            <div className="px-6 py-4 border-t flex items-center justify-end gap-2" style={{ borderColor: '#ddd5c4', background: '#faf7f2' }}>
+              <button onClick={() => { setShowWipeModal(false); setWipeConfirmText(''); }}
+                disabled={wiping}
+                className="text-xs px-4 py-2 rounded-lg" style={{ color: '#6b6456' }}>
+                Cancel
+              </button>
+              <button onClick={wipeData}
+                disabled={wiping || wipeConfirmText !== WIPE_CONFIRM_PHRASE}
+                className="text-xs px-4 py-2 rounded-lg font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ background: '#b04030', color: 'white' }}>
+                {wiping ? <><Spinner size={12} /> Deleting…</> : 'Permanently delete everything'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
