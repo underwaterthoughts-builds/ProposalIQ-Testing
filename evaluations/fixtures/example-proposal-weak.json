@@ -1,0 +1,14 @@
+{
+  "id": "example-proposal-weak",
+  "kind": "proposal",
+  "name": "Example: weak generic proposal (synthetic)",
+  "rating": 2,
+  "notes": "synthetic fixture for harness smoke test — should score low and surface filler",
+  "input_text": "PROPOSAL: Strategic Transformation Initiative\n\nEXECUTIVE SUMMARY\n\nAs your trusted partner of choice, we are excited to bring our proven track record of delivering value to this engagement. Our dedicated team combines deep sector expertise with a passion for innovation, ensuring that every project we deliver exceeds expectations.\n\nWe are an industry-leading provider of digital transformation services, with a world-class portfolio of solutions tailored to your needs. Our cutting-edge approach unlocks the full potential of your organisation, transforming the future of how you operate.\n\nAPPROACH\n\nOur methodology combines technical excellence with deep sector knowledge. We take a holistic view of every challenge, working in partnership with our clients to ensure successful outcomes. Our robust and scalable framework seamlessly integrates with your existing operations.\n\nWe believe that every transformation journey is unique, and our approach reflects this. By bringing together the right people, processes, and technology, we deliver outcomes that drive lasting value.\n\nWHY US\n\n- Proven track record across multiple sectors\n- Dedicated team of experts\n- Innovative solutions tailored to your needs\n- Trusted partner to leading organisations\n- Best-in-class methodology",
+  "expected": {
+    "must_contain": [],
+    "must_not_contain": ["proven track record", "trusted partner", "dedicated team"],
+    "min_themes": 0,
+    "min_score": 35
+  }
+}

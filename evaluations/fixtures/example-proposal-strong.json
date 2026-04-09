@@ -1,0 +1,14 @@
+{
+  "id": "example-proposal-strong",
+  "kind": "proposal",
+  "name": "Example: strong proposal (synthetic)",
+  "rating": 5,
+  "notes": "synthetic fixture for harness smoke test",
+  "input_text": "PROPOSAL: NHS Spine Integration Platform — submitted to Imperial College Healthcare NHS Trust by NorthStar Consulting, March 2024.\n\nEXECUTIVE SUMMARY\n\nWe have done this exact integration before, in production, at scale — not a pilot, not a POC. Over the last 18 months we delivered FHIR-to-Spine integrations for 47 NHS Trusts using a single event-driven Kafka pipeline. Zero downtime across the rollout. Average onboarding cycle reduced from 14 days to 3.\n\nThree things distinguish this proposal from a competent alternative, and we'll prove each one in the section that follows: (1) a production-tested adapter pattern, not a green-field design; (2) a named clinical safety lead — Sarah Chen, ISACA CISA, NHS DSPT auditor since 2021 — already cleared on the Trust DSPT; (3) a fixed-price commercial model that absorbs scope variance up to 15%.\n\nTECHNICAL APPROACH\n\nWe will reuse the same OAuth 2.0 federation pattern referenced in section 4.2 of the RFP. Our lead architect ran the Met Office's £12M data migration — a project explicitly cited in the G-Cloud 14 procurement framework as reference architecture for event-driven public sector integrations.\n\nOur methodology combines PRINCE2 governance with SAFe 5.0 delivery cadence. This is not boilerplate: the SAFe cadence specifically front-loads the integration risk in the first PI, which is the pattern that succeeded at HMRC and failed at the previous supplier here.\n\nCREDIBILITY EVIDENCE\n\n- 47 NHS Trust integrations delivered live (named in Annex B)\n- Zero clinical safety incidents across the portfolio\n- Current DSPT submission status: compliant for all 47 sites\n- Sarah Chen led IG on the Imperial College Healthcare contract in 2022 — same Trust, same governance regime\n\nCOMMERCIAL MODEL\n\n£1.85M fixed price for the 24-month contract, including the absorbed-scope clause. This is 12% below the rate-card equivalent and is achievable because we are reusing existing IP, not building from scratch.",
+  "expected": {
+    "must_contain": ["NHS", "FHIR", "Sarah Chen", "47"],
+    "must_not_contain": ["proven track record", "trusted partner"],
+    "min_themes": 3,
+    "min_score": 75
+  }
+}
