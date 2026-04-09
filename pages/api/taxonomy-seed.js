@@ -1,48 +1,77 @@
 import { getDb } from '../../lib/db';
 import { requireAuth } from '../../lib/auth';
 import { v4 as uuid } from 'uuid';
+import { SERVICE_TAXONOMY, CLIENT_TAXONOMY } from '../../lib/taxonomy';
 
-const DEFAULTS = [
-  ['Service Offering','Digital Transformation'],
-  ['Service Offering','Data & Analytics'],
-  ['Service Offering','Cloud Migration'],
-  ['Service Offering','Software Development'],
-  ['Service Offering','Managed Services'],
-  ['Service Offering','Consultancy & Advisory'],
-  ['Service Offering','Change Management'],
-  ['Service Offering','Cybersecurity'],
-  ['Service Offering','ERP & Systems Integration'],
-  ['Service Offering','Infrastructure & Networks'],
-  ['Service Offering','Film & Media Production'],
-  ['Service Offering','Creative & Brand Production'],
-  ['Service Offering','PR & Communications'],
-  ['Service Offering','Research & Insight'],
-  ['Service Offering','Recruitment & Staffing'],
-  ['Sector','Government & Public Sector'],
-  ['Sector','Healthcare & NHS'],
-  ['Sector','Financial Services'],
-  ['Sector','Aerospace & Defence'],
-  ['Sector','Technology & Software'],
-  ['Sector','Retail & Consumer'],
-  ['Sector','Energy & Utilities'],
-  ['Sector','Transport & Logistics'],
-  ['Sector','Education & Skills'],
-  ['Sector','Film & Creative Industries'],
-  ['Sector','Charity & Third Sector'],
-  ['Sector','Legal & Professional Services'],
-];
-
+// Idempotent seed for the two-axis taxonomy.
+// Safe to run multiple times — checks existence before inserting.
 async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
   const db = getDb();
-  const insert = db.prepare('INSERT OR IGNORE INTO taxonomy_items (id, name, category, is_default, sort_order) VALUES (?, ?, ?, 1, ?)');
-  let added = 0;
-  DEFAULTS.forEach(([cat, name], i) => {
-    const result = insert.run(uuid(), name, cat, i + 1);
-    if (result.changes) added++;
+
+  const findIndustry = db.prepare(
+    "SELECT id FROM taxonomy_items WHERE name = ? AND category = 'Industry' AND taxonomy_type = ?"
+  );
+  const findSector = db.prepare(
+    "SELECT id FROM taxonomy_items WHERE name = ? AND category = 'Sector' AND parent_id = ?"
+  );
+  const insert = db.prepare(
+    "INSERT INTO taxonomy_items (id, name, category, parent_id, sort_order, is_default, taxonomy_type) VALUES (?, ?, ?, ?, ?, 1, ?)"
+  );
+
+  let added = 0, skipped = 0;
+  let serviceIndustryCount = 0, serviceSectorCount = 0;
+  let clientIndustryCount = 0, clientSectorCount = 0;
+
+  function seedAxis(taxonomy, type) {
+    let industryOrder = 0;
+    for (const [industry, sectors] of Object.entries(taxonomy)) {
+      industryOrder++;
+      let industryRow = findIndustry.get(industry, type);
+      let industryId;
+      if (!industryRow) {
+        industryId = uuid();
+        insert.run(industryId, industry, 'Industry', null, industryOrder, type);
+        added++;
+        if (type === 'service') serviceIndustryCount++; else clientIndustryCount++;
+      } else {
+        industryId = industryRow.id;
+        skipped++;
+      }
+      let sectorOrder = 0;
+      for (const sector of sectors) {
+        sectorOrder++;
+        const existing = findSector.get(sector, industryId);
+        if (!existing) {
+          insert.run(uuid(), sector, 'Sector', industryId, sectorOrder, type);
+          added++;
+          if (type === 'service') serviceSectorCount++; else clientSectorCount++;
+        } else {
+          skipped++;
+        }
+      }
+    }
+  }
+
+  try {
+    seedAxis(SERVICE_TAXONOMY, 'service');
+    seedAxis(CLIENT_TAXONOMY, 'client');
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
+  }
+
+  return res.status(200).json({
+    success: true,
+    added,
+    skipped,
+    breakdown: {
+      service_industries: serviceIndustryCount,
+      service_sectors: serviceSectorCount,
+      client_industries: clientIndustryCount,
+      client_sectors: clientSectorCount,
+    },
+    message: `Seeded ${serviceIndustryCount} new service industries + ${serviceSectorCount} sectors, ${clientIndustryCount} client industries + ${clientSectorCount} sectors (${skipped} already existed)`,
   });
-  const all = db.prepare('SELECT * FROM taxonomy_items ORDER BY category, sort_order').all();
-  return res.status(200).json({ added, total: all.length, items: all });
 }
 
 export default requireAuth(handler);

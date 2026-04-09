@@ -182,6 +182,32 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
         <div className="flex flex-wrap gap-1 mb-3">
           {['proposal','rfp','budget'].map(ft=>fileTypes.includes(ft)?<FileChip key={ft} type={ft}/>:<span key={ft} className="text-[10px] font-mono px-1.5 py-0.5 rounded border opacity-30" style={{borderColor:'#ddd5c4'}}>{ft}</span>)}
         </div>
+        {/* Two-axis taxonomy chips: client (gold) + service (teal) */}
+        {(p.client_industry || p.service_industry) ? (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {p.client_industry && (
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border"
+                style={{borderColor:'rgba(184,150,46,.45)',background:'rgba(184,150,46,.08)',color:'#8a6200'}}
+                title="Client industry">
+                {p.client_industry}
+              </span>
+            )}
+            {p.service_industry && (
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border"
+                style={{borderColor:'rgba(30,74,82,.45)',background:'rgba(30,74,82,.08)',color:'#1e4a52'}}
+                title="Type of work">
+                {p.service_industry}
+              </span>
+            )}
+          </div>
+        ) : (
+          p.indexing_status === 'complete' && (
+            <div className="mb-2">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border border-dashed"
+                style={{borderColor:'#ddd5c4',color:'#9b8e80'}}>+ Untagged</span>
+            </div>
+          )
+        )}
         {(meta.key_themes||[]).slice(0,3).map(t=><span key={t} className="inline-block text-[10px] font-mono px-1.5 py-0.5 rounded mr-1 mb-1" style={{background:'#f0ebe0',color:'#6b6456'}}>{t}</span>)}
       </div>
       <div className="flex items-center justify-between px-4 py-2.5 border-t" style={{borderColor:'#f0ebe0'}}>
@@ -236,8 +262,10 @@ export default function Repository() {
   const [expandedFolders, setExpandedFolders] = useState({'f-gov':true,'f-health':true});
   const [semanticSearch, setSemanticSearch] = useState(false);
   const [analysisHealth, setAnalysisHealth] = useState(null);
-  const [taxonomy, setTaxonomy] = useState({ offerings: [], sectors: [] });
+  const [taxonomy, setTaxonomy] = useState({ offerings: [], sectors: [], serviceIndustries: [], clientIndustries: [] });
   const [selectedOffering, setSelectedOffering] = useState(null);
+  const [selectedServiceIndustry, setSelectedServiceIndustry] = useState(null);
+  const [selectedClientIndustry, setSelectedClientIndustry] = useState(null);
   const [runningAnalysis, setRunningAnalysis] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [selectMode, setSelectMode] = useState(false);
@@ -252,8 +280,12 @@ export default function Repository() {
     fetch('/api/taxonomy').then(r=>r.json()).then(d=>{
       const items = d.items || [];
       setTaxonomy({
+        // Legacy single-axis taxonomy (kept for back-compat with old proposals)
         offerings: items.filter(i=>i.category==='Service Offering'),
-        sectors: items.filter(i=>i.category==='Sector'),
+        sectors: items.filter(i=>i.category==='Sector' && !i.parent_id),
+        // New two-axis taxonomy
+        serviceIndustries: items.filter(i=>i.category==='Industry' && i.taxonomy_type==='service'),
+        clientIndustries: items.filter(i=>i.category==='Industry' && i.taxonomy_type==='client'),
       });
     }).catch(()=>{});
   },[]);
@@ -283,7 +315,7 @@ export default function Repository() {
     } catch { setToast('Failed to start analysis'); }
     setRunningAnalysis(false);
   }
-  useEffect(()=>{ loadProjects(); },[selectedFolder,search,semanticSearch,selectedOffering]);
+  useEffect(()=>{ loadProjects(); },[selectedFolder,search,semanticSearch,selectedOffering,selectedServiceIndustry,selectedClientIndustry]);
 
   async function loadFolders(){ const r=await fetch('/api/folders'); const d=await r.json(); setFolders(d.folders||[]); }
   async function loadProjects(resetStuck = false){    setLoading(true);
@@ -295,6 +327,8 @@ export default function Repository() {
     if(selectedFolder==='failed') params.set('indexing_status','error');
     else if(selectedFolder!=='all') params.set('folder',selectedFolder);
     if(selectedOffering) params.set('offering',selectedOffering);
+    if(selectedServiceIndustry) params.set('service_industry',selectedServiceIndustry);
+    if(selectedClientIndustry) params.set('client_industry',selectedClientIndustry);
     if(search) params.set('search',search);
     if(search && semanticSearch) params.set('semantic','true');
     const r=await fetch('/api/projects?'+params.toString());
@@ -447,10 +481,50 @@ export default function Repository() {
                   </div>
                 );
               })}
-              {/* Service Offering taxonomy browse */}
+              {/* TYPE OF WORK — service_industry filter (teal) */}
+              {taxonomy.serviceIndustries.length > 0 && (
+                <div className="mt-3 border-t pt-2" style={{borderColor:'#ddd5c4'}}>
+                  <div className="text-[9px] font-mono uppercase tracking-widest mb-1.5 px-2.5" style={{color:'#1e4a52'}}>Type of Work</div>
+                  <button onClick={()=>setSelectedServiceIndustry(null)}
+                    className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${!selectedServiceIndustry?'bg-white shadow-sm font-medium':'hover:bg-black/5'}`}>
+                    <span style={{color:'#1e4a52'}}>◈</span>
+                    <span className="flex-1">All Types</span>
+                  </button>
+                  {taxonomy.serviceIndustries.map(item=>(
+                    <button key={item.id} onClick={()=>setSelectedServiceIndustry(selectedServiceIndustry===item.name?null:item.name)}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${selectedServiceIndustry===item.name?'shadow-sm font-medium':'hover:bg-black/5'}`}
+                      style={selectedServiceIndustry===item.name?{background:'rgba(30,74,82,.12)',color:'#1e4a52'}:{}}>
+                      <span className="w-1 h-1 rounded-full flex-shrink-0" style={{background:selectedServiceIndustry===item.name?'#1e4a52':'#ddd5c4'}}/>
+                      <span className="flex-1 truncate">{item.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* CLIENT SECTOR — client_industry filter (gold) */}
+              {taxonomy.clientIndustries.length > 0 && (
+                <div className="mt-3 border-t pt-2" style={{borderColor:'#ddd5c4'}}>
+                  <div className="text-[9px] font-mono uppercase tracking-widest mb-1.5 px-2.5" style={{color:'#8a6200'}}>Client Sector</div>
+                  <button onClick={()=>setSelectedClientIndustry(null)}
+                    className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${!selectedClientIndustry?'bg-white shadow-sm font-medium':'hover:bg-black/5'}`}>
+                    <span style={{color:'#8a6200'}}>◆</span>
+                    <span className="flex-1">All Sectors</span>
+                  </button>
+                  {taxonomy.clientIndustries.map(item=>(
+                    <button key={item.id} onClick={()=>setSelectedClientIndustry(selectedClientIndustry===item.name?null:item.name)}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${selectedClientIndustry===item.name?'shadow-sm font-medium':'hover:bg-black/5'}`}
+                      style={selectedClientIndustry===item.name?{background:'rgba(184,150,46,.15)',color:'#8a6200'}:{}}>
+                      <span className="w-1 h-1 rounded-full flex-shrink-0" style={{background:selectedClientIndustry===item.name?'#b8962e':'#ddd5c4'}}/>
+                      <span className="flex-1 truncate">{item.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Legacy Service Offering taxonomy — kept for back-compat with pre-migration projects */}
               {taxonomy.offerings.length > 0 && (
                 <div className="mt-3 border-t pt-2" style={{borderColor:'#ddd5c4'}}>
-                  <div className="text-[9px] font-mono uppercase tracking-widest mb-1.5 px-2.5" style={{color:'#6b6456'}}>By Service</div>
+                  <div className="text-[9px] font-mono uppercase tracking-widest mb-1.5 px-2.5" style={{color:'#6b6456'}}>Legacy Tags</div>
                   <button onClick={()=>setSelectedOffering(null)}
                     className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${!selectedOffering?'bg-white shadow-sm font-medium':'hover:bg-black/5'}`}>
                     <span style={{color:'#6b6456'}}>◈</span>

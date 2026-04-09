@@ -107,7 +107,14 @@ async function handler(req, res) {
           const allProjects = db.prepare(
             "SELECT * FROM projects WHERE indexing_status='complete' AND embedding IS NOT NULL"
           ).all();
-          ranked = rankProposals(rfpVec, allProjects);
+          // Pass RFP taxonomy so rankProposals can apply tiered ranking.
+          const rfpTaxonomy = {
+            service_industry: rfpData.service_industry || null,
+            service_sectors: rfpData.service_sectors || [],
+            client_industry: rfpData.client_industry || null,
+            client_sectors: rfpData.client_sectors || [],
+          };
+          ranked = rankProposals(rfpVec, allProjects, rfpTaxonomy);
         }
       } catch (e) { warn('embed/rank', e.message); }
 
@@ -362,6 +369,7 @@ async function handler(req, res) {
         narrative_advice=?, suggested_approach=?,
         win_strategy=?, winning_language=?,
         bid_score=?,
+        service_industry=?, service_sectors=?, client_industry=?, client_sectors=?,
         status=? WHERE id=?`).run(
         rfpText.slice(0, 50000),
         JSON.stringify(rfpData),
@@ -395,6 +403,10 @@ async function handler(req, res) {
         JSON.stringify(winStrategy),
         JSON.stringify(winningLanguage),
         JSON.stringify(bidScore),
+        rfpData.service_industry || null,
+        JSON.stringify(rfpData.service_sectors || []),
+        rfpData.client_industry || null,
+        JSON.stringify(rfpData.client_sectors || []),
         status,
         scanId
       );

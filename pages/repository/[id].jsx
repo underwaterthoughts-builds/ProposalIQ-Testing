@@ -96,6 +96,162 @@ function TagList({ items = [], onSave, color = '#1e4a52', bg = '#e8f2f4' }) {
   );
 }
 
+// ── Two-axis taxonomy editor ──────────────────────────────────────────────
+// Industry dropdowns + sector chips, sourced from /api/taxonomy. Sector list
+// for each axis is filtered by the currently-selected industry.
+function TaxonomyEditor({ project, taxItems, onSave }) {
+  const [serviceInd, setServiceInd] = useState(project.service_industry || '');
+  const [serviceSecs, setServiceSecs] = useState(Array.isArray(project.service_sectors) ? project.service_sectors : []);
+  const [clientInd, setClientInd] = useState(project.client_industry || '');
+  const [clientSecs, setClientSecs] = useState(Array.isArray(project.client_sectors) ? project.client_sectors : []);
+  const [saving, setSaving] = useState(false);
+
+  // Re-sync if project reloads (e.g. after AI reindex)
+  useEffect(() => {
+    setServiceInd(project.service_industry || '');
+    setServiceSecs(Array.isArray(project.service_sectors) ? project.service_sectors : []);
+    setClientInd(project.client_industry || '');
+    setClientSecs(Array.isArray(project.client_sectors) ? project.client_sectors : []);
+  }, [project.id, project.service_industry, project.client_industry, project.indexed_at]);
+
+  // Group taxonomy items
+  const serviceIndustries = taxItems.filter(t => t.taxonomy_type === 'service' && t.category === 'Industry');
+  const clientIndustries  = taxItems.filter(t => t.taxonomy_type === 'client'  && t.category === 'Industry');
+  const sectorsFor = (industryName, type) => {
+    const ind = taxItems.find(t => t.name === industryName && t.category === 'Industry' && t.taxonomy_type === type);
+    if (!ind) return [];
+    return taxItems.filter(t => t.category === 'Sector' && t.parent_id === ind.id).map(t => t.name);
+  };
+  const serviceSectorOptions = sectorsFor(serviceInd, 'service');
+  const clientSectorOptions  = sectorsFor(clientInd, 'client');
+
+  const dirty =
+    serviceInd !== (project.service_industry || '') ||
+    clientInd  !== (project.client_industry  || '') ||
+    JSON.stringify([...serviceSecs].sort()) !== JSON.stringify([...(project.service_sectors || [])].sort()) ||
+    JSON.stringify([...clientSecs].sort())  !== JSON.stringify([...(project.client_sectors  || [])].sort());
+
+  function toggleSector(value, list, setter) {
+    if (list.includes(value)) setter(list.filter(s => s !== value));
+    else if (list.length < 3) setter([...list, value]);
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    await onSave({
+      service_industry: serviceInd || null,
+      service_sectors: serviceSecs,
+      client_industry: clientInd || null,
+      client_sectors: clientSecs,
+    });
+    setSaving(false);
+  }
+
+  const provenance = project.taxonomy_source === 'user' ? 'Edited by user'
+    : project.taxonomy_source === 'ai' ? 'Tagged by AI' : 'Untagged';
+
+  return (
+    <Card className="p-4 mb-4" style={{ background: '#fbf9f4', borderColor: '#ddd5c4' }}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#6b6456' }}>Classification</div>
+        <div className="text-[10px] font-mono" style={{ color: '#9b8e80' }}>{provenance}</div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* CLIENT axis — gold */}
+        <div>
+          <label className="text-[11px] font-medium block mb-1.5" style={{ color: '#8a6200' }}>Client industry</label>
+          <select value={clientInd}
+            onChange={e => { setClientInd(e.target.value); setClientSecs([]); }}
+            className="w-full text-xs px-2 py-1.5 rounded border bg-white"
+            style={{ borderColor: 'rgba(184,150,46,.45)' }}>
+            <option value="">— Untagged —</option>
+            {clientIndustries.map(i => <option key={i.id} value={i.name}>{i.name}</option>)}
+          </select>
+          {clientInd && (
+            <div className="mt-2">
+              <div className="text-[10px] font-mono mb-1" style={{ color: '#9b8e80' }}>
+                Sectors (max 3) — {clientSecs.length}/3 selected
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {clientSectorOptions.map(s => {
+                  const on = clientSecs.includes(s);
+                  return (
+                    <button key={s} type="button" onClick={() => toggleSector(s, clientSecs, setClientSecs)}
+                      className="text-[10px] px-2 py-0.5 rounded-full border transition-colors"
+                      style={on
+                        ? { background: 'rgba(184,150,46,.18)', borderColor: '#b8962e', color: '#8a6200' }
+                        : { background: 'white', borderColor: '#ddd5c4', color: '#6b6456' }}>
+                      {on ? '✓ ' : '+ '}{s}
+                    </button>
+                  );
+                })}
+                {clientSectorOptions.length === 0 && (
+                  <span className="text-[10px] italic" style={{ color: '#9b8e80' }}>No sectors loaded for this industry</span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* SERVICE axis — teal */}
+        <div>
+          <label className="text-[11px] font-medium block mb-1.5" style={{ color: '#1e4a52' }}>Type of work</label>
+          <select value={serviceInd}
+            onChange={e => { setServiceInd(e.target.value); setServiceSecs([]); }}
+            className="w-full text-xs px-2 py-1.5 rounded border bg-white"
+            style={{ borderColor: 'rgba(30,74,82,.45)' }}>
+            <option value="">— Untagged —</option>
+            {serviceIndustries.map(i => <option key={i.id} value={i.name}>{i.name}</option>)}
+          </select>
+          {serviceInd && (
+            <div className="mt-2">
+              <div className="text-[10px] font-mono mb-1" style={{ color: '#9b8e80' }}>
+                Sectors (max 3) — {serviceSecs.length}/3 selected
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {serviceSectorOptions.map(s => {
+                  const on = serviceSecs.includes(s);
+                  return (
+                    <button key={s} type="button" onClick={() => toggleSector(s, serviceSecs, setServiceSecs)}
+                      className="text-[10px] px-2 py-0.5 rounded-full border transition-colors"
+                      style={on
+                        ? { background: 'rgba(30,74,82,.18)', borderColor: '#1e4a52', color: '#1e4a52' }
+                        : { background: 'white', borderColor: '#ddd5c4', color: '#6b6456' }}>
+                      {on ? '✓ ' : '+ '}{s}
+                    </button>
+                  );
+                })}
+                {serviceSectorOptions.length === 0 && (
+                  <span className="text-[10px] italic" style={{ color: '#9b8e80' }}>No sectors loaded for this industry</span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {dirty && (
+        <div className="mt-3 flex gap-2">
+          <button onClick={handleSave} disabled={saving}
+            className="text-xs px-3 py-1.5 rounded font-medium disabled:opacity-50"
+            style={{ background: '#1e4a52', color: 'white' }}>
+            {saving ? 'Saving…' : 'Save changes'}
+          </button>
+          <button onClick={() => {
+            setServiceInd(project.service_industry || '');
+            setServiceSecs(project.service_sectors || []);
+            setClientInd(project.client_industry || '');
+            setClientSecs(project.client_sectors || []);
+          }} className="text-xs px-3 py-1.5 rounded" style={{ color: '#6b6456' }}>
+            Cancel
+          </button>
+        </div>
+      )}
+    </Card>
+  );
+}
+
 export default function ProjectDetail() {
   const router = useRouter();
   const { id } = router.query;
@@ -119,8 +275,12 @@ export default function ProjectDetail() {
   const [savingCapture, setSavingCapture] = useState(false);
   const [newFieldLabel, setNewFieldLabel] = useState('');
   const [newFieldValue, setNewFieldValue] = useState('');
+  const [taxItems, setTaxItems] = useState([]);
 
   useEffect(() => { if (id) loadProject(); }, [id]);
+  useEffect(() => {
+    fetch('/api/taxonomy').then(r => r.json()).then(d => setTaxItems(d.items || [])).catch(() => {});
+  }, []);
   useEffect(() => {
     if (project && narrativeEntries !== null) {
       const hasOutcome = project.outcome === 'won' || project.outcome === 'lost';
@@ -151,6 +311,22 @@ export default function ProjectDetail() {
     await fetch(`/api/projects/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ai_metadata: JSON.stringify(updated) }) });
     setProject(p => ({ ...p, ai_metadata: updated }));
     setToast('Saved');
+  }
+
+  // Save taxonomy fields. Server snaps to canonical and marks taxonomy_source='user'.
+  async function saveTaxonomy(updates) {
+    const r = await fetch(`/api/projects/${id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+    if (r.ok) {
+      // Reload to pick up server-side snapping
+      const fresh = await fetch(`/api/projects/${id}`).then(r => r.json());
+      setProject(fresh.project);
+      setToast('Classification saved');
+    } else {
+      setToast('Save failed');
+    }
   }
 
   async function saveOverviewField(fieldId, value) {
@@ -584,6 +760,7 @@ export default function ProjectDetail() {
             {/* ── TAB: AI METADATA (editable) ── */}
             {activeTab === 'metadata' && (
               <div className="space-y-4">
+                <TaxonomyEditor project={project} taxItems={taxItems} onSave={saveTaxonomy} />
                 <p className="text-xs" style={{ color: '#6b6456' }}>Click ✕ to remove a tag. Type and press Enter to add. Changes save immediately.</p>
                 {meta.executive_summary && (
                   <Card className="p-4">

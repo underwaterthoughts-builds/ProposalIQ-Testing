@@ -194,10 +194,15 @@ async function handler(req, res) {
       db.prepare(`UPDATE projects SET
         ai_metadata = ?, embedding = ?,
         kqs_recency = ?, kqs_outcome_quality = ?, kqs_specificity = ?, kqs_composite = ?,
+        service_industry = ?, service_sectors = ?, client_industry = ?, client_sectors = ?, taxonomy_source = 'ai',
         indexing_status = 'complete', indexed_at = CURRENT_TIMESTAMP
         WHERE id = ?`).run(
         JSON.stringify(metadata), JSON.stringify(vec),
         kqsRecency, kqsOutcome, kqsSpecificity, kqsComposite,
+        metadata.service_industry || null,
+        JSON.stringify(metadata.service_sectors || []),
+        metadata.client_industry || null,
+        JSON.stringify(metadata.client_sectors || []),
         projectId
       );
 

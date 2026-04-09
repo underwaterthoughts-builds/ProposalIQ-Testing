@@ -118,15 +118,29 @@ async function handler(req, res) {
       const kqsComposite = (kqsRecency + kqsOutcome + kqsSpecificity) / 3;
 
       // ── 5. SAVE ────────────────────────────────────────────────────────────
+      // Don't overwrite a user-edited taxonomy on reindex.
+      const existingSrc = db.prepare('SELECT taxonomy_source FROM projects WHERE id = ?').get(id);
+      const userEdited = existingSrc?.taxonomy_source === 'user';
+      const taxFields = userEdited ? '' :
+        ', service_industry = ?, service_sectors = ?, client_industry = ?, client_sectors = ?, taxonomy_source = \'ai\'';
+      const taxParams = userEdited ? [] : [
+        metadata.service_industry || null,
+        JSON.stringify(metadata.service_sectors || []),
+        metadata.client_industry || null,
+        JSON.stringify(metadata.client_sectors || []),
+      ];
+
       db.prepare(`UPDATE projects SET
         ai_metadata = ?, ${vec ? 'embedding = ?,' : ''}
-        kqs_recency = ?, kqs_outcome_quality = ?, kqs_specificity = ?, kqs_composite = ?,
+        kqs_recency = ?, kqs_outcome_quality = ?, kqs_specificity = ?, kqs_composite = ?
+        ${taxFields},
         indexing_status = 'complete', indexed_at = CURRENT_TIMESTAMP
         WHERE id = ?`).run(
         ...[
           JSON.stringify(metadata),
           ...(vec ? [JSON.stringify(vec)] : []),
           kqsRecency, kqsOutcome, kqsSpecificity, kqsComposite,
+          ...taxParams,
           id,
         ]
       );

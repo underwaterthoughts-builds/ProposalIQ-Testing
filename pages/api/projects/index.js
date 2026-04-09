@@ -38,6 +38,18 @@ async function handler(req, res) {
     }
     if (rating) { sql += ' AND p.user_rating >= ?'; params.push(parseInt(rating)); }
 
+    // Two-axis taxonomy filters (independent — both can be active)
+    const clientIndustry = req.query.client_industry;
+    if (clientIndustry) {
+      sql += ' AND p.client_industry = ?';
+      params.push(clientIndustry);
+    }
+    const serviceIndustry = req.query.service_industry;
+    if (serviceIndustry) {
+      sql += ' AND p.service_industry = ?';
+      params.push(serviceIndustry);
+    }
+
     sql += ' GROUP BY p.id ORDER BY p.created_at DESC';
 
     let projects = db.prepare(sql).all(...params).map(p => {
@@ -48,6 +60,8 @@ async function handler(req, res) {
         ...rest,
         ai_metadata: safe(p.ai_metadata, {}),
         taxonomy: safe(p.taxonomy, {}),
+        service_sectors: safe(p.service_sectors, []),
+        client_sectors: safe(p.client_sectors, []),
         file_types: p.file_types ? p.file_types.split(',') : [],
       };
     });
