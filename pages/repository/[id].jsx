@@ -523,6 +523,10 @@ export default function ProjectDetail() {
               </div>
             )}
 
+            {/* Classification — always visible above the tabs so users can
+                see and edit taxonomy from any tab without hunting */}
+            <TaxonomyEditor project={project} taxItems={taxItems} onSave={saveTaxonomy} />
+
             {/* Tabs */}
             <div className="flex border-b mb-5" style={{ borderColor: '#ddd5c4' }}>
               {tabs.map(t => (
@@ -760,7 +764,6 @@ export default function ProjectDetail() {
             {/* ── TAB: AI METADATA (editable) ── */}
             {activeTab === 'metadata' && (
               <div className="space-y-4">
-                <TaxonomyEditor project={project} taxItems={taxItems} onSave={saveTaxonomy} />
                 <p className="text-xs" style={{ color: '#6b6456' }}>Click ✕ to remove a tag. Type and press Enter to add. Changes save immediately.</p>
                 {meta.executive_summary && (
                   <Card className="p-4">

@@ -182,32 +182,36 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
         <div className="flex flex-wrap gap-1 mb-3">
           {['proposal','rfp','budget'].map(ft=>fileTypes.includes(ft)?<FileChip key={ft} type={ft}/>:<span key={ft} className="text-[10px] font-mono px-1.5 py-0.5 rounded border opacity-30" style={{borderColor:'#ddd5c4'}}>{ft}</span>)}
         </div>
-        {/* Two-axis taxonomy chips: client (gold) + service (teal) */}
-        {(p.client_industry || p.service_industry) ? (
-          <div className="flex flex-wrap gap-1 mb-2">
-            {p.client_industry && (
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border"
-                style={{borderColor:'rgba(184,150,46,.45)',background:'rgba(184,150,46,.08)',color:'#8a6200'}}
-                title="Client industry">
-                {p.client_industry}
-              </span>
-            )}
-            {p.service_industry && (
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full border"
-                style={{borderColor:'rgba(30,74,82,.45)',background:'rgba(30,74,82,.08)',color:'#1e4a52'}}
-                title="Type of work">
-                {p.service_industry}
-              </span>
-            )}
-          </div>
-        ) : (
-          p.indexing_status === 'complete' && (
-            <div className="mb-2">
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border border-dashed"
-                style={{borderColor:'#ddd5c4',color:'#9b8e80'}}>+ Untagged</span>
-            </div>
-          )
-        )}
+        {/* Two-axis taxonomy chips: client (gold) + service (teal).
+            Always rendered so untagged projects are still visible and clickable. */}
+        <div className="flex flex-wrap gap-1.5 mb-2.5">
+          {p.client_industry ? (
+            <span className="text-[11px] font-medium px-2 py-1 rounded-full border"
+              style={{borderColor:'rgba(184,150,46,.55)',background:'rgba(184,150,46,.12)',color:'#8a6200'}}
+              title="Client industry">
+              ◆ {p.client_industry}
+            </span>
+          ) : (
+            <span className="text-[11px] font-mono px-2 py-1 rounded-full border border-dashed"
+              style={{borderColor:'rgba(184,150,46,.45)',color:'#a8862e'}}
+              title="No client industry tagged — open the project to set one">
+              ◆ + client
+            </span>
+          )}
+          {p.service_industry ? (
+            <span className="text-[11px] font-medium px-2 py-1 rounded-full border"
+              style={{borderColor:'rgba(30,74,82,.55)',background:'rgba(30,74,82,.12)',color:'#1e4a52'}}
+              title="Type of work">
+              ◈ {p.service_industry}
+            </span>
+          ) : (
+            <span className="text-[11px] font-mono px-2 py-1 rounded-full border border-dashed"
+              style={{borderColor:'rgba(30,74,82,.45)',color:'#3d6b73'}}
+              title="No service industry tagged — open the project to set one">
+              ◈ + service
+            </span>
+          )}
+        </div>
         {(meta.key_themes||[]).slice(0,3).map(t=><span key={t} className="inline-block text-[10px] font-mono px-1.5 py-0.5 rounded mr-1 mb-1" style={{background:'#f0ebe0',color:'#6b6456'}}>{t}</span>)}
       </div>
       <div className="flex items-center justify-between px-4 py-2.5 border-t" style={{borderColor:'#f0ebe0'}}>
