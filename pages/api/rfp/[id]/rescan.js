@@ -31,7 +31,8 @@ async function handler(req, res) {
   res.status(202).json({ scanId: id, message: 'Re-analysis started' });
 
   // Fire-and-forget. Pipeline writes status='complete' or 'error' on its own.
-  runRfpScanPipeline(id, filePath).catch(e => {
+  const userId = req.user?.id || null;
+  runRfpScanPipeline(id, filePath, userId).catch(e => {
     console.error(`[rescan ${id}] outer catch:`, e.message);
     try { db.prepare("UPDATE rfp_scans SET status='error' WHERE id=?").run(id); } catch {}
   });

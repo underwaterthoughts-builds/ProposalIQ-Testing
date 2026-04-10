@@ -84,7 +84,7 @@ const AddNewInline = memo(function AddNewInline({ field, label, placeholder, sho
 
 // ─── PROJECT CARD ─────────────────────────────────────────────────────────────
 
-const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, onUpdated, selectMode, selected, onToggleSelect }) {
+const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, onUpdated, selectMode, selected, onToggleSelect, inWorkspace, onToggleWorkspace }) {
   const router = useRouter();
   const meta = p.ai_metadata || {};
   const fileTypes = p.file_types || [];
@@ -216,8 +216,22 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
         {(meta.key_themes||[]).slice(0,3).map(t=><span key={t} className="inline-block text-[10px] font-mono px-1.5 py-0.5 rounded mr-1 mb-1" style={{background:'#f0ebe0',color:'#6b6456'}}>{t}</span>)}
       </div>
       <div className="flex items-center justify-between px-4 py-2.5 border-t" style={{borderColor:'#f0ebe0'}}>
-        <div className="text-sm font-mono font-medium" style={{color:'#1e4a52'}}>
-          {formatMoney(p.contract_value, p.currency)}
+        <div className="flex items-center gap-2">
+          <div className="text-sm font-mono font-medium" style={{color:'#1e4a52'}}>
+            {formatMoney(p.contract_value, p.currency)}
+          </div>
+          {onToggleWorkspace && (
+            <button onClick={(e) => { e.stopPropagation(); onToggleWorkspace(); }}
+              className="text-[10px] px-1.5 py-0.5 rounded-full border transition-colors"
+              style={{
+                borderColor: inWorkspace ? '#1e4a52' : '#ddd5c4',
+                background: inWorkspace ? '#1e4a52' : 'transparent',
+                color: inWorkspace ? 'white' : '#9b8e80',
+              }}
+              title={inWorkspace ? 'In your workspace — click to remove' : 'Add to your workspace for RFP scanning'}>
+              {inWorkspace ? '✓ In workspace' : '+ Workspace'}
+            </button>
+          )}
         </div>
         <select value={p.outcome || 'pending'}
           onClick={e => e.stopPropagation()}
@@ -292,6 +306,9 @@ export default function Repository() {
   const [showUpload, setShowUpload] = useState(false);
   const [showBatch, setShowBatch] = useState(false);
   const [toast, setToast] = useState('');
+  // Per-user workspace — which projects to use for RFP Intelligence
+  const [workspaceIds, setWorkspaceIds] = useState(new Set());
+  const [workspaceLoaded, setWorkspaceLoaded] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState({'f-gov':true,'f-health':true});
   const [semanticSearch, setSemanticSearch] = useState(false);
   const [analysisHealth, setAnalysisHealth] = useState(null);
@@ -315,6 +332,11 @@ export default function Repository() {
   useEffect(()=>{
     loadFolders(); loadProjects(true);
     checkAnalysisHealth();
+    // Load workspace selections for this user
+    fetch('/api/workspace').then(r=>r.json()).then(d=>{
+      setWorkspaceIds(new Set(d.project_ids || []));
+      setWorkspaceLoaded(true);
+    }).catch(()=>setWorkspaceLoaded(true));
     fetch('/api/taxonomy').then(r=>r.json()).then(d=>{
       const items = d.items || [];
       setTaxonomy({
@@ -413,6 +435,51 @@ export default function Repository() {
   const handleDeleted = useCallback((id)=>setProjects(prev=>prev.filter(x=>x.id!==id)),[]);
   const handleUpdated = useCallback((id, fields)=>setProjects(prev=>prev.map(x=>x.id===id?{...x,...fields}:x)),[]);
   const handleToast = useCallback((msg)=>setToast(msg),[]);
+
+  // Workspace toggle — add/remove a single project
+  async function toggleWorkspace(projectId) {
+    const inWorkspace = workspaceIds.has(projectId);
+    // Optimistic update
+    setWorkspaceIds(prev => {
+      const next = new Set(prev);
+      if (inWorkspace) next.delete(projectId); else next.add(projectId);
+      return next;
+    });
+    try {
+      await fetch('/api/workspace', {
+        method: inWorkspace ? 'DELETE' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project_ids: [projectId] }),
+      });
+    } catch {
+      // Revert on failure
+      setWorkspaceIds(prev => {
+        const next = new Set(prev);
+        if (inWorkspace) next.add(projectId); else next.delete(projectId);
+        return next;
+      });
+      setToast('Failed to update workspace');
+    }
+  }
+
+  // Bulk add all visible projects to workspace
+  async function addAllVisibleToWorkspace() {
+    const ids = projects.map(p => p.id);
+    setWorkspaceIds(prev => { const next = new Set(prev); ids.forEach(id => next.add(id)); return next; });
+    try {
+      await fetch('/api/workspace', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project_ids: ids }) });
+      setToast(`Added ${ids.length} projects to your workspace`);
+    } catch { setToast('Failed'); }
+  }
+
+  // Clear workspace
+  async function clearWorkspace() {
+    setWorkspaceIds(new Set());
+    try {
+      await fetch('/api/workspace', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clear_all: true }) });
+      setToast('Workspace cleared — RFP scans will use all projects');
+    } catch { setToast('Failed'); }
+  }
 
   async function createFolder() {
     if (!newFolderName.trim()) return;
@@ -658,6 +725,34 @@ export default function Repository() {
               )}
             </div>
             <div className="flex-1 overflow-y-auto p-5">
+              {/* Workspace bar — shown when user has workspace selections */}
+              {workspaceLoaded && workspaceIds.size > 0 && !loading && (
+                <div className="flex items-center gap-3 mb-4 px-3 py-2.5 rounded-lg border"
+                  style={{ background: '#e8f2f4', borderColor: 'rgba(30,74,82,.25)' }}>
+                  <span className="text-xs font-medium" style={{ color: '#1e4a52' }}>
+                    Your workspace: {workspaceIds.size} project{workspaceIds.size !== 1 ? 's' : ''} selected for RFP Intelligence
+                  </span>
+                  <div className="flex-1" />
+                  <button onClick={addAllVisibleToWorkspace}
+                    className="text-[11px] px-2 py-1 rounded border transition-colors hover:bg-white"
+                    style={{ borderColor: 'rgba(30,74,82,.3)', color: '#1e4a52' }}>
+                    + Add all visible
+                  </button>
+                  <button onClick={clearWorkspace}
+                    className="text-[11px] px-2 py-1 rounded border transition-colors hover:bg-white"
+                    style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+                    Clear workspace
+                  </button>
+                </div>
+              )}
+              {workspaceLoaded && workspaceIds.size === 0 && !loading && projects.length > 0 && (
+                <div className="flex items-center gap-3 mb-4 px-3 py-2.5 rounded-lg border border-dashed"
+                  style={{ borderColor: '#ddd5c4', color: '#9b8e80' }}>
+                  <span className="text-xs">
+                    No workspace set — RFP scans will match against all projects. Click "+ Workspace" on any project to curate your scanning set.
+                  </span>
+                </div>
+              )}
               {loading?(
                 <div className="flex items-center gap-2 py-12 justify-center" style={{color:'#6b6456'}}><Spinner/> Loading projects…</div>
               ):projects.length===0?(
@@ -669,7 +764,7 @@ export default function Repository() {
                 </div>
               ):(
                 <div className="grid gap-4" style={{gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))'}}>
-                  {projects.map(p=><ProjectCard key={p.id} project={p} onToast={handleToast} onDeleted={handleDeleted} onUpdated={handleUpdated} selectMode={selectMode} selected={selectedIds.has(p.id)} onToggleSelect={()=>toggleSelect(p.id)}/>)}
+                  {projects.map(p=><ProjectCard key={p.id} project={p} onToast={handleToast} onDeleted={handleDeleted} onUpdated={handleUpdated} selectMode={selectMode} selected={selectedIds.has(p.id)} onToggleSelect={()=>toggleSelect(p.id)} inWorkspace={workspaceIds.has(p.id)} onToggleWorkspace={()=>toggleWorkspace(p.id)}/>)}
                 </div>
               )}
             </div>

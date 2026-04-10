@@ -45,8 +45,10 @@ async function handler(req, res) {
 
   res.status(202).json({ scanId, message: 'Processing started' });
 
-  // Fire-and-forget the pipeline so the user can poll for status
-  runRfpScanPipeline(scanId, newPath).catch(e => {
+  // Fire-and-forget the pipeline so the user can poll for status.
+  // Pass userId so the pipeline can filter by workspace.
+  const userId = req.user?.id || null;
+  runRfpScanPipeline(scanId, newPath, userId).catch(e => {
     console.error(`[scan ${scanId}] outer catch:`, e.message);
     try { db.prepare("UPDATE rfp_scans SET status='error' WHERE id=?").run(scanId); } catch {}
   });
