@@ -1431,6 +1431,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast })
   const [generatingFull, setGeneratingFull] = useState(false);
   const [editingFull, setEditingFull] = useState(false);
   const [fullProposalText, setFullProposalText] = useState('');
+  const [coverageReport, setCoverageReport] = useState(null);
 
   // Load existing drafts on mount
   useEffect(() => {
@@ -1581,7 +1582,8 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast })
       const d = await r.json();
       setFullProposal(d.proposal);
       setFullProposalText(d.proposal);
-      onToast('✓ Full proposal draft ready');
+      setCoverageReport(d.coverage || null);
+      onToast('✓ Full proposal draft ready — style-matched and coverage-checked');
     } catch (e) {
       onToast('Generation failed: ' + e.message);
     }
@@ -1688,6 +1690,88 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast })
             </div>
           )}
         </div>
+
+        {/* Requirements coverage report */}
+        {coverageReport && (
+          <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#ddd5c4' }}>
+            <div className="px-5 py-3 flex items-center justify-between" style={{ background: '#fbf9f4' }}>
+              <div className="flex items-center gap-3">
+                <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#6b6456' }}>Requirements coverage check</div>
+                {coverageReport.coverage_summary && (
+                  <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full"
+                    style={{
+                      background: coverageReport.coverage_summary.coverage_percentage >= 80 ? '#edf3ec' :
+                        coverageReport.coverage_summary.coverage_percentage >= 60 ? '#faf4e2' : '#faeeeb',
+                      color: coverageReport.coverage_summary.coverage_percentage >= 80 ? '#3d5c3a' :
+                        coverageReport.coverage_summary.coverage_percentage >= 60 ? '#8a6200' : '#b04030',
+                    }}>
+                    {coverageReport.coverage_summary.coverage_percentage}% covered
+                  </span>
+                )}
+              </div>
+              {coverageReport.coverage_summary && (
+                <div className="text-[11px] font-mono" style={{ color: '#9b8e80' }}>
+                  {coverageReport.coverage_summary.fully_addressed} addressed · {coverageReport.coverage_summary.partially_addressed} partial · {coverageReport.coverage_summary.missed} missed
+                </div>
+              )}
+            </div>
+
+            {/* Critical gaps warning */}
+            {coverageReport.critical_gaps?.length > 0 && (
+              <div className="px-5 py-3 border-t" style={{ borderColor: '#f0ebe0', background: '#faeeeb' }}>
+                <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#b04030' }}>Critical — MUST requirements not addressed</div>
+                <ul className="space-y-1">
+                  {coverageReport.critical_gaps.map((g, i) => (
+                    <li key={i} className="text-xs flex gap-2" style={{ color: '#7a3023' }}>
+                      <span className="flex-shrink-0">✕</span><span>{g}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Per-requirement checklist */}
+            <div className="px-5 py-3 border-t max-h-80 overflow-y-auto" style={{ borderColor: '#f0ebe0' }}>
+              {(coverageReport.requirements || []).map((r, i) => {
+                const statusIcon = r.status === 'addressed' ? '✓' : r.status === 'partial' ? '◐' : '✕';
+                const statusColor = r.status === 'addressed' ? '#3d5c3a' : r.status === 'partial' ? '#b8962e' : '#b04030';
+                return (
+                  <div key={i} className="flex items-start gap-2 py-1.5 border-b last:border-0 text-xs" style={{ borderColor: '#f8f6f2' }}>
+                    <span className="flex-shrink-0 font-bold mt-0.5" style={{ color: statusColor }}>{statusIcon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[10px] flex-shrink-0" style={{ color: r.priority === 'must' ? '#b04030' : '#6b6456' }}>
+                          [{r.priority?.toUpperCase()}]
+                        </span>
+                        <span className="truncate" style={{ color: '#1a1816' }}>{r.text}</span>
+                      </div>
+                      {r.note && <div className="text-[11px] mt-0.5" style={{ color: '#6b6456' }}>{r.note}</div>}
+                    </div>
+                    {r.where_addressed && (
+                      <span className="text-[10px] font-mono flex-shrink-0" style={{ color: '#9b8e80' }}>
+                        {r.where_addressed}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Improvement suggestions */}
+            {coverageReport.improvement_suggestions?.length > 0 && (
+              <div className="px-5 py-3 border-t" style={{ borderColor: '#f0ebe0', background: '#fbf9f4' }}>
+                <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#1e4a52' }}>Suggestions to improve coverage</div>
+                <ul className="space-y-1">
+                  {coverageReport.improvement_suggestions.map((s, i) => (
+                    <li key={i} className="text-xs flex gap-2" style={{ color: '#1e4a52' }}>
+                      <span className="flex-shrink-0">→</span><span>{s}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }
