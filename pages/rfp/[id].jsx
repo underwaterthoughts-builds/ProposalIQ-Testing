@@ -983,7 +983,10 @@ ${sectionHtml('Winning Language', languageHtml)}
                   )}
                 </div>
               ) : activeTab === 'assembly' ? (
-                <AssemblyTab scan={scan} matches={matches} winStrategy={winStrategy} suggestedApproach={suggestedApproach} onToast={setToast} />
+                <AssemblyTab scan={scan} matches={matches} winStrategy={winStrategy} suggestedApproach={suggestedApproach} onToast={setToast}
+                  onGenerateTemplate={generateTemplate} onExportBriefing={exportBriefing}
+                  generatingTemplate={generatingTemplate} templateDraftMode={templateDraftMode}
+                  setTemplateDraftMode={setTemplateDraftMode} exporting={exporting} />
               ) : (
                 <div className="text-center py-12"><p className="text-sm" style={{ color:'#6b6456' }}>Select a tab above.</p></div>
               )}
@@ -1419,7 +1422,8 @@ function OutcomeCaptureModal({ existing, usageSummary, scanName, onSave, onClose
 const SECTION_STATUSES = ['not started', 'in progress', 'draft ready', 'complete'];
 const STATUS_COLORS = { 'not started':'#ddd5c4', 'in progress':'#b8962e', 'draft ready':'#1e4a52', 'complete':'#3d5c3a' };
 
-function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast }) {
+function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
+  onGenerateTemplate, onExportBriefing, generatingTemplate, templateDraftMode, setTemplateDraftMode, exporting }) {
   const rfpData = scan?.rfp_data || {};
   const storageKey = `piq_assembly_${scan?.id}`;
   // Wave 4 — section drafts state
@@ -1603,7 +1607,26 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast })
                 {rfpData.title || 'Untitled'} for {rfpData.client || 'Unknown'} · Grounded in: {topMatchNames}
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              {onGenerateTemplate && (
+                <div className="flex rounded overflow-hidden border border-white/30">
+                  <button onClick={() => { setTemplateDraftMode(false); onGenerateTemplate(); }} disabled={generatingTemplate}
+                    className="text-xs px-3 py-1.5 text-white/80 hover:text-white">
+                    {generatingTemplate && !templateDraftMode ? 'Building…' : '📄 Template'}
+                  </button>
+                  <div className="w-px bg-white/20" />
+                  <button onClick={() => { setTemplateDraftMode(true); onGenerateTemplate(); }} disabled={generatingTemplate}
+                    className="text-xs px-3 py-1.5 text-white/80 hover:text-white">
+                    {generatingTemplate && templateDraftMode ? 'Writing…' : '✍ Draft'}
+                  </button>
+                </div>
+              )}
+              {onExportBriefing && (
+                <button onClick={onExportBriefing} disabled={exporting}
+                  className="text-xs px-3 py-1.5 rounded text-white/70 hover:text-white border border-white/20">
+                  {exporting ? 'Exporting…' : '↓ Export briefing'}
+                </button>
+              )}
               <button onClick={() => setFullProposal(null)}
                 className="text-xs px-3 py-1.5 rounded text-white/70 hover:text-white border border-white/20">
                 ← Back to sections
@@ -1801,6 +1824,28 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast })
               <span>Writing 8 sections in your winning style — this takes 30–60 seconds…</span>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Quick actions — Template / Draft / Export inline */}
+      {onGenerateTemplate && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[11px] font-mono uppercase tracking-widest" style={{ color: '#9b8e80' }}>Export:</span>
+          <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: '#1e4a52' }}>
+            <button onClick={() => { setTemplateDraftMode(false); onGenerateTemplate(); }} disabled={generatingTemplate}
+              className="text-xs px-3 py-1.5 transition-colors hover:bg-teal-50" style={{ color: '#1e4a52' }}>
+              {generatingTemplate && !templateDraftMode ? <><Spinner size={10} /> Building…</> : '📄 Template (.docx)'}
+            </button>
+            <div className="w-px" style={{ background: '#1e4a52' }} />
+            <button onClick={() => { setTemplateDraftMode(true); onGenerateTemplate(); }} disabled={generatingTemplate}
+              className="text-xs px-3 py-1.5 transition-colors hover:bg-teal-50" style={{ color: '#1e4a52' }}>
+              {generatingTemplate && templateDraftMode ? <><Spinner size={10} /> Writing…</> : '✍ AI Draft (.docx)'}
+            </button>
+          </div>
+          <button onClick={onExportBriefing} disabled={exporting}
+            className="text-xs px-3 py-1.5 rounded border transition-colors hover:bg-gray-50" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+            {exporting ? 'Exporting…' : '↓ Export briefing (.html)'}
+          </button>
         </div>
       )}
 
