@@ -1426,6 +1426,11 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast })
   const [drafts, setDrafts] = useState({});  // section_id → draft object
   const [generating, setGenerating] = useState(null); // section_id currently generating
   const [openDraftId, setOpenDraftId] = useState(null); // section_id whose panel is expanded
+  // Full proposal state
+  const [fullProposal, setFullProposal] = useState(null);
+  const [generatingFull, setGeneratingFull] = useState(false);
+  const [editingFull, setEditingFull] = useState(false);
+  const [fullProposalText, setFullProposalText] = useState('');
 
   // Load existing drafts on mount
   useEffect(() => {
@@ -1559,12 +1564,166 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast })
   const wonMatches = matches.filter(m => m.outcome === 'won').slice(0, 3);
   const topMatchNames = wonMatches.map(m => m.name).join(', ') || 'no matched proposals';
 
+  async function generateFullProposalDoc() {
+    if (scan.status !== 'complete') {
+      onToast('Wait for the full scan to complete before generating a proposal.');
+      return;
+    }
+    setGeneratingFull(true);
+    try {
+      const r = await fetch(`/api/rfp/${scan.id}/generate-proposal`, { method: 'POST' });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        onToast(err.error || 'Proposal generation failed');
+        setGeneratingFull(false);
+        return;
+      }
+      const d = await r.json();
+      setFullProposal(d.proposal);
+      setFullProposalText(d.proposal);
+      onToast('✓ Full proposal draft ready');
+    } catch (e) {
+      onToast('Generation failed: ' + e.message);
+    }
+    setGeneratingFull(false);
+  }
+
+  // If a full proposal exists, show the proposal view
+  if (fullProposal) {
+    return (
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="rounded-xl p-5" style={{ background: '#1e4a52' }}>
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="text-white font-semibold text-base mb-1">Draft Proposal</div>
+              <div className="text-white/60 text-xs">
+                {rfpData.title || 'Untitled'} for {rfpData.client || 'Unknown'} · Grounded in: {topMatchNames}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setFullProposal(null)}
+                className="text-xs px-3 py-1.5 rounded text-white/70 hover:text-white border border-white/20">
+                ← Back to sections
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Guidance */}
+        <div className="rounded-lg p-3 text-xs flex items-start gap-2"
+          style={{ background: '#faf4e2', border: '1px solid rgba(184,150,46,.3)', color: '#7a5800' }}>
+          <span className="flex-shrink-0">✦</span>
+          <span>
+            This is a first draft grounded in your intelligence. <strong>[#N]</strong> markers reference your matched proposals.
+            <strong> [EVIDENCE NEEDED]</strong> markers show where you need to fill in specific data.
+            Edit directly below, then copy into your proposal template.
+          </span>
+        </div>
+
+        {/* Action bar */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button onClick={() => setEditingFull(!editingFull)}
+            className="text-xs px-3 py-1.5 rounded border" style={{ borderColor: '#ddd5c4', color: '#1e4a52' }}>
+            {editingFull ? '◉ Preview' : '✎ Edit'}
+          </button>
+          <button onClick={() => {
+            navigator.clipboard.writeText(fullProposalText);
+            onToast('Proposal copied to clipboard');
+          }}
+            className="text-xs px-3 py-1.5 rounded border" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+            ⎘ Copy to clipboard
+          </button>
+          <button onClick={() => {
+            const blob = new Blob([fullProposalText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${(rfpData.title || scan.name || 'proposal').replace(/[^a-z0-9]/gi, '_')}_draft.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            onToast('Draft downloaded');
+          }}
+            className="text-xs px-3 py-1.5 rounded border" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+            ↓ Download .txt
+          </button>
+          <button onClick={generateFullProposalDoc} disabled={generatingFull}
+            className="text-xs px-3 py-1.5 rounded border" style={{ borderColor: '#ddd5c4', color: '#1e4a52' }}>
+            {generatingFull ? 'Regenerating…' : '⟳ Regenerate'}
+          </button>
+          <span className="text-[10px] font-mono ml-auto" style={{ color: '#9b8e80' }}>
+            {fullProposalText.split(/\s+/).length.toLocaleString()} words
+          </span>
+        </div>
+
+        {/* Document body */}
+        <div className="rounded-xl border overflow-hidden" style={{ background: 'white', borderColor: '#ddd5c4' }}>
+          {editingFull ? (
+            <textarea value={fullProposalText} onChange={e => setFullProposalText(e.target.value)}
+              rows={Math.max(30, fullProposalText.split('\n').length + 5)}
+              className="w-full text-sm leading-relaxed p-8 outline-none resize-y font-serif"
+              style={{ color: '#1a1816', minHeight: '80vh' }} />
+          ) : (
+            <div className="p-8 prose prose-sm max-w-none font-serif" style={{ color: '#1a1816' }}>
+              {fullProposalText.split('\n').map((line, i) => {
+                if (!line.trim()) return <br key={i} />;
+                if (line.startsWith('## ')) {
+                  return <h2 key={i} className="text-lg font-serif font-semibold mt-8 mb-3 pb-2 border-b" style={{ color: '#1e4a52', borderColor: '#f0ebe0' }}>{line.replace(/^## /, '')}</h2>;
+                }
+                if (line.startsWith('### ')) {
+                  return <h3 key={i} className="text-base font-serif font-semibold mt-5 mb-2" style={{ color: '#3d5c3a' }}>{line.replace(/^### /, '')}</h3>;
+                }
+                // Highlight [#N] references and [EVIDENCE NEEDED] markers
+                const parts = line.split(/(\[#\d+\]|\[EVIDENCE NEEDED[^\]]*\])/g);
+                return (
+                  <p key={i} className="text-sm leading-relaxed mb-3">
+                    {parts.map((part, j) => {
+                      if (/^\[#\d+\]$/.test(part)) return <span key={j} className="font-mono text-[11px] px-1 rounded" style={{ background: 'rgba(30,74,82,.12)', color: '#1e4a52' }}>{part}</span>;
+                      if (/^\[EVIDENCE NEEDED/.test(part)) return <span key={j} className="font-mono text-[11px] px-1 rounded" style={{ background: 'rgba(184,150,46,.18)', color: '#8a6200' }}>{part}</span>;
+                      return <span key={j}>{part}</span>;
+                    })}
+                  </p>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
+      {/* Generate full proposal CTA */}
+      {scan.status === 'complete' && (
+        <div className="rounded-xl overflow-hidden border-2" style={{ borderColor: '#b8962e' }}>
+          <div className="p-5 flex items-start gap-4" style={{ background: 'linear-gradient(135deg, #1e4a52 0%, #2d6b78 100%)' }}>
+            <div className="flex-1">
+              <div className="text-white font-semibold text-base mb-1">Generate full proposal</div>
+              <div className="text-white/70 text-sm leading-relaxed">
+                Build a complete, submission-ready proposal using everything from this scan — matched proposals, win strategy,
+                winning language, gap analysis, team, and your organisation profile. Written in your winning style.
+              </div>
+            </div>
+            <button onClick={generateFullProposalDoc} disabled={generatingFull}
+              className="flex-shrink-0 text-sm px-5 py-3 rounded-lg font-semibold transition-all disabled:opacity-60"
+              style={{ background: '#b8962e', color: 'white' }}>
+              {generatingFull ? <><Spinner size={14} /> Writing proposal…</> : '✍ Generate proposal'}
+            </button>
+          </div>
+          {generatingFull && (
+            <div className="px-5 py-3 text-xs flex items-center gap-2" style={{ background: '#faf4e2', color: '#7a5800' }}>
+              <Spinner size={12} />
+              <span>Writing 8 sections in your winning style — this takes 30–60 seconds…</span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Progress header */}
       <div className="rounded-xl p-4 flex items-center gap-4" style={{ background:'#1e4a52' }}>
         <div className="flex-1">
-          <div className="text-white font-semibold text-sm mb-1">Proposal Assembly</div>
+          <div className="text-white font-semibold text-sm mb-1">Section-by-section assembly</div>
           <div className="text-white/60 text-xs">{complete} of {sections.length} sections complete · Grounded in: {topMatchNames}</div>
         </div>
         <div className="text-right flex-shrink-0">
