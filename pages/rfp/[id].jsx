@@ -1648,9 +1648,9 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
           style={{ background: '#faf4e2', border: '1px solid rgba(184,150,46,.3)', color: '#7a5800' }}>
           <span className="flex-shrink-0">✦</span>
           <span>
-            This is a first draft grounded in your intelligence. <strong>[#N]</strong> markers reference your matched proposals.
-            <strong> [EVIDENCE NEEDED]</strong> markers show where you need to fill in specific data.
-            Edit directly below, then copy into your proposal template.
+            This is a first draft grounded in your intelligence. <strong>(Proposal: "Name")</strong> citations
+            reference your matched past work. <strong>[EVIDENCE NEEDED]</strong> markers show where you
+            need to fill in specific data. Copy into your proposal template and edit.
           </span>
         </div>
 
@@ -1697,22 +1697,47 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
               className="w-full text-sm leading-relaxed p-8 outline-none resize-y font-serif"
               style={{ color: '#1a1816', minHeight: '80vh' }} />
           ) : (
-            <div className="p-8 prose prose-sm max-w-none font-serif" style={{ color: '#1a1816' }}>
-              {fullProposalText.split('\n').map((line, i) => {
+            <div className="p-8 max-w-none font-serif" style={{ color: '#1a1816' }}>
+              {fullProposalText.split('\n').map((line, i, arr) => {
                 if (!line.trim()) return <br key={i} />;
-                if (line.startsWith('## ')) {
-                  return <h2 key={i} className="text-lg font-serif font-semibold mt-8 mb-3 pb-2 border-b" style={{ color: '#1e4a52', borderColor: '#f0ebe0' }}>{line.replace(/^## /, '')}</h2>;
+
+                // Detect section titles: standalone line that is short
+                // (<80 chars), doesn't end with a period, and is followed
+                // by a blank line or is at the start. Also catch ## / ###
+                // if the model still uses them, and strip the markers.
+                const cleanLine = line.replace(/^#{1,4}\s+/, '').replace(/\*\*([^*]+)\*\*/g, '$1');
+                const nextLine = arr[i + 1] || '';
+                const prevLine = arr[i - 1] || '';
+                const looksLikeTitle = (
+                  cleanLine.length < 80 &&
+                  !cleanLine.endsWith('.') &&
+                  !cleanLine.endsWith(',') &&
+                  (!nextLine.trim() || prevLine.trim() === '') &&
+                  cleanLine.length > 3
+                ) || /^#{1,4}\s+/.test(line);
+
+                if (looksLikeTitle && cleanLine.length < 80) {
+                  return (
+                    <div key={i} className="mt-8 mb-3 pb-2 border-b" style={{ borderColor: '#f0ebe0' }}>
+                      <h2 className="text-base font-serif font-bold" style={{ color: '#1e4a52' }}>{cleanLine}</h2>
+                    </div>
+                  );
                 }
-                if (line.startsWith('### ')) {
-                  return <h3 key={i} className="text-base font-serif font-semibold mt-5 mb-2" style={{ color: '#3d5c3a' }}>{line.replace(/^### /, '')}</h3>;
-                }
-                // Highlight [#N] references and [EVIDENCE NEEDED] markers
-                const parts = line.split(/(\[#\d+\]|\[EVIDENCE NEEDED[^\]]*\])/g);
+
+                // Normal paragraph — highlight (Proposal: "...") and [EVIDENCE NEEDED] markers
+                const parts = cleanLine.split(/(\(Proposal: "[^"]*"\)|\[EVIDENCE NEEDED[^\]]*\]|\[#\d+\])/g);
                 return (
                   <p key={i} className="text-sm leading-relaxed mb-3">
                     {parts.map((part, j) => {
-                      if (/^\[#\d+\]$/.test(part)) return <span key={j} className="font-mono text-[11px] px-1 rounded" style={{ background: 'rgba(30,74,82,.12)', color: '#1e4a52' }}>{part}</span>;
-                      if (/^\[EVIDENCE NEEDED/.test(part)) return <span key={j} className="font-mono text-[11px] px-1 rounded" style={{ background: 'rgba(184,150,46,.18)', color: '#8a6200' }}>{part}</span>;
+                      if (/^\(Proposal: "/.test(part)) {
+                        return <span key={j} className="text-[11px] italic" style={{ color: '#1e4a52' }}>{part}</span>;
+                      }
+                      if (/^\[#\d+\]$/.test(part)) {
+                        return <span key={j} className="text-[11px] italic" style={{ color: '#1e4a52' }}>{part}</span>;
+                      }
+                      if (/^\[EVIDENCE NEEDED/.test(part)) {
+                        return <span key={j} className="text-[11px] px-1 rounded" style={{ background: 'rgba(184,150,46,.18)', color: '#8a6200' }}>{part}</span>;
+                      }
                       return <span key={j}>{part}</span>;
                     })}
                   </p>
