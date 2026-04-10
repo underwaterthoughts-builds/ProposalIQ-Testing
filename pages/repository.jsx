@@ -279,6 +279,11 @@ export default function Repository() {
   const [editingFolderId, setEditingFolderId] = useState(null);
   const [editingFolderName, setEditingFolderName] = useState('');
 
+  // Session-scoped retry counter for auto-retrying failed analyses.
+  // In-memory only — reloads reset the count, so a persistently broken
+  // analysis won't loop forever.
+  const retryTracker = useRef({});
+
   useEffect(()=>{
     loadFolders(); loadProjects(true);
     checkAnalysisHealth();
@@ -294,6 +299,38 @@ export default function Repository() {
       });
     }).catch(()=>{});
   },[]);
+
+  // Auto-retry logic for failed analyses.
+  // Scans the current projects list for any in 'error' state and triggers
+  // /reindex for them with a stagger, up to 3 tries per project per session.
+  // Gets re-evaluated each time projects reload.
+  useEffect(() => {
+    if (!projects.length) return;
+    const failed = projects.filter(p =>
+      p.indexing_status === 'error' &&
+      (retryTracker.current[p.id] || 0) < 3
+    );
+    if (!failed.length) return;
+
+    let cancelled = false;
+    (async () => {
+      for (const p of failed) {
+        if (cancelled) break;
+        const attempt = (retryTracker.current[p.id] || 0) + 1;
+        retryTracker.current[p.id] = attempt;
+        console.log(`[auto-retry] ${p.id} attempt ${attempt}/3`);
+        try {
+          await fetch(`/api/projects/${p.id}/reindex`, { method: 'POST' });
+        } catch {}
+        // Stagger retries so they don't all hit the API at once
+        await new Promise(r => setTimeout(r, 4000));
+      }
+      // After the retry batch, reload projects to pick up the new statuses
+      if (!cancelled) setTimeout(() => loadProjects(), 5000);
+    })();
+
+    return () => { cancelled = true; };
+  }, [projects.length]);
 
   async function checkAnalysisHealth() {
     try {
@@ -943,6 +980,13 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
   const [folders] = useState(initialFolders);
   const leafFolders = folders.filter(fl=>!folders.find(p=>p.parent_id===fl.id));
 
+  // Delay between sequential AI-backed calls (prescan, upload) so we don't
+  // hammer the Gemini/OpenAI API rate limits in rapid succession. 3 seconds
+  // empirically clears the "too many concurrent" failure mode we were seeing
+  // on batch uploads of 5+ files without adding noticeable total time.
+  const STAGGER_MS = 3000;
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
   function handleFileSelect(e) {
     const selected = Array.from(e.target.files);
     setQueue(selected.map(f=>({
@@ -955,6 +999,9 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
   async function scanAll() {
     setUploading(true);
     for(let i=0;i<queue.length;i++){
+      // Stagger: wait before firing each call (except the first) so rapid
+      // successive AI calls don't hit rate limits.
+      if (i > 0) await sleep(STAGGER_MS);
       setQueue(prev=>prev.map((q,idx)=>idx===i?{...q,status:'scanning'}:q));
       try{
         const fd=new FormData(); fd.append('proposal',queue[i].file);
@@ -982,8 +1029,16 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
 
   async function uploadAll() {
     setUploading(true);
+    // Track how many non-done items we've already kicked off so the FIRST
+    // one doesn't wait (only subsequent ones stagger).
+    let fired = 0;
     for(let i=0;i<queue.length;i++){
       const item=queue[i]; if(item.status==='done') continue;
+      // Stagger: wait before firing each call (except the first eligible one)
+      // so the server doesn't start N concurrent background analyses and
+      // hit Gemini/OpenAI rate limits.
+      if (fired > 0) await sleep(STAGGER_MS);
+      fired++;
       setQueue(prev=>prev.map((q,idx)=>idx===i?{...q,status:'uploading'}:q));
       try{
         const fd=new FormData();

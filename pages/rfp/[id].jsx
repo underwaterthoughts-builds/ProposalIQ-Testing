@@ -2010,21 +2010,26 @@ function TieredMatches({ matches, expandedMatches, setExpandedMatches, suppress,
         </div>
       )}
 
-      {/* Direct-fit groupings — always expanded */}
+      {/* Direct-fit groupings — always expanded.
+          Ordered: tier 1 first, then tier 3 (same type of work), then
+          tier 2 (same sector). This puts the "same work" matches higher
+          because a same-work-different-sector proposal is usually a
+          better transferable reference than a same-sector-different-work
+          one, from a bid writer's perspective. */}
       {renderGroup(
         '◆ Direct fit · same sector and same type of work',
         'Strongest matches — same client industry and same service line as this RFP.',
         tier1, '#3d5c3a'
       )}
       {renderGroup(
-        '◆ Same sector · different type of work',
-        'Same client industry but a different service line.',
-        tier2, '#8a6200'
-      )}
-      {renderGroup(
         '◈ Same type of work · different sector',
         'Same service line, but the client was in a different industry.',
         tier3, '#1e4a52'
+      )}
+      {renderGroup(
+        '◆ Same sector · different type of work',
+        'Same client industry but a different service line.',
+        tier2, '#8a6200'
       )}
       {renderGroup(
         '◌ Untagged proposals',
@@ -2135,6 +2140,20 @@ function MatchCard({ match: m, expanded, onToggle, onSuppress, onToast, onLog })
           <div className="flex flex-wrap gap-1 mb-2">
             {(m.match_reasons||[]).slice(0,4).map(t => <span key={t} className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background:'#e8f2f4', color:'#1e4a52' }}>{t}</span>)}
           </div>
+          {/* Sanity check warning — shown when the AI gatekeeper flagged
+              the match with a specific caveat. Visible by default so the
+              writer sees the heads-up before they spend time on it. */}
+          {m.sanity_warning && (
+            <div className="rounded px-2 py-1.5 mb-2 text-[11px] flex items-start gap-1.5"
+              style={{
+                background: m.sanity_demoted ? 'rgba(176,64,48,.06)' : 'rgba(184,150,46,.10)',
+                border: `1px solid ${m.sanity_demoted ? 'rgba(176,64,48,.2)' : 'rgba(184,150,46,.3)'}`,
+                color: m.sanity_demoted ? '#7a3023' : '#7a5800',
+              }}>
+              <span className="flex-shrink-0">⚠</span>
+              <span className="flex-1"><strong>{m.sanity_demoted ? 'Demoted by AI sanity check:' : 'AI flag:'}</strong> {m.sanity_warning}</span>
+            </div>
+          )}
           <div className="flex items-center gap-3">
             <Stars rating={m.user_rating} />
             {wq?.overall_score > 0 && <span className="text-[10px] font-mono" style={{ color:wq.overall_score>=75?'#3d5c3a':wq.overall_score>=55?'#b8962e':'#b04030' }}>✍ {wq.overall_score}/100</span>}
