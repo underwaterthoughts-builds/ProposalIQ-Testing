@@ -209,12 +209,6 @@ export default function Team() {
       <Layout title="Team Setup" subtitle="Specialists, rates and CV matching" user={user}
         actions={
           <div className="flex gap-2">
-            <label className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12.5px] font-medium rounded-md border border-[#ddd5c4] hover:bg-cream cursor-pointer transition-all">
-              <input type="file" accept=".xlsx,.xls,.csv,.docx,.doc,.txt" className="hidden"
-                ref={spreadsheetRef}
-                onChange={handleSpreadsheetSelect} />
-              {importLoading ? <><Spinner size={12} /> Reading…</> : '⊞ Import File'}
-            </label>
             {selectMode ? (
               <>
                 <label className="flex items-center gap-2 text-xs cursor-pointer">
@@ -234,7 +228,7 @@ export default function Team() {
                   <input type="file" accept=".xlsx,.xls,.csv,.docx,.doc,.txt" className="hidden"
                     ref={spreadsheetRef}
                     onChange={handleSpreadsheetSelect} />
-                  {importLoading ? <><Spinner size={12} /> Reading…</> : '⊞ Import File'}
+                  {importLoading ? <><Spinner size={12} /> Reading…</> : '⊞ Import team from spreadsheet'}
                 </label>
                 {members.length > 0 && (
                   <button onClick={() => setSelectMode(true)}
@@ -618,6 +612,7 @@ function MemberModal({ member: m, onClose, onSaved, onToast }) {
   const [saving, setSaving] = useState(false);
   const [uploadingCv, setUploadingCv] = useState(false);
   const [cvResult, setCvResult] = useState(m?.cv_extracted || null);
+  const [pendingCvFile, setPendingCvFile] = useState(null); // CV queued for upload on save
   const [error, setError] = useState('');
   const cvRef = useRef();
   const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
@@ -631,14 +626,26 @@ function MemberModal({ member: m, onClose, onSaved, onToast }) {
     }
   }
 
-  async function uploadCv(file) {
-    if (!m?.id) { onToast('Save the member first, then upload CV'); return; }
+  // Upload CV to an existing member (edit mode or after initial save)
+  async function uploadCvToMember(memberId, file) {
     setUploadingCv(true);
     const fd = new FormData(); fd.append('cv', file);
-    const r = await fetch(`/api/team/${m.id}`, { method: 'PATCH', body: fd });
+    const r = await fetch(`/api/team/${memberId}`, { method: 'PATCH', body: fd });
     if (r.ok) { const d = await r.json(); setCvResult(d.extracted); onToast('CV uploaded and analysed'); }
     else onToast('CV upload failed');
     setUploadingCv(false);
+  }
+
+  // Handle CV file selection — if editing existing member, upload immediately.
+  // If creating new member, queue the file to upload after save.
+  function handleCvSelect(file) {
+    if (!file) return;
+    if (m?.id) {
+      uploadCvToMember(m.id, file);
+    } else {
+      setPendingCvFile(file);
+      onToast('CV queued — will upload when you save the member');
+    }
   }
 
   async function save() {
@@ -649,9 +656,25 @@ function MemberModal({ member: m, onClose, onSaved, onToast }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
     });
-    setSaving(false);
-    if (r.ok) onSaved();
-    else { const d = await r.json(); setError(d.error || 'Save failed'); }
+    if (r.ok) {
+      // If we have a pending CV file and this was a new member creation,
+      // upload the CV now that we have the member ID.
+      if (pendingCvFile && !m) {
+        try {
+          const d = await r.json();
+          const newId = d.id || d.member?.id;
+          if (newId) {
+            await uploadCvToMember(newId, pendingCvFile);
+          }
+        } catch {}
+      }
+      setSaving(false);
+      onSaved();
+    } else {
+      const d = await r.json();
+      setError(d.error || 'Save failed');
+      setSaving(false);
+    }
   }
 
   return (
@@ -690,8 +713,8 @@ function MemberModal({ member: m, onClose, onSaved, onToast }) {
           <Textarea label="Background / Bio" rows={2} value={form.bio} onChange={e => f('bio', e.target.value)} />
           <div>
             <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{ color: '#6b6456' }}>CV / Bio Document</label>
-            <input type="file" ref={cvRef} className="hidden" accept=".pdf,.docx,.doc,.txt" onChange={e => { if (e.target.files[0]) uploadCv(e.target.files[0]); }} />
-            <div className={`rounded-lg p-3 border ${cvResult ? 'border-teal/30' : 'border-[#ddd5c4]'}`} style={{ background: '#f8f6f2' }}>
+            <input type="file" ref={cvRef} className="hidden" accept=".pdf,.docx,.doc,.txt" onChange={e => { if (e.target.files[0]) handleCvSelect(e.target.files[0]); }} />
+            <div className={`rounded-lg p-3 border ${cvResult || pendingCvFile ? 'border-teal/30' : 'border-[#ddd5c4]'}`} style={{ background: '#f8f6f2' }}>
               {uploadingCv ? (
                 <div className="flex items-center gap-2 text-sm"><Spinner size={14} /> Analysing CV…</div>
               ) : cvResult && Object.keys(cvResult).length > 0 ? (
@@ -702,13 +725,21 @@ function MemberModal({ member: m, onClose, onSaved, onToast }) {
                   </div>
                   {cvResult.career_summary && <p className="text-xs mb-1" style={{ color: '#6b6456' }}>{cvResult.career_summary}</p>}
                 </div>
+              ) : pendingCvFile ? (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs font-semibold" style={{ color: '#1e4a52' }}>◉ {pendingCvFile.name}</div>
+                    <div className="text-[10px]" style={{ color: '#6b6456' }}>Will be uploaded and analysed when you save</div>
+                  </div>
+                  <button type="button" onClick={() => { setPendingCvFile(null); }} className="text-[10px]" style={{ color: '#6b6456' }}>Remove</button>
+                </div>
               ) : (
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-xs font-medium mb-0.5">Upload CV or bio</div>
-                    <div className="text-[10px]" style={{ color: '#6b6456' }}>{!m?.id ? 'Save member first, then upload CV' : 'PDF or DOCX · skills extracted automatically'}</div>
+                    <div className="text-[10px]" style={{ color: '#6b6456' }}>PDF or DOCX · skills extracted automatically</div>
                   </div>
-                  {m?.id && <Btn variant="ghost" size="sm" onClick={() => cvRef.current?.click()}>Browse</Btn>}
+                  <Btn variant="ghost" size="sm" onClick={() => cvRef.current?.click()}>Browse</Btn>
                 </div>
               )}
             </div>
