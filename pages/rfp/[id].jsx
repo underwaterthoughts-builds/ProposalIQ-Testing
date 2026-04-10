@@ -462,14 +462,22 @@ ${sectionHtml('Winning Language', languageHtml)}
         <div className="flex h-full overflow-hidden">
           {/* Main */}
           <div className="flex-1 flex flex-col overflow-hidden md:border-r" style={{ borderColor:'#ddd5c4' }}>
-            {scan.status === 'processing' && (
-              <div className="flex items-center gap-3 px-5 py-3 text-sm border-b" style={{ background:'#faf4e2', borderColor:'rgba(184,150,46,.3)', color:'#7a5800' }}>
-                <Spinner size={14}/><span>Fast pass running — verdict in ~30s, full analysis in ~90s…</span>
-              </div>
-            )}
-            {scan.status === 'fast_ready' && (
-              <div className="flex items-center gap-3 px-5 py-3 text-sm border-b" style={{ background:'#e8f2f4', borderColor:'rgba(30,74,82,.25)', color:'#1e4a52' }}>
-                <Spinner size={14}/><span>Verdict ready — deep analysis (gaps, win strategy, winning language, news, approach) running in background…</span>
+            {(scan.status === 'processing' || scan.status === 'fast_ready') && (
+              <div className="flex items-center gap-3 px-5 py-3 text-sm border-b"
+                style={{
+                  background: scan.status === 'fast_ready' ? '#e8f2f4' : '#faf4e2',
+                  borderColor: scan.status === 'fast_ready' ? 'rgba(30,74,82,.25)' : 'rgba(184,150,46,.3)',
+                  color: scan.status === 'fast_ready' ? '#1e4a52' : '#7a5800',
+                }}>
+                <Spinner size={14}/>
+                <span className="flex-1">
+                  {scan.status_detail || (scan.status === 'fast_ready'
+                    ? 'Verdict ready — deep analysis running…'
+                    : 'Starting intelligence pipeline…')}
+                </span>
+                <span className="text-[10px] font-mono opacity-60 flex-shrink-0">
+                  {scan.status === 'fast_ready' ? 'deep pass' : 'fast pass'}
+                </span>
               </div>
             )}
             {/* Wave 3 — outcome capture banner. Shown once scan is complete
