@@ -84,7 +84,7 @@ const AddNewInline = memo(function AddNewInline({ field, label, placeholder, sho
 
 // ─── PROJECT CARD ─────────────────────────────────────────────────────────────
 
-const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, selectMode, selected, onToggleSelect }) {
+const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, onUpdated, selectMode, selected, onToggleSelect }) {
   const router = useRouter();
   const meta = p.ai_metadata || {};
   const fileTypes = p.file_types || [];
@@ -219,7 +219,35 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
         <div className="text-sm font-mono font-medium" style={{color:'#1e4a52'}}>
           {formatMoney(p.contract_value, p.currency)}
         </div>
-        <OutcomeLabel outcome={p.outcome}/>
+        <select value={p.outcome || 'pending'}
+          onClick={e => e.stopPropagation()}
+          onChange={async (e) => {
+            e.stopPropagation();
+            const newOutcome = e.target.value;
+            try {
+              const r = await fetch(`/api/projects/${p.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ outcome: newOutcome }),
+              });
+              if (r.ok) {
+                if (onUpdated) onUpdated(p.id, { outcome: newOutcome });
+                onToast(`Marked as ${newOutcome}`);
+              } else onToast('Update failed');
+            } catch { onToast('Update failed'); }
+          }}
+          className="text-[11px] font-medium px-2 py-1 rounded-full border-0 outline-none cursor-pointer appearance-none text-center"
+          style={{
+            background: p.outcome === 'won' ? '#edf3ec' : p.outcome === 'lost' ? '#faeeeb' : p.outcome === 'withdrawn' ? '#f0ebe0' : '#faf4e2',
+            color: p.outcome === 'won' ? '#3d5c3a' : p.outcome === 'lost' ? '#b04030' : p.outcome === 'withdrawn' ? '#6b6456' : '#8a6200',
+            minWidth: 80,
+          }}>
+          <option value="pending">Pending</option>
+          <option value="active">Active</option>
+          <option value="won">Won</option>
+          <option value="lost">Lost</option>
+          <option value="withdrawn">Withdrawn</option>
+        </select>
       </div>
     </Card>
   );
@@ -383,6 +411,7 @@ export default function Repository() {
   const rootFolders = folders.filter(f=>!f.parent_id);
   const childFolders = (pid)=>folders.filter(f=>f.parent_id===pid);
   const handleDeleted = useCallback((id)=>setProjects(prev=>prev.filter(x=>x.id!==id)),[]);
+  const handleUpdated = useCallback((id, fields)=>setProjects(prev=>prev.map(x=>x.id===id?{...x,...fields}:x)),[]);
   const handleToast = useCallback((msg)=>setToast(msg),[]);
 
   async function createFolder() {
@@ -640,7 +669,7 @@ export default function Repository() {
                 </div>
               ):(
                 <div className="grid gap-4" style={{gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))'}}>
-                  {projects.map(p=><ProjectCard key={p.id} project={p} onToast={handleToast} onDeleted={handleDeleted} selectMode={selectMode} selected={selectedIds.has(p.id)} onToggleSelect={()=>toggleSelect(p.id)}/>)}
+                  {projects.map(p=><ProjectCard key={p.id} project={p} onToast={handleToast} onDeleted={handleDeleted} onUpdated={handleUpdated} selectMode={selectMode} selected={selectedIds.has(p.id)} onToggleSelect={()=>toggleSelect(p.id)}/>)}
                 </div>
               )}
             </div>
