@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -8,10 +8,11 @@ import QuickView from '../../components/QuickView';
 import { useMode } from '../../lib/useMode';
 import { useUser } from '../../lib/useUser';
 import { formatMoney, currencySymbol } from '../../lib/format';
+import { DebouncedInput, DebouncedTextarea, DebouncedSearch } from '../../lib/useDebounce';
 
 const PRIORITY_COLOR = { high:'#b04030', med:'#b8962e', low:'#2d6b78' };
 
-function CheckpointBanner({ label, approved, onApprove, saving, children }) {
+const CheckpointBanner = memo(function CheckpointBanner({ label, approved, onApprove, saving, children }) {
   if (approved) return (
     <div className="flex items-center gap-2 px-4 py-2.5 mb-4 rounded-xl text-sm" style={{ background:'#edf3ec', border:'1px solid rgba(61,92,58,.2)' }}>
       <span style={{ color:'#3d5c3a' }}>✓</span>
@@ -36,7 +37,7 @@ function CheckpointBanner({ label, approved, onApprove, saving, children }) {
       {children && <div className="border-t px-4 py-3" style={{ borderColor:'rgba(184,150,46,.2)' }}>{children}</div>}
     </div>
   );
-}
+});
 
 export default function RFPResults() {
   const router = useRouter();
@@ -1113,7 +1114,7 @@ ${sectionHtml('Winning Language', languageHtml)}
 // these to the actual proposals from the matches array via index. We
 // preserve the markers in the editable text rather than rewriting them
 // inline so the writer always sees what was cited.
-function SectionDraftPanel({ draft, matches, winningLanguage, onUpdateText, onAccept, onRegenerate, onDiscard, onClose, regenerating }) {
+const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winningLanguage, onUpdateText, onAccept, onRegenerate, onDiscard, onClose, regenerating }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(draft.draft_text || '');
   const [saving, setSaving] = useState(false);
@@ -1188,7 +1189,7 @@ function SectionDraftPanel({ draft, matches, winningLanguage, onUpdateText, onAc
         {/* Draft body */}
         <div className="rounded-lg p-4 mb-3" style={{ background: 'white', border: '1px solid #ddd5c4' }}>
           {editing ? (
-            <textarea value={text} onChange={e => setText(e.target.value)}
+            <DebouncedTextarea value={text} onCommit={setText} delay={400}
               rows={Math.max(8, text.split('\n').length + 2)}
               className="w-full text-sm leading-relaxed outline-none resize-y font-serif"
               style={{ color: '#1a1816' }} />
@@ -1288,14 +1289,14 @@ function SectionDraftPanel({ draft, matches, winningLanguage, onUpdateText, onAc
       </div>
     </div>
   );
-}
+});
 
 // ── Outcome Capture Modal — Wave 3 closed feedback loop ───────────────────
 // Active capture form for the bid outcome. Records what happened with the
 // bid, whether ProposalIQ contributed materially, and free-text on what was
 // useful / what was missing. Feeds into lib/feedback.js to bias future
 // ranking toward proposals that have actually been used in winning bids.
-function OutcomeCaptureModal({ existing, usageSummary, scanName, onSave, onClose }) {
+const OutcomeCaptureModal = memo(function OutcomeCaptureModal({ existing, usageSummary, scanName, onSave, onClose }) {
   const [outcome, setOutcomeVal] = useState(existing?.outcome || 'pending');
   const [submitted, setSubmitted] = useState(existing?.submitted ? true : false);
   const [piqUsed, setPiqUsed] = useState(existing?.piq_used_materially ? true : false);
@@ -1392,21 +1393,21 @@ function OutcomeCaptureModal({ existing, usageSummary, scanName, onSave, onClose
           {/* Free text */}
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>What was most useful?</label>
-            <textarea value={mostUseful} onChange={e => setMostUseful(e.target.value)}
+            <DebouncedTextarea value={mostUseful} onCommit={setMostUseful} delay={300}
               rows={2} placeholder="e.g. The matched proposals from the HMRC contract, the gap analysis flagging DSPT compliance, the win strategy opening narrative…"
               className="w-full text-sm px-3 py-2 rounded-lg border outline-none resize-y"
               style={{ borderColor: '#ddd5c4' }} />
           </div>
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>What was missing or wrong?</label>
-            <textarea value={whatMissing} onChange={e => setWhatMissing(e.target.value)}
+            <DebouncedTextarea value={whatMissing} onCommit={setWhatMissing} delay={300}
               rows={2} placeholder="e.g. Should have flagged the social value requirement, off-sector matches in cross-sector list, win strategy too generic…"
               className="w-full text-sm px-3 py-2 rounded-lg border outline-none resize-y"
               style={{ borderColor: '#ddd5c4' }} />
           </div>
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>Client feedback (optional)</label>
-            <textarea value={clientFeedback} onChange={e => setClientFeedback(e.target.value)}
+            <DebouncedTextarea value={clientFeedback} onCommit={setClientFeedback} delay={300}
               rows={2} placeholder="e.g. Strong on technical, weak on commercials. They noted the 47-trust scale claim specifically."
               className="w-full text-sm px-3 py-2 rounded-lg border outline-none resize-y"
               style={{ borderColor: '#ddd5c4' }} />
@@ -1424,7 +1425,7 @@ function OutcomeCaptureModal({ existing, usageSummary, scanName, onSave, onClose
       </div>
     </div>
   );
-}
+});
 
 // ── PROPOSAL ASSEMBLY TAB ─────────────────────────────────────────────────────
 const SECTION_STATUSES = ['not started', 'in progress', 'draft ready', 'complete'];
@@ -1692,8 +1693,8 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
         {/* Document body */}
         <div className="rounded-xl border overflow-hidden" style={{ background: 'white', borderColor: '#ddd5c4' }}>
           {editingFull ? (
-            <textarea value={fullProposalText} onChange={e => setFullProposalText(e.target.value)}
-              rows={Math.max(30, fullProposalText.split('\n').length + 5)}
+            <DebouncedTextarea value={fullProposalText} onCommit={setFullProposalText} delay={500}
+              rows={Math.max(30, (fullProposalText || '').split('\n').length + 5)}
               className="w-full text-sm leading-relaxed p-8 outline-none resize-y font-serif"
               style={{ color: '#1a1816', minHeight: '80vh' }} />
           ) : (
@@ -2014,7 +2015,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
 // The default tab. Renders the verdict at the top, then top priorities,
 // risks, recommended assets, and immediate next actions. Designed so the
 // bid director can read it in 90 seconds and walk away with a decision.
-function ExecutiveBrief({ brief, bidScore, matches, onJumpTab }) {
+const ExecutiveBrief = memo(function ExecutiveBrief({ brief, bidScore, matches, onJumpTab }) {
   if (!brief) {
     return (
       <div className="py-16 text-center">
@@ -2216,7 +2217,7 @@ function ExecutiveBrief({ brief, bidScore, matches, onJumpTab }) {
       )}
     </div>
   );
-}
+});
 
 // ── Tiered match grouping ────────────────────────────────────────────────
 // Groups matches by their taxonomy_tier and renders each group as a section.
@@ -2224,7 +2225,7 @@ function ExecutiveBrief({ brief, bidScore, matches, onJumpTab }) {
 // group (tier 5) is collapsed by default behind a click-to-reveal button so
 // off-sector noise doesn't drown out direct matches. Untagged (tier 4) is
 // shown when present but framed as a neutral fallback.
-function TieredMatches({ matches, expandedMatches, setExpandedMatches, suppress, setToast, onLog }) {
+const TieredMatches = memo(function TieredMatches({ matches, expandedMatches, setExpandedMatches, suppress, setToast, onLog }) {
   const [showCrossSector, setShowCrossSector] = useState(false);
   // Filter mode: 'all' shows the full tier hierarchy, 'sector' shows only
   // matches that share the RFP's client industry, 'service' shows only
@@ -2415,9 +2416,9 @@ function TieredMatches({ matches, expandedMatches, setExpandedMatches, suppress,
       )}
     </>
   );
-}
+});
 
-function MatchCard({ match: m, expanded, onToggle, onSuppress, onToast, onLog }) {
+const MatchCard = memo(function MatchCard({ match: m, expanded, onToggle, onSuppress, onToast, onLog }) {
   const meta = m.ai_metadata || {};
   const wq = meta.writing_quality;
   const labelColor = m.match_label==='Strong'?'#3d5c3a':m.match_label==='Good'?'#1e4a52':m.match_label==='Partial'?'#b8962e':'#6b6456';
@@ -2540,9 +2541,9 @@ function MatchCard({ match: m, expanded, onToggle, onSuppress, onToast, onLog })
       </div>
     </Card>
   );
-}
+});
 
-function GapCard({ gap: g }) {
+const GapCard = memo(function GapCard({ gap: g }) {
   const [open, setOpen] = useState(false);
   return (
     <Card className="mb-3 overflow-hidden">
@@ -2579,7 +2580,7 @@ function GapCard({ gap: g }) {
       </div>
     </Card>
   );
-}
+});
 
 // Market Context — categorised, scored, strategically framed news.
 // Replaces the old "Industry News" tab. News items are grouped by category
@@ -2593,7 +2594,7 @@ const CATEGORY_META = {
   competitive: { label: 'Competitive Landscape', icon: '◉', color: '#b04030', desc: 'Competitor wins, M&A, market shifts in the supplier base' },
 };
 
-function MarketContext({ news }) {
+const MarketContext = memo(function MarketContext({ news }) {
   if (!news || news.length === 0) {
     return (
       <div className="text-center py-12">
@@ -2645,9 +2646,9 @@ function MarketContext({ news }) {
       })}
     </div>
   );
-}
+});
 
-function MarketContextCard({ item: n, accent }) {
+const MarketContextCard = memo(function MarketContextCard({ item: n, accent }) {
   return (
     <Card className="overflow-hidden flex flex-col">
       <div className="p-4 flex-1">
@@ -2693,9 +2694,9 @@ function MarketContextCard({ item: n, accent }) {
       )}
     </Card>
   );
-}
+});
 
-function NewsCard({ item: n }) {
+const NewsCard = memo(function NewsCard({ item: n }) {
   return (
     <Card className="overflow-hidden flex flex-col">
       <div className="p-4 flex-1">
@@ -2720,4 +2721,4 @@ function NewsCard({ item: n }) {
       )}
     </Card>
   );
-}
+});

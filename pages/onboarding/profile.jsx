@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Layout from '../../components/Layout';
 import { Card, Btn, Spinner, Toast } from '../../components/ui';
 import { useUser } from '../../lib/useUser';
+import { DebouncedInput, DebouncedTextarea } from '../../lib/useDebounce';
 
 // ──────────────────────────────────────────────────────────────────────────
 // Organisation Profile Onboarding
@@ -197,7 +198,7 @@ export default function OnboardingProfile() {
             </div>
 
             <label className="text-xs font-medium block mb-1.5" style={{ color: '#1a1816' }}>Organisation name</label>
-            <input value={orgName} onChange={e => setOrgName(e.target.value)}
+            <DebouncedInput value={orgName} onCommit={setOrgName} delay={300}
               placeholder="e.g. NorthStar Consulting"
               className="w-full text-sm px-3 py-2 mb-4 border rounded outline-none"
               style={{ borderColor: '#ddd5c4' }} />
@@ -206,7 +207,7 @@ export default function OnboardingProfile() {
               <>
                 <label className="text-xs font-medium block mb-1.5" style={{ color: '#1a1816' }}>Website URL</label>
                 <div className="flex gap-2">
-                  <input value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)}
+                  <DebouncedInput value={websiteUrl} onCommit={setWebsiteUrl} delay={300}
                     placeholder="https://yourcompany.com"
                     className="flex-1 text-sm px-3 py-2 border rounded outline-none"
                     style={{ borderColor: '#ddd5c4' }} />
@@ -221,7 +222,7 @@ export default function OnboardingProfile() {
             ) : (
               <>
                 <label className="text-xs font-medium block mb-1.5" style={{ color: '#1a1816' }}>Paste your services / capabilities text</label>
-                <textarea value={pastedText} onChange={e => setPastedText(e.target.value)}
+                <DebouncedTextarea value={pastedText} onCommit={setPastedText} delay={400}
                   rows={8} placeholder="Paste the services section from your website, a capability statement, or a credentials deck. The AI will extract structured offerings from whatever you give it."
                   className="w-full text-sm px-3 py-2 border rounded outline-none font-serif"
                   style={{ borderColor: '#ddd5c4' }} />
@@ -299,7 +300,7 @@ export default function OnboardingProfile() {
 
               {/* Add new offering */}
               <div className="flex gap-2 mt-4 pt-4 border-t" style={{ borderColor: '#f0ebe0' }}>
-                <input value={newOfferingLabel} onChange={e => setNewOfferingLabel(e.target.value)}
+                <DebouncedInput value={newOfferingLabel} onCommit={setNewOfferingLabel} delay={200}
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addOffering(); } }}
                   placeholder="Add an offering we missed (e.g. Crisis Communications)"
                   className="flex-1 text-sm px-3 py-2 border rounded outline-none"
@@ -379,7 +380,7 @@ export default function OnboardingProfile() {
 }
 
 // ── Single offering chip with inline edit + remove + pin ───────────────────
-function OfferingChip({ offering, onRemove, onEdit, onToggleCore, isCore }) {
+const OfferingChip = memo(function OfferingChip({ offering, onRemove, onEdit, onToggleCore, isCore }) {
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(offering.label);
 
@@ -429,4 +430,4 @@ function OfferingChip({ offering, onRemove, onEdit, onToggleCore, isCore }) {
       <button onClick={onRemove} className="text-[11px] opacity-50 hover:opacity-100" title="Remove">×</button>
     </div>
   );
-}
+});

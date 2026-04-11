@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, memo } from 'react';
 import Head from 'next/head';
 import Layout from '../components/Layout';
 import { Btn, Card, Spinner, Toast, Input, Select, Textarea } from '../components/ui';
 import { useUser } from '../lib/useUser';
 import { currencySymbol } from '../lib/format';
+import { DebouncedInput, DebouncedTextarea } from '../lib/useDebounce';
 
 const AVAILS = ['Available — Full time','Available — Part time','Partially Available','On Project (available next quarter)','Unavailable'];
 const COLORS = ['#2d6b78','#3d5c3a','#8b3a5c','#5c4a2a','#4a2a5c','#2a4a3c','#7a3a1c','#1c3a7a'];

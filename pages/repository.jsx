@@ -5,6 +5,7 @@ import Layout from '../components/Layout';
 import { Btn, Card, Stars, OutcomeLabel, FileChip, Spinner, Toast } from '../components/ui';
 import { useUser } from '../lib/useUser';
 import { formatMoney } from '../lib/format';
+import { DebouncedSearch } from '../lib/useDebounce';
 
 const OUTCOMES = ['won','lost','pending','active','withdrawn'];
 const DEFAULT_SECTORS = ['Government & Public Sector','Healthcare & NHS','Aerospace & Defence','Financial Services','Technology','Retail & Consumer','Other'];
@@ -707,7 +708,7 @@ export default function Repository() {
               ) : (
                 <>
                   <div className="flex-1 flex items-center gap-1 border rounded-md overflow-hidden" style={{borderColor:'#ddd5c4'}}>
-                    <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={semanticSearch ? "Search by meaning — try 'NHS data integration' or 'cloud migration finance'…" : "Search by name, client, sector, technology…"}
+                    <DebouncedSearch value={search} onSearch={setSearch} delay={400} placeholder={semanticSearch ? "Search by meaning — try 'NHS data integration' or 'cloud migration finance'…" : "Search by name, client, sector, technology…"}
                       className="flex-1 px-3 py-1.5 text-sm outline-none transition-colors bg-paper focus:bg-white" />
                     <button onClick={()=>setSemanticSearch(s=>!s)} title={semanticSearch ? "Switch to keyword search" : "Switch to AI semantic search"}
                       className="px-2.5 py-1.5 text-[10px] font-mono border-l transition-all"

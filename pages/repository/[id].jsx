@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, memo } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -6,11 +6,12 @@ import Layout from '../../components/Layout';
 import { Btn, Card, Stars, OutcomeLabel, FileChip, Spinner, Toast } from '../../components/ui';
 import { useUser } from '../../lib/useUser';
 import { formatMoney, currencySymbol } from '../../lib/format';
+import { DebouncedInput, DebouncedTextarea } from '../../lib/useDebounce';
 
 const CURRENCY_OPTIONS = ['GBP','USD','EUR','AUD','CAD','NZD','CHF','JPY','CNY','SGD','HKD','AED','SAR','ZAR','INR','KRW','TRY','BRL','MXN','RUB'];
 
 // ── COLOUR-CODED INDICATOR ────────────────────────────────────────────────────
-function Indicator({ type, children }) {
+const Indicator = memo(function Indicator({ type, children }) {
   const styles = {
     positive: { icon: '+', color: '#3d5c3a', bg: '#edf3ec', border: 'rgba(61,92,58,.2)' },
     suggestion: { icon: '?', color: '#8a6200', bg: '#faf4e2', border: 'rgba(184,150,46,.3)' },
@@ -23,9 +24,9 @@ function Indicator({ type, children }) {
       <span style={{ color: s.color }}>{children}</span>
     </div>
   );
-}
+});
 
-function ScoreCircle({ score, label, size = 52 }) {
+const ScoreCircle = memo(function ScoreCircle({ score, label, size = 52 }) {
   if (!score) return null;
   const r = 18; const circ = 2 * Math.PI * r;
   const dash = (score / 100) * circ;
@@ -45,9 +46,9 @@ function ScoreCircle({ score, label, size = 52 }) {
       <div className="text-[10px] font-mono text-center leading-tight" style={{ color: '#6b6456' }}>{label}</div>
     </div>
   );
-}
+});
 
-function ScoreBar({ label, value, note }) {
+const ScoreBar = memo(function ScoreBar({ label, value, note }) {
   if (!value) return null;
   const color = value >= 75 ? '#3d5c3a' : value >= 55 ? '#b8962e' : '#b04030';
   return (
@@ -62,9 +63,9 @@ function ScoreBar({ label, value, note }) {
       {note && <div className="text-[11px] mt-1 italic" style={{ color: '#6b6456' }}>{note}</div>}
     </div>
   );
-}
+});
 
-function TagList({ items = [], onSave, color = '#1e4a52', bg = '#e8f2f4' }) {
+const TagList = memo(function TagList({ items = [], onSave, color = '#1e4a52', bg = '#e8f2f4' }) {
   const [tags, setTags] = useState(items);
   const [input, setInput] = useState('');
   const [dirty, setDirty] = useState(false);
@@ -97,7 +98,7 @@ function TagList({ items = [], onSave, color = '#1e4a52', bg = '#e8f2f4' }) {
       )}
     </div>
   );
-}
+});
 
 // ── Editable project details ──────────────────────────────────────────────
 // Collapsible panel that lets users edit the top-level project fields that
@@ -107,7 +108,7 @@ function TagList({ items = [], onSave, color = '#1e4a52', bg = '#e8f2f4' }) {
 //
 // Collapsed by default so it doesn't take up space on the overview tab —
 // click "Edit details" to expand. Each field saves on blur.
-function ProjectDetailsEditor({ project, onSave }) {
+const ProjectDetailsEditor = memo(function ProjectDetailsEditor({ project, onSave }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState({});
 
@@ -235,12 +236,12 @@ function ProjectDetailsEditor({ project, onSave }) {
       )}
     </Card>
   );
-}
+});
 
 // ── Two-axis taxonomy editor ──────────────────────────────────────────────
 // Industry dropdowns + sector chips, sourced from /api/taxonomy. Sector list
 // for each axis is filtered by the currently-selected industry.
-function TaxonomyEditor({ project, taxItems, onSave }) {
+const TaxonomyEditor = memo(function TaxonomyEditor({ project, taxItems, onSave }) {
   const [serviceInd, setServiceInd] = useState(project.service_industry || '');
   const [serviceSecs, setServiceSecs] = useState(Array.isArray(project.service_sectors) ? project.service_sectors : []);
   const [clientInd, setClientInd] = useState(project.client_industry || '');
@@ -391,7 +392,7 @@ function TaxonomyEditor({ project, taxItems, onSave }) {
       )}
     </Card>
   );
-}
+});
 
 export default function ProjectDetail() {
   const router = useRouter();
