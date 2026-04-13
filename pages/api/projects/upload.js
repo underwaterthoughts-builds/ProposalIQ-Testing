@@ -6,7 +6,7 @@ import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { projectDir } from '../../../lib/storage';
 import { parseDocument } from '../../../lib/parser';
-import { embed, analyseProposal, extractPricingFromImages } from '../../../lib/gemini';
+import { embed, analyseProposal, extractPricingFromImages, setCostContext } from '../../../lib/gemini';
 
 export const config = { api: { bodyParser: false } };
 
@@ -119,6 +119,7 @@ async function handler(req, res) {
 
   // Use IIFE with outer catch to ensure status is always updated on failure
   ;(async () => {
+    setCostContext({ category: 'proposal_analysis', scanId: null, projectId });
     logStage(projectId, name, 'upload', 'info', 'File received and saved');
     try {
       const textToAnalyse = proposalText || allText;

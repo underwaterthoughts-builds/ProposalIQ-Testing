@@ -161,7 +161,7 @@ export default function Settings() {
         <div className="flex flex-col h-full overflow-hidden">
           {/* Tab bar */}
           <div className="flex border-b bg-white flex-shrink-0" style={{ borderColor:'#ddd5c4' }}>
-            {[['general','General'],['ai','AI Configuration'],['prompts','AI Prompts'],['taxonomy','Taxonomy'],['storage','Data & Storage']].map(([id,label]) => (
+            {[['general','General'],['ai','AI Configuration'],['costs','AI Costs'],['prompts','AI Prompts'],['taxonomy','Taxonomy'],['storage','Data & Storage']].map(([id,label]) => (
               <button key={id} onClick={() => setActiveTab(id)}
                 className="px-5 py-3 text-[12.5px] font-medium border-b-2 transition-all"
                 style={{ borderColor: activeTab===id?'#1e4a52':'transparent', color: activeTab===id?'#1e4a52':'#6b6456' }}>
@@ -234,6 +234,8 @@ export default function Settings() {
                 </Card>
               </div>
             )}
+
+            {activeTab === 'costs' && <AiCostsTab />}
 
             {activeTab === 'ai' && (
               <div className="max-w-2xl mx-auto space-y-5">
@@ -464,5 +466,130 @@ export default function Settings() {
         </div>
       )}
     </>
+  );
+}
+
+// ── AI Costs Tab ─────────────────────────────────────────────────────────
+function AiCostsTab() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/ai-costs').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="flex items-center gap-2 py-12 justify-center" style={{color:'#6b6456'}}><Spinner/> Loading costs…</div>;
+  if (!data || !data.total) return <div className="text-center py-12 text-sm" style={{color:'#6b6456'}}>No cost data yet. Costs are tracked from the first AI call after this update deploys.</div>;
+
+  const CATEGORY_LABELS = {
+    rfp_scan: 'RFP Intelligence scans',
+    proposal_analysis: 'Proposal analysis (upload/reindex)',
+    proposal_generation: 'Full proposal generation',
+    unknown: 'Other / uncategorised',
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-5">
+      {/* Total spend */}
+      <Card className="p-5">
+        <h2 className="font-serif text-base mb-4">Total AI Spend</h2>
+        <div className="grid grid-cols-4 gap-4">
+          {[
+            ['Total cost', `$${data.total.cost.toFixed(2)}`],
+            ['API calls', data.total.calls.toLocaleString()],
+            ['Input tokens', `${(data.total.input_tokens / 1000).toFixed(0)}K`],
+            ['Output tokens', `${(data.total.output_tokens / 1000).toFixed(0)}K`],
+          ].map(([label, value]) => (
+            <div key={label}>
+              <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#6b6456'}}>{label}</div>
+              <div className="font-serif text-xl">{value}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* By category — the main breakdown the user asked for */}
+      <Card className="p-5">
+        <h2 className="font-serif text-base mb-4">Spend by Feature</h2>
+        {data.by_category.length === 0 ? (
+          <p className="text-sm" style={{color:'#6b6456'}}>No data yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {data.by_category.map(c => {
+              const pct = data.total.cost > 0 ? Math.round((c.cost / data.total.cost) * 100) : 0;
+              return (
+                <div key={c.category}>
+                  <div className="flex items-baseline justify-between mb-1">
+                    <span className="text-sm font-medium">{CATEGORY_LABELS[c.category] || c.category}</span>
+                    <span className="font-mono text-sm font-semibold" style={{color:'#1e4a52'}}>${c.cost.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{background:'#f0ebe0'}}>
+                      <div className="h-full rounded-full" style={{width:`${pct}%`, background:'#1e4a52'}} />
+                    </div>
+                    <span className="text-[10px] font-mono" style={{color:'#9b8e80'}}>{pct}% · {c.calls} calls</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
+
+      {/* By model */}
+      <Card className="p-5">
+        <h2 className="font-serif text-base mb-4">Spend by Model</h2>
+        <div className="rounded-lg border overflow-hidden" style={{borderColor:'#ddd5c4'}}>
+          <div className="grid text-[10px] font-mono uppercase tracking-widest px-4 py-2" style={{gridTemplateColumns:'1fr 80px 80px 80px', background:'#f0ebe0', color:'#6b6456'}}>
+            <span>Model</span><span className="text-right">Cost</span><span className="text-right">Calls</span><span className="text-right">Tokens</span>
+          </div>
+          {data.by_model.map(m => (
+            <div key={m.model} className="grid items-center px-4 py-2 border-t text-xs" style={{gridTemplateColumns:'1fr 80px 80px 80px', borderColor:'#f0ebe0'}}>
+              <span className="font-mono">{m.model}</span>
+              <span className="text-right font-mono font-semibold" style={{color:'#1e4a52'}}>${m.cost.toFixed(2)}</span>
+              <span className="text-right font-mono" style={{color:'#6b6456'}}>{m.calls}</span>
+              <span className="text-right font-mono" style={{color:'#6b6456'}}>{((m.input_tokens + m.output_tokens) / 1000).toFixed(0)}K</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Most expensive functions */}
+      <Card className="p-5">
+        <h2 className="font-serif text-base mb-4">Most Expensive Functions</h2>
+        <div className="rounded-lg border overflow-hidden" style={{borderColor:'#ddd5c4'}}>
+          <div className="grid text-[10px] font-mono uppercase tracking-widest px-4 py-2" style={{gridTemplateColumns:'1fr 1fr 70px 50px 70px', background:'#f0ebe0', color:'#6b6456'}}>
+            <span>Function</span><span>Category</span><span className="text-right">Total</span><span className="text-right">Calls</span><span className="text-right">Avg/call</span>
+          </div>
+          {data.by_function.slice(0, 10).map(f => (
+            <div key={f.function_name} className="grid items-center px-4 py-2 border-t text-xs" style={{gridTemplateColumns:'1fr 1fr 70px 50px 70px', borderColor:'#f0ebe0'}}>
+              <span className="font-mono truncate">{f.function_name}</span>
+              <span className="font-mono truncate" style={{color:'#6b6456'}}>{CATEGORY_LABELS[f.category] || f.category}</span>
+              <span className="text-right font-mono font-semibold" style={{color:'#1e4a52'}}>${f.cost.toFixed(2)}</span>
+              <span className="text-right font-mono" style={{color:'#6b6456'}}>{f.calls}</span>
+              <span className="text-right font-mono" style={{color:'#9b8e80'}}>${f.avg_cost_per_call.toFixed(4)}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Daily trend */}
+      {data.daily.length > 0 && (
+        <Card className="p-5">
+          <h2 className="font-serif text-base mb-4">Last 7 Days</h2>
+          <div className="space-y-2">
+            {data.daily.map(d => (
+              <div key={d.day} className="flex items-center justify-between text-xs">
+                <span className="font-mono" style={{color:'#6b6456'}}>{d.day}</span>
+                <div className="flex items-center gap-3">
+                  <span className="font-mono" style={{color:'#9b8e80'}}>{d.calls} calls</span>
+                  <span className="font-mono font-semibold" style={{color:'#1e4a52'}}>${(d.cost || 0).toFixed(2)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+    </div>
   );
 }

@@ -3,7 +3,7 @@ import { requireAuth } from '../../../../lib/auth';
 import { safe } from '../../../../lib/embeddings';
 import {
   generateFullProposal, checkRequirementsCoverage,
-  conformToWritingStyle, hasOpenAI,
+  conformToWritingStyle, hasOpenAI, setCostContext,
 } from '../../../../lib/gemini';
 import { logUsageEvent } from '../../../../lib/feedback';
 
@@ -59,6 +59,8 @@ async function handler(req, res) {
     const row = db.prepare("SELECT * FROM organisation_profile WHERE id = 'default'").get();
     if (row) orgProfile = { ...row, confirmed_profile: safe(row.confirmed_profile, {}) };
   } catch {}
+
+  setCostContext({ category: 'proposal_generation', scanId: id, projectId: null });
 
   // ── STAGE 1: Generate the raw proposal ─────────────────────────────────
   let proposal;
