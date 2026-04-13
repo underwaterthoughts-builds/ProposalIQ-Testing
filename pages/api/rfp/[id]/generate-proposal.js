@@ -79,19 +79,9 @@ async function handler(req, res) {
     return res.status(500).json({ error: 'Generation returned no content.' });
   }
 
-  // STAGE 2 (style conformance) REMOVED.
-  // The writing guide already handles sector tone + service structure
-  // per-section via buildSectionGuide(). The conformToWritingStyle pass
-  // was rewriting all 8 sections in one massive call, reintroducing the
-  // exact problem (theatrical language, ignored rules) that the section-
-  // by-section approach fixed. Skipping it makes the output match what
-  // the user sees in individual section drafts.
-  let styledProposal = proposal;
-  if (false) { // kept for reference, not executed
-    try {
-      // Non-fatal — use the unstyled proposal
-    }
-  }
+  // Style conformance pass removed — the writing guide handles tone
+  // per-section. A whole-document rewrite was degrading quality.
+  const styledProposal = proposal;
 
   // ── STAGE 3: Requirements coverage check (OpenAI only) ─────────────
   let coverageReport = null;
