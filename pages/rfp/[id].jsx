@@ -4,7 +4,6 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Layout from '../../components/Layout';
 import { Card, ScoreRing, Stars, OutcomeLabel, Badge, Spinner, ProgressBar, Btn, Toast } from '../../components/ui';
-import QuickView from '../../components/QuickView';
 import { useMode } from '../../lib/useMode';
 import { useUser } from '../../lib/useUser';
 import { formatMoney, currencySymbol } from '../../lib/format';
@@ -406,23 +405,31 @@ ${sectionHtml('Winning Language', languageHtml)}
     { id:'assembly', label:'Proposal Assembly', badge: '⊞' },
   ];
 
-  // Quick view — single scroll editorial layout
+  // Quick view — uses the same ExecutiveBrief component as the Overview tab
+  // in Pro mode, wrapped in a simple scroll layout. One shared component,
+  // no duplication between Quick and Pro.
   if (isQuick) {
     return (
       <>
         <Head><title>{scan.name} — RFP Intelligence</title></Head>
-        <Layout title={scan.name} subtitle={rfpData.client ? `${rfpData.client} · ${rfpData.sector}` : 'RFP Intelligence'} user={user}>
-          <QuickView
-            scan={scan}
-            scanId={id}
-            onExport={exportBriefing}
-            onTemplate={(d) => generateTemplate(d)}
-            onDelete={deleteScan}
-            exporting={exporting}
-            generatingTemplate={generatingTemplate}
-            deleting={deleting}
-            clientIntel={clientIntel}
-          />
+        <Layout title={scan.name} subtitle={rfpData.client ? `${rfpData.client} · ${rfpData.sector}` : 'RFP Intelligence'} user={user}
+          actions={
+            <div className="flex gap-2">
+              <Btn variant="ghost" onClick={exportBriefing} disabled={exporting}>
+                {exporting ? 'Exporting…' : '↓ Export'}
+              </Btn>
+              <Btn variant="teal" onClick={() => generateTemplate()} disabled={generatingTemplate}>
+                {generatingTemplate ? 'Building…' : '📄 Template'}
+              </Btn>
+            </div>
+          }>
+          <div className="h-full overflow-y-auto p-4 md:p-6" style={{ background: '#faf7f2' }}>
+            {scan.status === 'processing' ? (
+              <div className="py-16 text-center"><Spinner size={32}/><p className="text-sm mt-4" style={{ color:'#6b6456' }}>Running intelligence pipeline — fast brief in ~30s…</p></div>
+            ) : (
+              <ExecutiveBrief brief={executiveBrief} bidScore={bidScore} matches={matches} onJumpTab={null} />
+            )}
+          </div>
         </Layout>
         <Toast msg={toast} onClose={() => setToast('')} />
       </>
