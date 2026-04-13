@@ -79,39 +79,16 @@ async function handler(req, res) {
     return res.status(500).json({ error: 'Generation returned no content.' });
   }
 
-  // ── STAGE 2: Style conformance (OpenAI only) ─────────────────────────
-  // Build a style reference from the top matched won proposals: their
-  // style classification, standout sentences, and writing quality notes.
-  // This gives the model a concrete voice to match, not just an abstract
-  // style label.
+  // STAGE 2 (style conformance) REMOVED.
+  // The writing guide already handles sector tone + service structure
+  // per-section via buildSectionGuide(). The conformToWritingStyle pass
+  // was rewriting all 8 sections in one massive call, reintroducing the
+  // exact problem (theatrical language, ignored rules) that the section-
+  // by-section approach fixed. Skipping it makes the output match what
+  // the user sees in individual section drafts.
   let styledProposal = proposal;
-  if (hasOpenAI()) {
+  if (false) { // kept for reference, not executed
     try {
-      const wonMatches = matches.filter(m => m.outcome === 'won').slice(0, 3);
-      const styleRef = wonMatches.map(m => {
-        const meta = m.ai_metadata || {};
-        const wq = meta.writing_quality || {};
-        const sc = m.style_classification || {};
-        return [
-          `Proposal: "${m.name}" (${m.outcome}, ${m.user_rating}★)`,
-          sc.primary_style ? `Style: ${sc.primary_style} — ${sc.style_description || ''}` : null,
-          sc.tone ? `Tone: ${sc.tone}` : null,
-          sc.sentence_structure ? `Sentence structure: ${sc.sentence_structure}` : null,
-          sc.evidence_approach ? `Evidence approach: ${sc.evidence_approach}` : null,
-          sc.opening_technique ? `Opening technique: ${sc.opening_technique}` : null,
-          wq.tone_notes ? `Writing notes: ${wq.tone_notes}` : null,
-          (meta.standout_sentences || []).length > 0
-            ? `Voice samples (quote exactly for tone matching):\n${meta.standout_sentences.slice(0, 4).map(s => `  "${s}"`).join('\n')}`
-            : null,
-        ].filter(Boolean).join('\n');
-      }).join('\n\n');
-
-      if (styleRef.trim().length > 100) {
-        console.log(`[generate-proposal ${id}] running style conformance pass`);
-        styledProposal = await conformToWritingStyle(proposal, styleRef, rfpData);
-      }
-    } catch (e) {
-      console.error(`[generate-proposal ${id}] stage 2 style error (non-fatal):`, e.message);
       // Non-fatal — use the unstyled proposal
     }
   }
