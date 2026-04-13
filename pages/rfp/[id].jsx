@@ -483,6 +483,9 @@ ${sectionHtml('Winning Language', languageHtml)}
   const rfpData = scan.rfp_data || {};
   const matches = scan.matched_proposals || [];
   const gaps = scan.gaps || [];
+  const coverageData = scan.coverage_map || null;
+  const coverageMapItems = coverageData?.map || [];
+  const coverageSummary = coverageData?.summary || null;
   const news = scan.news || [];
   const team = scan.team_suggestions || [];
   const financial = scan.financial_model || {};
@@ -731,8 +734,73 @@ ${sectionHtml('Winning Language', languageHtml)}
                       saving={savingCheckpoint === 'gaps'}
                     />
                   )}
-                  <p className="text-sm mb-4" style={{ color:'#6b6456' }}>Requirements in this RFP not fully addressed by your matched proposals. Team members with relevant CV data are suggested per gap.</p>
-                  {gaps.length === 0 ? <div className="text-center py-12"><p className="text-sm" style={{ color:'#6b6456' }}>No gaps identified.</p></div>
+
+                  {/* COVERAGE MAP — shown first, before gaps */}
+                  {coverageMapItems.length > 0 && (
+                    <div className="mb-6">
+                      <div className="flex items-baseline justify-between mb-3">
+                        <div>
+                          <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#1e4a52' }}>Requirements coverage</div>
+                          <p className="text-xs mt-0.5" style={{ color: '#6b6456' }}>For each requirement, do we have evidence from our matched proposals?</p>
+                        </div>
+                        {coverageSummary && (
+                          <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-full"
+                            style={{
+                              background: (coverageSummary.coverage_percentage || 0) >= 80 ? '#edf3ec' :
+                                (coverageSummary.coverage_percentage || 0) >= 60 ? '#faf4e2' : '#faeeeb',
+                              color: (coverageSummary.coverage_percentage || 0) >= 80 ? '#3d5c3a' :
+                                (coverageSummary.coverage_percentage || 0) >= 60 ? '#8a6200' : '#b04030',
+                            }}>
+                            {coverageSummary.coverage_percentage || 0}% covered
+                          </span>
+                        )}
+                      </div>
+                      <div className="rounded-lg border overflow-hidden" style={{ borderColor: '#ddd5c4', background: 'white' }}>
+                        {coverageMapItems.map((item, i) => {
+                          const icon = item.status === 'covered' ? '✓' : item.status === 'partial' ? '◐' : '✕';
+                          const color = item.status === 'covered' ? '#3d5c3a' : item.status === 'partial' ? '#b8962e' : '#b04030';
+                          return (
+                            <div key={i} className="flex items-start gap-2.5 px-4 py-2.5 border-b last:border-0 text-xs" style={{ borderColor: '#f0ebe0' }}>
+                              <span className="flex-shrink-0 font-bold mt-0.5" style={{ color }}>{icon}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <span className="font-mono text-[10px] flex-shrink-0 uppercase"
+                                    style={{ color: item.priority === 'must' ? '#b04030' : '#6b6456' }}>
+                                    [{item.priority}]
+                                  </span>
+                                  <span style={{ color: '#1a1816' }}>{item.requirement}</span>
+                                </div>
+                                <div className="text-[11px]" style={{ color: '#6b6456' }}>
+                                  {item.evidence_summary}
+                                  {item.evidence_from && (
+                                    <span className="font-mono ml-1" style={{ color: '#1e4a52' }}>
+                                      — {item.evidence_from}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {coverageSummary && (
+                        <div className="flex gap-4 mt-2 text-[10px] font-mono" style={{ color: '#9b8e80' }}>
+                          <span>{coverageSummary.covered || 0} covered</span>
+                          <span>{coverageSummary.partial || 0} partial</span>
+                          <span>{coverageSummary.not_covered || 0} not covered</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* GAPS — derived from the coverage map's not_covered + partial items */}
+                  <div className="flex items-baseline justify-between mb-3">
+                    <div>
+                      <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#b04030' }}>Opportunity gaps</div>
+                      <p className="text-xs mt-0.5" style={{ color: '#6b6456' }}>Material gaps that would affect win probability, with suggested actions.</p>
+                    </div>
+                  </div>
+                  {gaps.length === 0 ? <div className="text-center py-8"><p className="text-sm" style={{ color:'#6b6456' }}>No material gaps identified.</p></div>
                   : <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {gaps.map((g, i) => <GapCard key={i} gap={g} />)}
                     </div>}

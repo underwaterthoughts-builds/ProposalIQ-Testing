@@ -106,6 +106,7 @@ function handler(req, res) {
         winning_language: safe(scan.winning_language, []),
         bid_score: safe(scan.bid_score, null),
         executive_brief: safe(scan.executive_brief, null),
+        coverage_map: safe(scan.coverage_map, null),
       },
     });
   }
