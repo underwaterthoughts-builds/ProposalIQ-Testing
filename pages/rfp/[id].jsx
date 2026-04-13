@@ -523,6 +523,11 @@ ${sectionHtml('Winning Language', languageHtml)}
         <Layout title={scan.name} subtitle={rfpData.client ? `${rfpData.client} · ${rfpData.sector}` : 'RFP Intelligence'} user={user}
           actions={
             <div className="flex gap-2">
+              <a href={`/api/rfp/${id}/download`} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12.5px] font-medium rounded-md border border-[#ddd5c4] hover:bg-cream transition-all"
+                style={{ color: '#6b6456' }}>
+                View RFP ↗
+              </a>
               <Btn variant="ghost" onClick={exportBriefing} disabled={exporting}>
                 {exporting ? 'Exporting…' : '↓ Export'}
               </Btn>
@@ -550,6 +555,11 @@ ${sectionHtml('Winning Language', languageHtml)}
       <Layout title={scan.name} subtitle={rfpData.client?`${rfpData.client} · ${rfpData.sector}`:'RFP Intelligence'} user={user}
         actions={
           <div className="hidden md:flex gap-2">
+            <a href={`/api/rfp/${id}/download`} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12.5px] font-medium rounded-md border border-[#ddd5c4] hover:bg-cream transition-all"
+              style={{ color: '#6b6456' }}>
+              View RFP ↗
+            </a>
             <Btn variant="ghost" onClick={exportBriefing} disabled={exporting}>
               {exporting ? <><Spinner size={12}/> Exporting…</> : '↓ Export Briefing'}
             </Btn>
