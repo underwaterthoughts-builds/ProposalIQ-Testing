@@ -621,7 +621,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                 </div>
               ) : activeTab === 'writing' ? (
                 <div>
-                  <p className="text-sm mb-4" style={{ color:'#6b6456' }}>Writing quality analysis across your matched proposals. Use this to understand what made the best bids effective.</p>
+                  <p className="text-sm mb-4" style={{ color:'#6b6456' }}>Writing quality analysis across your top matched proposals. Cross-sector matches are included when their writing approach is transferable — the content differs but the technique may be useful.</p>
                   {writingInsights.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="text-3xl mb-3 opacity-25">✍</div>
@@ -634,21 +634,42 @@ ${sectionHtml('Winning Language', languageHtml)}
                         <div className="grid text-[10px] font-mono uppercase tracking-widest px-4 py-2" style={{ gridTemplateColumns:'1fr 80px 80px 80px 100px', background:'#f0ebe0', color:'#6b6456' }}>
                           <span>Proposal</span><span className="text-center">Writing</span><span className="text-center">Approach</span><span className="text-center">Credibility</span><span className="text-center">Outcome</span>
                         </div>
-                        {writingInsights.map(w => (
-                          <Link key={w.project_id} href={`/repository/${w.project_id}`}
-                            className="grid items-center px-4 py-3 border-t hover:bg-[#faf7f2] transition-colors text-sm"
-                            style={{ gridTemplateColumns:'1fr 80px 80px 80px 100px', borderColor:'#f0ebe0' }}>
-                            <span className="font-medium truncate">{w.project_name}</span>
-                            <span className="text-center font-mono" style={{ color:w.writing_score>=75?'#3d5c3a':w.writing_score>=55?'#b8962e':'#b04030' }}>{w.writing_score||'—'}</span>
-                            <span className="text-center font-mono" style={{ color:(w.approach_score||0)>=75?'#3d5c3a':(w.approach_score||0)>=55?'#b8962e':'#b04030' }}>{w.approach_score||'—'}</span>
-                            <span className="text-center font-mono" style={{ color:(w.credibility_score||0)>=75?'#3d5c3a':(w.credibility_score||0)>=55?'#b8962e':'#b04030' }}>{w.credibility_score||'—'}</span>
-                            <span className="text-center"><OutcomeLabel outcome={w.outcome}/></span>
-                          </Link>
-                        ))}
+                        {writingInsights.map(w => {
+                          const isCrossSector = w.taxonomy_tier >= 4 || w.taxonomy_match === 'cross';
+                          const relevanceHint = isCrossSector
+                            ? (w.match_explanation?.recommended_use || 'Different sector — included for writing technique, not content relevance')
+                            : null;
+                          return (
+                            <div key={w.project_id} className="border-t" style={{ borderColor:'#f0ebe0' }}>
+                              <Link href={`/repository/${w.project_id}`}
+                                className="grid items-center px-4 py-3 hover:bg-[#faf7f2] transition-colors text-sm"
+                                style={{ gridTemplateColumns:'1fr 80px 80px 80px 100px' }}>
+                                <span className="font-medium truncate">{w.project_name}</span>
+                                <span className="text-center font-mono" style={{ color:w.writing_score>=75?'#3d5c3a':w.writing_score>=55?'#b8962e':'#b04030' }}>{w.writing_score||'—'}</span>
+                                <span className="text-center font-mono" style={{ color:(w.approach_score||0)>=75?'#3d5c3a':(w.approach_score||0)>=55?'#b8962e':'#b04030' }}>{w.approach_score||'—'}</span>
+                                <span className="text-center font-mono" style={{ color:(w.credibility_score||0)>=75?'#3d5c3a':(w.credibility_score||0)>=55?'#b8962e':'#b04030' }}>{w.credibility_score||'—'}</span>
+                                <span className="text-center"><OutcomeLabel outcome={w.outcome}/></span>
+                              </Link>
+                              {relevanceHint && (
+                                <div className="px-4 pb-2 text-[11px] italic flex items-start gap-1.5" style={{ color: '#9b8e80' }}>
+                                  <span className="flex-shrink-0">◌</span>
+                                  <span>Different industry — shown because the <strong>writing approach</strong> is transferable: {relevanceHint}</span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                       {/* Evidence density highlights */}
-                      {writingInsights.filter(w=>w.evidence_density).slice(0,2).map(w => (
+                      {writingInsights.filter(w=>w.evidence_density).slice(0,2).map(w => {
+                        const isCross = w.taxonomy_tier >= 4 || w.taxonomy_match === 'cross';
+                        return (
                         <div key={w.project_id + '_ev'} className="rounded-lg p-4 mb-3 border" style={{ borderColor:'#ddd5c4' }}>
+                          {isCross && (
+                            <div className="text-[10px] italic mb-2 px-2 py-1 rounded" style={{ background: '#f8f6f2', color: '#9b8e80' }}>
+                              ◌ Different industry — analyse the writing technique, not the subject matter
+                            </div>
+                          )}
                           <div className="flex items-center justify-between mb-2">
                             <div className="text-xs font-medium">{w.project_name}</div>
                             <div className="flex items-center gap-2">
@@ -669,16 +690,25 @@ ${sectionHtml('Winning Language', languageHtml)}
                             <p className="text-xs" style={{ color:'#b8962e' }}>△ {w.evidence_density.improvement_priority}</p>
                           )}
                         </div>
-                      ))}
+                        );
+                      })}
 
                       {/* Win indicators */}
-                      {writingInsights.filter(w=>w.outcome==='won'&&w.win_indicators?.length>0).slice(0,2).map(w => (
+                      {writingInsights.filter(w=>w.outcome==='won'&&w.win_indicators?.length>0).slice(0,2).map(w => {
+                        const isCross = w.taxonomy_tier >= 4 || w.taxonomy_match === 'cross';
+                        return (
                         <Card key={w.project_id} className="p-4 mb-3" style={{ background:'#edf3ec', border:'1px solid rgba(61,92,58,.2)' }}>
+                          {isCross && (
+                            <div className="text-[10px] italic mb-2 px-2 py-1 rounded" style={{ background: 'rgba(61,92,58,.08)', color: '#6b8a64' }}>
+                              ◌ Different industry — these win indicators reflect writing technique and positioning approach, not sector-specific content
+                            </div>
+                          )}
                           <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color:'#3d5c3a' }}>Win Indicators — {w.project_name}</div>
                           {w.win_indicators.map((ind, i) => <div key={i} className="text-xs mb-1 flex gap-2"><span style={{ color:'#3d5c3a' }}>↑</span>{ind}</div>)}
                           {w.standout_sentences?.slice(0,1).map((s, i) => <blockquote key={i} className="text-xs italic border-l-2 pl-3 mt-2" style={{ borderColor:'#3d5c3a', color:'#2a4a28' }}>"{s}"</blockquote>)}
                         </Card>
-                      ))}
+                        );
+                      })}
                     </>
                   )}
                 </div>
