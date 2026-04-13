@@ -394,7 +394,7 @@ ${sectionHtml('Winning Language', languageHtml)}
   const goodMatchCount = matches.filter(m => m.outcome === 'won').length;
 
   const tabs = [
-    { id:'brief', label:'Brief', badge: executiveBrief?.verdict?.decision ? '★' : null },
+    { id:'brief', label:'Overview', badge: executiveBrief?.verdict?.decision ? '★' : null },
     { id:'matches', label:'Matched Proposals', count:matches.length },
     { id:'gaps', label:'Opportunity Gaps', count:gaps.length },
     { id:'writing', label:'Writing Insights', count:writingInsights.length },

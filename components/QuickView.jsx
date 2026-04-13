@@ -281,7 +281,7 @@ export default function QuickView({ scan, scanId, onExport, onTemplate, onDelete
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="flex-1 min-w-0">
               <div className="text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{ color: '#9b8e80' }}>
-                Intelligence Brief · Quick View
+                Overview · Quick View
               </div>
               <h1 className="font-serif text-xl md:text-3xl leading-tight mb-1">{scan.name}</h1>
               <div className="text-sm" style={{ color: '#6b6456' }}>
@@ -372,98 +372,96 @@ export default function QuickView({ scan, scanId, onExport, onTemplate, onDelete
           </Section>
         )}
 
-        {/* Matched proposals */}
-        {matches.length > 0 && (
-          <Section label="Best Matched Past Work" color="#3d5c3a">
+        {/* What it's really asking / fit assessment (from executive brief) */}
+        {brief?.what_this_brief_is_really_asking_for && (
+          <Section label="What This RFP Is Really Asking For" color="#1e4a52">
+            <p className="text-sm leading-relaxed" style={{ color: '#1a1816' }}>{brief.what_this_brief_is_really_asking_for}</p>
+          </Section>
+        )}
+        {brief?.are_we_a_strong_fit && (
+          <Section label="Are We a Strong Fit?" color="#3d5c3a">
+            <p className="text-sm leading-relaxed" style={{ color: '#1a1816' }}>{brief.are_we_a_strong_fit}</p>
+          </Section>
+        )}
+
+        {/* Best-fit style + structure */}
+        {(brief?.best_fit_style || brief?.best_fit_structure) && (
+          <Section label="Recommended Approach" color="#b8962e">
+            {brief.best_fit_style && <p className="text-sm mb-2"><strong style={{ color: '#8a6200' }}>Style:</strong> {brief.best_fit_style}</p>}
+            {brief.best_fit_structure && <p className="text-sm"><strong style={{ color: '#8a6200' }}>Structure:</strong> {brief.best_fit_structure}</p>}
+          </Section>
+        )}
+
+        {/* Recommended assets */}
+        {brief?.recommended_assets_to_use?.length > 0 && (
+          <Section label="Past Assets to Reference" color="#3d5c3a">
             <div className="space-y-2">
-              {matches.slice(0, 5).map((m, i) => <QuickMatchCard key={m.id} match={m} />)}
-            </div>
-            {matches.length > 5 && (
-              <div className="text-xs text-center mt-2" style={{ color: '#9b8e80' }}>+ {matches.length - 5} more in Pro view</div>
-            )}
-          </Section>
-        )}
-
-        {/* Writing style */}
-        {recommendedStyle && (
-          <Section label="Recommended Writing Style" color="#b8962e">
-            <StyleBlock style={recommendedStyle} />
-          </Section>
-        )}
-
-        {/* Writing insights */}
-        {writingInsights.length > 0 && (
-          <Section label="Writing Quality — Matched Proposals" color="#6b6456">
-            <div className="rounded-xl border overflow-hidden" style={{ background: 'white', borderColor: '#ddd5c4' }}>
-              <div className="grid text-[10px] font-mono uppercase tracking-widest px-4 py-2 border-b" style={{ gridTemplateColumns: '1fr 90px', background: '#f8f6f2', borderColor: '#f0ebe0', color: '#9b8e80' }}>
-                <span>Proposal</span><span className="text-right">W · A · C</span>
-              </div>
-              <div className="divide-y" style={{ '--tw-divide-color': '#f0ebe0' }}>
-                {writingInsights.map(w => <WritingInsightRow key={w.project_id} w={w} />)}
-              </div>
+              {brief.recommended_assets_to_use.slice(0, 4).map((a, i) => (
+                <div key={i} className="rounded-lg p-3 border" style={{ background: 'white', borderColor: '#ddd5c4' }}>
+                  <div className="text-sm font-medium">{a.name}</div>
+                  {a.why && <div className="text-xs mt-0.5" style={{ color: '#6b6456' }}>{a.why}</div>}
+                  {a.use_for && <div className="text-[10px] font-mono mt-1" style={{ color: '#9b8e80' }}>Use for: {a.use_for}</div>}
+                </div>
+              ))}
             </div>
           </Section>
         )}
 
-        {/* A useful line */}
-        {bestLine && (
-          <Section label="A Line Worth Adapting" color="#b8962e">
-            <UsefulLine snippet={bestLine} />
+        {/* What to deprioritise */}
+        {brief?.what_to_deprioritise?.length > 0 && (
+          <Section label="Do Not Waste Effort On" color="#6b6456">
+            <ul className="space-y-1">
+              {brief.what_to_deprioritise.map((d, i) => (
+                <li key={i} className="text-sm flex gap-2" style={{ color: '#6b6456' }}>
+                  <span className="flex-shrink-0">✕</span><span>{d}</span>
+                </li>
+              ))}
+            </ul>
           </Section>
         )}
 
-        {/* Industry news */}
-        {news.length > 0 && (
-          <Section label="Industry Context" color="#2d6b78">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {news.slice(0, 4).map((n, i) => <QuickNewsCard key={i} item={n} />)}
+        {/* Immediate next actions */}
+        {brief?.immediate_next_actions?.length > 0 && (
+          <Section label="Do These Today" color="#1e4a52">
+            <div className="rounded-xl p-4" style={{ background: '#1e4a52', color: 'white' }}>
+              <ol className="space-y-2">
+                {brief.immediate_next_actions.slice(0, 5).map((a, i) => (
+                  <li key={i} className="flex gap-3 text-sm">
+                    <span className="font-mono font-bold opacity-60 flex-shrink-0">{i + 1}.</span>
+                    <div className="flex-1">
+                      <div>{a.action || a}</div>
+                      {(a.owner || a.deadline) && (
+                        <div className="flex gap-3 mt-0.5 text-[10px] font-mono uppercase tracking-wide opacity-70">
+                          {a.owner && <span>{a.owner}</span>}
+                          {a.deadline && <span>{a.deadline}</span>}
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
             </div>
           </Section>
         )}
 
-        {/* Export tools */}
-        <Section label="Export & Build" color="#6b6456">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="rounded-xl border overflow-hidden" style={{ background: 'white', borderColor: '#ddd5c4' }}>
-              <div className="p-4">
-                <div className="text-2xl mb-2">📄</div>
-                <div className="text-sm font-semibold mb-1">Proposal Template</div>
-                <div className="text-xs mb-3" style={{ color: '#6b6456' }}>Word doc with sections, guidance notes, and winning language pre-filled from your matches.</div>
-              </div>
-              <div className="flex border-t" style={{ borderColor: '#f0ebe0' }}>
-                <button onClick={() => onTemplate(false)} disabled={generatingTemplate}
-                  className="flex-1 py-2.5 text-xs font-medium border-r transition-all hover:bg-cream no-min-h" style={{ borderColor: '#f0ebe0', color: '#1e4a52' }}>
-                  📄 Guidance
-                </button>
-                <button onClick={() => onTemplate(true)} disabled={generatingTemplate}
-                  className="flex-1 py-2.5 text-xs font-medium transition-all hover:bg-cream no-min-h" style={{ color: '#1e4a52' }}>
-                  ✍ AI Draft
-                </button>
-              </div>
-            </div>
-            <button onClick={onExport} disabled={exporting}
-              className="rounded-xl p-5 text-left border transition-all hover:border-teal hover:shadow-sm"
-              style={{ background: 'white', borderColor: '#ddd5c4' }}>
-              <div className="text-2xl mb-2">↓</div>
-              <div className="text-sm font-semibold mb-1">Full Briefing</div>
-              <div className="text-xs" style={{ color: '#6b6456' }}>Complete HTML briefing doc with all intelligence — matches, gaps, strategy, winning language.</div>
-            </button>
-            <button onClick={copyBriefing}
-              className="rounded-xl p-5 text-left border transition-all hover:border-teal hover:shadow-sm"
-              style={{ background: 'white', borderColor: '#ddd5c4' }}>
-              <div className="text-2xl mb-2">⊡</div>
-              <div className="text-sm font-semibold mb-1">Copy Summary</div>
-              <div className="text-xs" style={{ color: '#6b6456' }}>Plain-text brief for Slack, email, or Notion — bid signal, priorities, angle, past work.</div>
-            </button>
-            <button onClick={onDelete} disabled={deleting}
-              className="rounded-xl p-5 text-left border transition-all hover:border-red-200"
-              style={{ background: 'white', borderColor: '#ddd5c4' }}>
-              <div className="text-2xl mb-2" style={{ color: '#b04030' }}>✕</div>
-              <div className="text-sm font-semibold mb-1" style={{ color: '#b04030' }}>Delete Scan</div>
-              <div className="text-xs" style={{ color: '#6b6456' }}>Remove this scan and the uploaded RFP file permanently.</div>
-            </button>
-          </div>
-        </Section>
+        {/* Quick actions */}
+        <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t" style={{ borderColor: '#e8e0d0' }}>
+          <button onClick={copyBriefing}
+            className="px-4 py-2 rounded-lg text-xs font-medium border transition-all hover:bg-cream"
+            style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+            ⊡ Copy Brief
+          </button>
+          <button onClick={onExport} disabled={exporting}
+            className="px-4 py-2 rounded-lg text-xs font-medium border transition-all hover:bg-cream"
+            style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+            {exporting ? 'Exporting…' : '↓ Export Briefing'}
+          </button>
+          <button onClick={onTemplate} disabled={generatingTemplate}
+            className="px-4 py-2 rounded-lg text-xs font-medium text-white transition-all"
+            style={{ background: '#1e4a52' }}>
+            {generatingTemplate ? 'Building…' : '📄 Template'}
+          </button>
+        </div>
 
       </div>
     </div>
