@@ -11,6 +11,114 @@ import { DebouncedInput, DebouncedTextarea, DebouncedSearch } from '../../lib/us
 
 const PRIORITY_COLOR = { high:'#b04030', med:'#b8962e', low:'#2d6b78' };
 
+// ── RFP Taxonomy Bar — shows classification tags above the tabs ──────────
+// Displays client_industry, service_industry and their sectors so the user
+// can verify at a glance that the AI classified correctly. Each tag is
+// clickable to correct via inline dropdown. Saves via PATCH to rfp_scans.
+const RfpTaxonomyBar = memo(function RfpTaxonomyBar({ scan, rfpData, scanId }) {
+  const [editing, setEditing] = useState(null); // 'client_industry' | 'service_industry' | null
+  const [saving, setSaving] = useState(false);
+
+  const clientIndustry = scan.client_industry || null;
+  const serviceIndustry = scan.service_industry || null;
+
+  // Load taxonomy items for dropdowns — lazy, only when editing
+  const [taxItems, setTaxItems] = useState(null);
+  useEffect(() => {
+    if (editing && !taxItems) {
+      fetch('/api/taxonomy').then(r => r.json()).then(d => setTaxItems(d.items || [])).catch(() => {});
+    }
+  }, [editing, taxItems]);
+
+  async function saveTaxonomy(field, value) {
+    setSaving(true);
+    try {
+      // PATCH the rfp_scans row directly
+      const { getDb } = await import('../../lib/db');
+      // Can't call getDb client-side — use a lightweight API call instead
+      await fetch(`/api/rfp/${scanId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_taxonomy', [field]: value }),
+      });
+      // Reload to pick up the change
+      window.location.reload();
+    } catch {}
+    setSaving(false);
+    setEditing(null);
+  }
+
+  const clientIndustries = (taxItems || []).filter(t => t.taxonomy_type === 'client' && t.category === 'Industry');
+  const serviceIndustries = (taxItems || []).filter(t => t.taxonomy_type === 'service' && t.category === 'Industry');
+
+  return (
+    <div className="flex items-center gap-2 px-5 py-2 border-b flex-wrap" style={{ borderColor: '#f0ebe0', background: '#fbf9f4' }}>
+      <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#9b8e80' }}>Classification:</span>
+
+      {/* Client industry */}
+      {editing === 'client_industry' ? (
+        <select autoFocus value={clientIndustry || ''} onChange={e => saveTaxonomy('client_industry', e.target.value)}
+          onBlur={() => setEditing(null)}
+          className="text-[11px] px-2 py-1 rounded border bg-white outline-none"
+          style={{ borderColor: 'rgba(184,150,46,.5)' }}>
+          <option value="">— Untagged —</option>
+          {clientIndustries.map(i => <option key={i.id} value={i.name}>{i.name}</option>)}
+        </select>
+      ) : (
+        <button onClick={() => setEditing('client_industry')}
+          className="text-[11px] px-2.5 py-1 rounded-full border transition-colors hover:bg-white"
+          style={{
+            borderColor: clientIndustry ? 'rgba(184,150,46,.5)' : '#ddd5c4',
+            background: clientIndustry ? 'rgba(184,150,46,.1)' : 'transparent',
+            color: clientIndustry ? '#8a6200' : '#9b8e80',
+          }}
+          title="Click to change client industry">
+          ◆ {clientIndustry || '+ Client sector'}
+        </button>
+      )}
+
+      {/* Service industry */}
+      {editing === 'service_industry' ? (
+        <select autoFocus value={serviceIndustry || ''} onChange={e => saveTaxonomy('service_industry', e.target.value)}
+          onBlur={() => setEditing(null)}
+          className="text-[11px] px-2 py-1 rounded border bg-white outline-none"
+          style={{ borderColor: 'rgba(30,74,82,.5)' }}>
+          <option value="">— Untagged —</option>
+          {serviceIndustries.map(i => <option key={i.id} value={i.name}>{i.name}</option>)}
+        </select>
+      ) : (
+        <button onClick={() => setEditing('service_industry')}
+          className="text-[11px] px-2.5 py-1 rounded-full border transition-colors hover:bg-white"
+          style={{
+            borderColor: serviceIndustry ? 'rgba(30,74,82,.5)' : '#ddd5c4',
+            background: serviceIndustry ? 'rgba(30,74,82,.1)' : 'transparent',
+            color: serviceIndustry ? '#1e4a52' : '#9b8e80',
+          }}
+          title="Click to change type of work">
+          ◈ {serviceIndustry || '+ Type of work'}
+        </button>
+      )}
+
+      {/* Static info tags */}
+      {rfpData.client && rfpData.client !== 'Unknown' && (
+        <span className="text-[11px] px-2 py-1 rounded-full border" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+          {rfpData.client}
+        </span>
+      )}
+      {rfpData.sector && rfpData.sector !== 'Unknown' && (
+        <span className="text-[11px] px-2 py-1 rounded-full border" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+          {rfpData.sector}
+        </span>
+      )}
+      {rfpData.contract_value_hint && (
+        <span className="text-[11px] px-2 py-1 rounded-full border" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+          {rfpData.contract_value_hint}
+        </span>
+      )}
+    </div>
+  );
+});
+
 const CheckpointBanner = memo(function CheckpointBanner({ label, approved, onApprove, saving, children }) {
   if (approved) return (
     <div className="flex items-center gap-2 px-4 py-2.5 mb-4 rounded-xl text-sm" style={{ background:'#edf3ec', border:'1px solid rgba(61,92,58,.2)' }}>
@@ -529,6 +637,12 @@ ${sectionHtml('Winning Language', languageHtml)}
                 {scan.narrative_advice?.startsWith?.('Error:') && <div className="text-xs font-mono mb-1">{scan.narrative_advice}</div>}
                 <div className="text-xs">Check terminal for details. Try setting <code>GEMINI_MODEL=gemini-2.0-flash</code> in .env.local and restarting.</div>
               </div>
+            )}
+
+            {/* RFP classification tags — visible above all tabs so user can
+                verify and correct the AI's categorisation at a glance */}
+            {scan.status !== 'processing' && (
+              <RfpTaxonomyBar scan={scan} rfpData={rfpData} scanId={id} />
             )}
 
             {/* Tabs — scrollable pills on mobile, border tabs on desktop */}

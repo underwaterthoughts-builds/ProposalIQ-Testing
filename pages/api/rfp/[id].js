@@ -113,6 +113,20 @@ function handler(req, res) {
   if (req.method === 'POST') {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
 
+    if (body.action === 'update_taxonomy') {
+      // Update the scan's taxonomy classification (user correction)
+      const updates = [];
+      const params = [];
+      if ('client_industry' in body) { updates.push('client_industry = ?'); params.push(body.client_industry || null); }
+      if ('service_industry' in body) { updates.push('service_industry = ?'); params.push(body.service_industry || null); }
+      if ('client_sectors' in body) { updates.push('client_sectors = ?'); params.push(JSON.stringify(body.client_sectors || [])); }
+      if ('service_sectors' in body) { updates.push('service_sectors = ?'); params.push(JSON.stringify(body.service_sectors || [])); }
+      if (updates.length > 0) {
+        db.prepare(`UPDATE rfp_scans SET ${updates.join(', ')} WHERE id = ?`).run(...params, id);
+      }
+      return res.status(200).json({ ok: true });
+    }
+
     if (body.action === 'suppress') {
       db.prepare('INSERT OR IGNORE INTO rfp_scan_suppressions (scan_id, project_id) VALUES (?, ?)').run(id, body.project_id);
       return res.status(200).json({ ok: true });
