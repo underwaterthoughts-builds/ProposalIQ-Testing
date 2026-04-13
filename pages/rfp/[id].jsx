@@ -33,9 +33,6 @@ const RfpTaxonomyBar = memo(function RfpTaxonomyBar({ scan, rfpData, scanId }) {
   async function saveTaxonomy(field, value) {
     setSaving(true);
     try {
-      // PATCH the rfp_scans row directly
-      const { getDb } = await import('../../lib/db');
-      // Can't call getDb client-side — use a lightweight API call instead
       await fetch(`/api/rfp/${scanId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
