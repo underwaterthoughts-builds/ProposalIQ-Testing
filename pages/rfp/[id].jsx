@@ -626,6 +626,15 @@ ${sectionHtml('Winning Language', languageHtml)}
                 </button>
               </div>
             )}
+            {scan.status === 'deep_failed' && (
+              <div className="flex items-center gap-3 px-5 py-3 text-sm border-b" style={{ background:'#faeeeb', borderColor:'rgba(176,64,48,.25)', color:'#b04030' }}>
+                <span style={{ fontSize: 16 }}>⚠</span>
+                <span className="flex-1">
+                  {scan.status_detail || 'Deep analysis failed after retries.'}{' '}
+                  Fast verdict is available above; use Re-scan to try again.
+                </span>
+              </div>
+            )}
             {scan.status === 'error' && (
               <div className="px-5 py-3 text-sm border-b" style={{ background:'#faeeeb', borderColor:'rgba(176,64,48,.2)', color:'#b04030' }}>
                 <div className="font-semibold mb-1">⚠ Scan error</div>

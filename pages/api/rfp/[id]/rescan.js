@@ -26,7 +26,7 @@ async function handler(req, res) {
   // We deliberately do NOT wipe the existing results — they stay visible
   // until the new pipeline overwrites them, so the user always has
   // something to look at.
-  db.prepare("UPDATE rfp_scans SET status='processing' WHERE id=?").run(id);
+  db.prepare("UPDATE rfp_scans SET status='processing', deep_retry_count=0, status_detail=NULL WHERE id=?").run(id);
 
   res.status(202).json({ scanId: id, message: 'Re-analysis started' });
 
