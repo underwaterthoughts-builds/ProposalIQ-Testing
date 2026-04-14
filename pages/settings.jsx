@@ -158,19 +158,40 @@ export default function Settings() {
     <>
       <Head><title>Settings — ProposalIQ</title></Head>
       <Layout title="Settings" subtitle="Platform configuration" user={user}>
-        <div className="flex flex-col h-full overflow-hidden">
-          {/* Tab bar */}
-          <div className="flex border-b bg-white flex-shrink-0" style={{ borderColor:'#ddd5c4' }}>
-            {[['general','General'],['ai','AI Configuration'],['costs','AI Costs'],['prompts','AI Prompts'],['taxonomy','Taxonomy'],['storage','Data & Storage']].map(([id,label]) => (
-              <button key={id} onClick={() => setActiveTab(id)}
-                className="px-5 py-3 text-[12.5px] font-medium border-b-2 transition-all"
-                style={{ borderColor: activeTab===id?'#1e4a52':'transparent', color: activeTab===id?'#1e4a52':'#6b6456' }}>
-                {label}
-              </button>
-            ))}
+        <div className="flex flex-col h-full overflow-hidden bg-surface">
+
+          {/* Editorial header */}
+          <header className="px-8 pt-12 pb-8">
+            <h1 className="text-4xl md:text-5xl font-headline font-bold tracking-tight text-on-surface mb-2">Settings</h1>
+            <p className="text-on-surface-variant font-body">Configure ProposalIQ workspace intelligence and data governance.</p>
+          </header>
+
+          {/* Bento-style tabs */}
+          <div className="px-8 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+              {[['general','General'],['ai','AI Configuration'],['costs','AI Costs'],['prompts','AI Prompts'],['taxonomy','Taxonomy'],['storage','Data & Storage']].map(([id,label], i) => {
+                const active = activeTab === id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setActiveTab(id)}
+                    className={`flex flex-col gap-2 p-4 text-left transition-colors ${
+                      active
+                        ? 'bg-surface-container-low border-b-2 border-primary-container text-primary'
+                        : 'bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low border-b-2 border-transparent'
+                    }`}
+                  >
+                    <span className="text-[10px] font-label uppercase tracking-widest text-outline">
+                      Section {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="font-medium text-sm">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6" style={{ background:'#faf7f2' }}>
+          <div className="flex-1 overflow-y-auto px-8 pb-8 bg-surface">
 
             {activeTab === 'general' && (
               <div className="max-w-2xl mx-auto space-y-5">
