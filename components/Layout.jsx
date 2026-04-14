@@ -9,13 +9,13 @@ const NAV = [
   { href: '/repository', label: 'Repository' },
   { href: '/rfp',        label: 'Intelligence' },
   { href: '/team',       label: 'Team' },
+  { href: '/clients',    label: 'Clients' },
   { href: '/settings',   label: 'Settings' },
+  { href: '/users',      label: 'Users' },
 ];
 
-// Secondary nav (mobile drawer only — less-used pages)
+// Secondary nav (mobile drawer only)
 const SECONDARY_NAV = [
-  { href: '/clients', label: 'Clients' },
-  { href: '/users',   label: 'Users' },
   { href: '/onboarding/profile', label: 'Organisation Profile' },
 ];
 
