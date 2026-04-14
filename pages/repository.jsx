@@ -577,6 +577,22 @@ export default function Repository() {
   }
   useEffect(()=>{ loadProjects(); },[selectedFolder,search,semanticSearch,selectedOffering,selectedServiceIndustry,selectedClientIndustry]);
 
+  // Refetch when the tab becomes visible after being hidden. Covers the case
+  // where AI analysis was triggered from another tab, an admin tool, or an
+  // auto-retry the user wasn't watching — their User/AI/System ratings
+  // reflect the latest state on return without requiring a manual reload.
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === 'visible') loadProjects();
+    }
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
+  }, []);
+
   async function loadFolders(){ const r=await fetch('/api/folders'); const d=await r.json(); setFolders(d.folders||[]); }
   async function loadProjects(resetStuck = false){    setLoading(true);
     // Auto-reset projects stuck in 'indexing' state before loading

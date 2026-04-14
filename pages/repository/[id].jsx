@@ -453,6 +453,22 @@ export default function ProjectDetail() {
   const [taxItems, setTaxItems] = useState([]);
 
   useEffect(() => { if (id) loadProject(); }, [id]);
+
+  // Refetch on tab focus / visibility so User/AI/System ratings reflect
+  // any analysis that ran while the user was away (another tab, auto-
+  // retry, admin rescan). No-op if the id hasn't loaded yet.
+  useEffect(() => {
+    if (!id) return;
+    function onVisible() {
+      if (document.visibilityState === 'visible') loadProject();
+    }
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
+  }, [id]);
   useEffect(() => {
     fetch('/api/taxonomy').then(r => r.json()).then(d => setTaxItems(d.items || [])).catch(() => {});
   }, []);
