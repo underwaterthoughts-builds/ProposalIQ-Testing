@@ -500,6 +500,8 @@ ${sectionHtml('Winning Language', languageHtml)}
     { id:'language', label:'Winning Language', count:winningLanguage.length },
     { id:'narrative', label:'Narrative Advice', badge: narrativeText ? '✎' : null },
     { id:'assembly', label:'Proposal Assembly', badge: '⊞' },
+    { id:'document', label:'View RFP', badge: scan.rfp_filename ? '📄' : null },
+    { id:'plaintext', label:'Plain Text', count: scan.rfp_text ? Math.round((scan.rfp_text.length || 0) / 1000) : 0 },
   ];
 
   // Quick view — uses the same ExecutiveBrief component as the Overview tab
@@ -1321,6 +1323,10 @@ ${sectionHtml('Winning Language', languageHtml)}
                   onGenerateTemplate={generateTemplate} onExportBriefing={exportBriefing}
                   generatingTemplate={generatingTemplate} templateDraftMode={templateDraftMode}
                   setTemplateDraftMode={setTemplateDraftMode} exporting={exporting} />
+              ) : activeTab === 'document' ? (
+                <RfpDocumentTab scan={scan} />
+              ) : activeTab === 'plaintext' ? (
+                <RfpPlainTextTab scan={scan} />
               ) : (
                 <div className="text-center py-12"><p className="text-sm" style={{ color:'#d0c5b0' }}>Select a tab above.</p></div>
               )}
@@ -3119,5 +3125,89 @@ const NewsCard = memo(function NewsCard({ item: n }) {
         </a>
       )}
     </Card>
+  );
+});
+
+// ── VIEW RFP DOCUMENT TAB ───────────────────────────────────────────────
+// Inline iframe of the uploaded source RFP. PDFs embed directly; other
+// types show a download CTA since browsers can't preview them natively.
+const RfpDocumentTab = memo(function RfpDocumentTab({ scan }) {
+  const [loaded, setLoaded] = useState(false);
+  const filename = scan.rfp_original_name || scan.rfp_filename || '';
+  const ext = filename.toLowerCase().split('.').pop();
+  const isPdf = ext === 'pdf';
+
+  if (!scan.rfp_filename) {
+    return <div className="text-center py-16 text-on-surface-variant">No source file attached to this scan.</div>;
+  }
+
+  if (!loaded) {
+    return (
+      <div className="text-center py-16 bg-surface-container-low">
+        <span className="material-symbols-outlined text-5xl text-primary/40">picture_as_pdf</span>
+        <h3 className="font-headline text-xl mt-4 text-on-surface">{filename || 'RFP document'}</h3>
+        <p className="font-body text-sm mt-2 text-on-surface-variant max-w-md mx-auto">
+          {isPdf
+            ? 'Click to load the full PDF inline. Deferred so the workbench stays snappy.'
+            : `This document is a .${ext} file — inline preview is only supported for PDFs. Use the download link to view it.`}
+        </p>
+        <div className="flex gap-3 justify-center mt-6">
+          {isPdf && (
+            <button
+              onClick={() => setLoaded(true)}
+              className="bg-primary text-on-primary px-6 py-3 text-[10px] font-label uppercase tracking-widest font-bold"
+            >
+              Load PDF
+            </button>
+          )}
+          <a
+            href={`/api/rfp/${scan.id}/download`}
+            target="_blank" rel="noopener noreferrer"
+            className="border border-outline/30 text-on-surface-variant hover:text-on-surface px-6 py-3 text-[10px] font-label uppercase tracking-widest flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-sm">download</span>
+            Open / Download
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-surface-container-lowest">
+      <iframe
+        src={`/api/rfp/${scan.id}/download`}
+        title="RFP document"
+        className="w-full"
+        style={{ height: 'calc(100vh - 280px)', minHeight: 600, border: 'none' }}
+      />
+    </div>
+  );
+});
+
+// ── RFP PLAIN TEXT TAB ──────────────────────────────────────────────────
+// rfp_text is already loaded with the scan payload (first 50k chars),
+// so no extra fetch is needed — render what we have.
+const RfpPlainTextTab = memo(function RfpPlainTextTab({ scan }) {
+  const text = scan.rfp_text || '';
+  if (!text) {
+    return <div className="text-center py-16 text-on-surface-variant">No extracted text available for this scan.</div>;
+  }
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  return (
+    <div className="bg-surface-container-low">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-outline-variant/10">
+        <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
+          Extracted Text
+        </div>
+        <div className="font-label text-[10px] text-on-surface-variant/60">
+          {words.toLocaleString()} words · {text.length.toLocaleString()} chars
+          {text.length >= 50000 && ' · truncated to 50k'}
+        </div>
+      </div>
+      <pre className="font-body text-sm leading-relaxed whitespace-pre-wrap text-on-surface p-6 overflow-auto max-h-[75vh]">
+        {text}
+      </pre>
+    </div>
   );
 });
