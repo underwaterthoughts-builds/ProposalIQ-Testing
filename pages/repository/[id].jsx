@@ -613,32 +613,92 @@ export default function ProjectDetail() {
   return (
     <>
       <Head><title>{project.name} — ProposalIQ</title></Head>
-      <Layout title={project.name} subtitle={`${project.client} · ${project.sector}`} user={user}
-        actions={
-          <div className="flex gap-2">
-            <Link href="/repository"><Btn variant="ghost">← Repository</Btn></Link>
-            <Btn variant="danger" onClick={deleteProject} disabled={deleting}>
-              {deleting ? <><Spinner size={12} /> Deleting…</> : '✕ Delete'}
-            </Btn>
-          </div>
-        }>
-        <div className="flex h-full overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6">
+      <Layout title={project.name} user={user}>
+        <div className="flex h-full overflow-hidden bg-surface relative">
 
-            {/* Header */}
-            <div className="flex items-start gap-4 mb-5">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1.5">
-                  <OutcomeLabel outcome={project.outcome} />
-                  <Stars rating={project.user_rating} />
-                  <span className="text-xs font-mono" style={{ color: '#b8962e' }}>AI weight: {Math.round((project.ai_weight || 0.4) * 100)}%</span>
-                </div>
-                <div className="text-sm" style={{ color: '#6b6456' }}>
-                  {project.project_type} · {formatMoney(project.contract_value, project.currency)} · {project.date_submitted}
+          {/* Background atmospheric accents */}
+          <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+            <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
+            <div className="absolute top-1/2 -right-48 w-[600px] h-[600px] bg-primary-container/5 rounded-full blur-[160px]" />
+          </div>
+
+          {/* Side rotated editorial mark */}
+          <div className="fixed right-0 top-1/3 -rotate-90 origin-right hidden xl:block pointer-events-none z-0">
+            <span className="font-label text-[10px] uppercase tracking-[1em] text-outline/30">
+              ProposalIQ ARCHIVE — CONFIDENTIAL
+            </span>
+          </div>
+
+          <div className="flex-1 overflow-y-auto relative z-10">
+            <div className="max-w-[900px] mx-auto px-6 md:px-10 pt-8 pb-20">
+
+              {/* Breadcrumb + actions */}
+              <div className="flex justify-between items-center mb-12 flex-wrap gap-4">
+                <nav className="flex items-center gap-2 text-on-surface-variant font-label text-xs uppercase tracking-widest">
+                  <Link href="/repository" className="hover:text-primary transition-colors">Repository</Link>
+                  <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                  <span className="text-on-surface truncate max-w-[200px]">{project.id.slice(0, 12).toUpperCase()}</span>
+                </nav>
+                <div className="flex gap-4 items-center">
+                  <span className="text-xs font-label text-primary uppercase tracking-wider">AI weight: {Math.round((project.ai_weight || 0.4) * 100)}%</span>
+                  <button
+                    onClick={deleteProject}
+                    disabled={deleting}
+                    className="material-symbols-outlined text-on-surface-variant hover:text-error transition-colors"
+                    title="Delete project"
+                  >
+                    {deleting ? 'sync' : 'delete'}
+                  </button>
+                  <Link href="/repository" className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors" title="Back to repository">
+                    arrow_back
+                  </Link>
                 </div>
               </div>
-              <div className="flex gap-2">{files.map(f => <FileChip key={f.id} type={f.file_type} />)}</div>
-            </div>
+
+              {/* Editorial identity */}
+              <section className="mb-12">
+                <div className="flex flex-col gap-6">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div className="inline-flex items-center gap-3 px-3 py-1 bg-surface-container-low w-fit rounded-full border border-outline-variant/10">
+                      <span
+                        className={`w-2 h-2 rounded-full ${
+                          project.outcome === 'won' ? 'bg-[#4ade80]' :
+                          project.outcome === 'lost' ? 'bg-error' :
+                          project.outcome === 'withdrawn' ? 'bg-outline-variant' :
+                          'bg-primary'
+                        }`}
+                      />
+                      <span className="font-label text-[10px] uppercase tracking-tighter text-on-surface-variant font-bold">
+                        Outcome: {project.outcome || 'pending'}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      {files.map(f => <FileChip key={f.id} type={f.file_type} />)}
+                    </div>
+                  </div>
+
+                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-headline font-light tracking-tight leading-[1.1] text-on-surface">
+                    {project.name}
+                  </h1>
+
+                  <div className="flex flex-wrap items-end justify-between gap-6 pt-6">
+                    <div>
+                      <p className="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-1">Lead Client</p>
+                      <p className="text-xl font-headline italic">{project.client || '—'}</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      {project.user_rating > 0 && <Stars rating={project.user_rating} />}
+                      {project.user_rating > 0 && (
+                        <span className="font-label text-lg">{project.user_rating.toFixed(1)}</span>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-1">Value</p>
+                      <p className="font-label text-xl text-primary">{formatMoney(project.contract_value, project.currency)}</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
 
             {/* Status banners */}
             {(project.indexing_status === 'indexing' || reindexing) && (
