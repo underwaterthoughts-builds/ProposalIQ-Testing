@@ -674,14 +674,27 @@ ${sectionHtml('Winning Language', languageHtml)}
                     <RfpTaxonomyBar scan={scan} rfpData={rfpData} scanId={id} />
                   </div>
 
-                  {(scan.status === 'complete' || scan.status === 'fast_ready') && scan.analysis_model !== 'gpt' && (
+                  {scan.status === 'fast_ready' && (
+                    <div className="mt-4 flex items-start gap-2 text-xs text-secondary bg-secondary/5 px-4 py-3 border-l-2 border-secondary">
+                      <span className="material-symbols-outlined text-base flex-shrink-0 animate-pulse">sync</span>
+                      <span>
+                        <strong className="text-on-surface">Deep pass running.</strong>{' '}
+                        Verdict and matches are ready; Opportunity Gaps, Win Strategy, Winning Language,
+                        Suggested Approach, Narrative Advice and Proposal Assembly will populate over the next
+                        2–3 minutes. Refresh the page if they don't appear after that.
+                      </span>
+                    </div>
+                  )}
+                  {scan.status === 'complete' && scan.analysis_model !== 'gpt' && (
                     <div className="mt-4 flex items-start gap-2 text-xs text-secondary bg-secondary/5 px-4 py-3 border-l-2 border-secondary">
                       <span className="material-symbols-outlined text-base flex-shrink-0">info</span>
                       <span>
-                        Quick scan only — Gemini handled extraction and matching, but several deep tabs
-                        (Opportunity Gaps, Win Strategy, Winning Language, Suggested Approach, Narrative Advice,
-                        Proposal Assembly) need OpenAI to generate quality output. Configure OPENAI_API_KEY in
-                        Railway and rescan for full results.
+                        <strong className="text-on-surface">Pipeline finished — quick scan only.</strong>{' '}
+                        The deep tabs (Opportunity Gaps, Win Strategy, Winning Language, Suggested Approach,
+                        Narrative Advice, Proposal Assembly) need OpenAI to generate quality content; on Gemini
+                        alone they finish empty. Set <code className="px-1 bg-surface-container-highest text-primary">OPENAI_API_KEY</code> in
+                        Railway, then click <strong className="text-on-surface">Rescan</strong> on this page to
+                        regenerate everything.
                       </span>
                     </div>
                   )}
