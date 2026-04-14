@@ -243,20 +243,45 @@ export default function Team() {
             )}
           </div>
         }>
-        <div className="flex flex-col h-full overflow-hidden">
-          {/* Tab bar */}
-          <div className="flex border-b bg-white flex-shrink-0" style={{borderColor:'#ddd5c4'}}>
-            {[['members','Team Members'],['ratecard','Rate Card']].map(([id,label])=>(
-              <button key={id} onClick={()=>setActiveTab(id)}
-                className="px-5 py-3 text-[12.5px] font-medium border-b-2 transition-all"
-                style={{borderColor:activeTab===id?'#1e4a52':'transparent',color:activeTab===id?'#1e4a52':'#6b6456'}}>
-                {label}
-              </button>
-            ))}
+        <div className="flex flex-col h-full overflow-hidden bg-surface relative">
+
+          {/* Decorative background accent */}
+          <div className="fixed top-0 right-0 -z-0 w-1/3 h-full opacity-[0.06] pointer-events-none">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,#e8c357_0%,transparent_50%)]" />
           </div>
 
-          <div className="flex flex-1 overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6">
+          {/* Editorial hero */}
+          <header className="relative z-10 px-6 md:px-12 pt-12 pb-8 grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
+            <div className="col-span-12 md:col-span-5">
+              <h1 className="text-5xl md:text-7xl font-headline leading-[0.95] tracking-tighter text-on-surface">
+                The <br/>
+                <span className="text-primary italic">Consortium.</span>
+              </h1>
+            </div>
+            <div className="col-span-12 md:col-span-6 md:col-start-7">
+              <p className="text-base md:text-lg text-on-surface-variant leading-relaxed max-w-xl">
+                Your strategic bid team: architects, technical writers, and domain experts. Managed through a transparent rate card and CV-matched to each opportunity.
+              </p>
+              <div className="mt-8 flex gap-6 border-b border-outline-variant/10">
+                {[['members', 'Team Members'], ['ratecard', 'Rate Card']].map(([id, label]) => (
+                  <button
+                    key={id}
+                    onClick={() => setActiveTab(id)}
+                    className={`pb-4 border-b-2 font-label text-sm tracking-widest uppercase transition-colors ${
+                      activeTab === id
+                        ? 'border-primary text-primary font-bold'
+                        : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </header>
+
+          <div className="flex flex-1 overflow-hidden relative z-10">
+          <div className="flex-1 overflow-y-auto px-6 md:px-12 pb-12">
 
             {/* Import preview table */}
             {showImport && (
@@ -318,103 +343,168 @@ export default function Team() {
             {loading ? (
               <div className="flex items-center gap-2 py-12 justify-center" style={{ color: '#6b6456' }}><Spinner /> Loading team…</div>
             ) : members.length === 0 && !showImport ? (
-              <div className="text-center py-16">
-                <div className="text-4xl mb-3 opacity-25">◉</div>
-                <div className="font-serif text-lg mb-2 opacity-40">No team members yet</div>
-                <p className="text-sm mb-4" style={{ color: '#6b6456' }}>Add people manually or import from a spreadsheet, Word doc, or CSV.</p>
-                <div className="flex gap-3 justify-center">
-                  <Btn variant="teal" onClick={() => setShowAdd(true)}>⊕ Add Manually</Btn>
-                  <label className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12.5px] font-medium rounded-md border border-[#ddd5c4] hover:bg-cream cursor-pointer">
+              <div className="text-center py-24">
+                <span className="material-symbols-outlined text-6xl text-outline opacity-40">groups</span>
+                <h3 className="font-headline text-2xl mt-6 text-on-surface">Assemble your consortium</h3>
+                <p className="text-sm mt-2 text-on-surface-variant max-w-md mx-auto">
+                  Add strategists, technical writers, and domain experts. Each is CV-matched to RFPs automatically.
+                </p>
+                <div className="flex gap-3 justify-center mt-8">
+                  <button
+                    onClick={() => setShowAdd(true)}
+                    className="bg-primary text-on-primary px-6 py-3 text-xs font-label uppercase tracking-widest font-bold"
+                  >
+                    Add Manually
+                  </button>
+                  <label className="inline-flex items-center gap-2 px-6 py-3 border border-outline/30 text-on-surface text-xs font-label uppercase tracking-widest cursor-pointer hover:bg-surface-container-high transition-colors">
                     <input type="file" accept=".xlsx,.xls,.csv,.docx,.doc,.txt" className="hidden" onChange={handleSpreadsheetSelect} />
-                    ⊞ Import File
+                    <span className="material-symbols-outlined text-sm">upload</span>
+                    Import File
                   </label>
                 </div>
               </div>
             ) : (
-              <div className="space-y-3">
-                {members.map(m => {
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {members.map((m, i) => {
                   const memberHistory = history.filter(h => h.member_id === m.id);
                   const cv = m.cv_extracted || {};
+                  const isSelected = selectedIds.has(m.id);
+
+                  // Tier badge — rough heuristic based on years + rate
+                  const tier = m.years_experience >= 15 ? 'Lead'
+                    : m.years_experience >= 8 ? 'Expert'
+                    : 'Staff';
+
                   return (
-                    <Card key={m.id} className="overflow-hidden">
-                      <div className="flex items-start gap-4 p-4" style={selectedIds.has(m.id) ? {background:'#e8f2f4'} : {}}>
-                        <div className="w-11 h-11 rounded-full flex items-center justify-center text-base font-bold text-white flex-shrink-0"
-                          style={{ background: m.color || '#2d6b78' }}>
-                          {m.name.split(' ').map(n => n[0]).join('')}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <div className="text-sm font-semibold flex items-center gap-2">
-                                {m.name}
-                                {m.cv_filename && <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: '#e8f2f4', color: '#1e4a52' }}>CV ✓</span>}
-                              </div>
-                              <div className="text-xs mb-2" style={{ color: '#6b6456' }}>{m.title} · {m.years_experience} yrs exp</div>
+                    <div
+                      key={m.id}
+                      className={`bg-surface-container-high p-8 flex flex-col gap-6 group hover:bg-surface-container-highest transition-all duration-300 ${isSelected ? 'outline outline-2 outline-primary' : ''}`}
+                    >
+                      {/* Header: avatar + tier tag */}
+                      <div className="flex justify-between items-start">
+                        <div className="w-20 h-20 bg-surface-container-lowest overflow-hidden flex items-center justify-center">
+                          {m.cv_filename ? (
+                            <div className="w-full h-full flex items-center justify-center text-lg font-bold text-primary bg-surface-container-low">
+                              {m.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                             </div>
-                            <div className="flex gap-2 flex-shrink-0 items-center">
-                              {selectMode ? (
-                                <input type="checkbox" checked={selectedIds.has(m.id)}
-                                  onChange={() => toggleSelectMember(m.id)}
-                                  className="w-4 h-4 cursor-pointer" style={{accentColor:'#1e4a52'}} />
-                              ) : (
-                                <>
-                                  <Btn size="sm" variant="ghost" onClick={() => { setEditMember(m); setShowAdd(true); }}>Edit</Btn>
-                                  <Btn size="sm" variant="danger" onClick={() => deleteMember(m.id, m.name)}>Remove</Btn>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex flex-wrap gap-1.5 mb-1">
-                            {(m.stated_specialisms || []).map(s => (
-                              <span key={s} className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: '#e8f2f4', color: '#1e4a52' }}>{s}</span>
-                            ))}
-                          </div>
-                          {cv.certifications?.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {cv.certifications.slice(0, 3).map(c => (
-                                <span key={c} className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: '#edf3ec', color: '#3d5c3a' }}>{c}</span>
-                              ))}
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-lg font-bold text-on-surface-variant">
+                              {m.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                             </div>
                           )}
-                          {memberHistory.length > 0 && (
-                            <div className="mt-1 text-[10px] font-mono" style={{ color: '#6b6456' }}>
-                              {memberHistory.length} project{memberHistory.length !== 1 ? 's' : ''} · {memberHistory.filter(h => h.outcome === 'won').length} won
-                            </div>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          {selectMode ? (
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleSelectMember(m.id)}
+                              className="w-4 h-4 cursor-pointer"
+                              style={{ accentColor: '#e8c357' }}
+                            />
+                          ) : (
+                            <span className="text-xs font-label text-primary font-bold tracking-[0.2em] uppercase">{tier}</span>
                           )}
                         </div>
                       </div>
-                      <div className="grid grid-cols-4 border-t" style={{ borderColor: '#f0ebe0' }}>
-                        {[
-                          ['Client / Day', `£${m.day_rate_client.toLocaleString()}`],
-                          ['Cost / Day', `£${m.day_rate_cost.toLocaleString()}`],
-                          ['Margin', `${m.day_rate_client ? Math.round((1 - m.day_rate_cost / m.day_rate_client) * 100) : 0}%`],
-                          ['Availability', m.availability.split(' — ')[0] || m.availability],
-                        ].map(([lbl, val], i) => (
-                          <div key={lbl} className={`px-3 py-2 text-center ${i > 0 ? 'border-l' : ''}`} style={{ borderColor: '#f0ebe0' }}>
-                            <div className="text-xs font-mono font-medium">{val}</div>
-                            <div className="text-[10px] font-mono mt-0.5" style={{ color: '#6b6456' }}>{lbl}</div>
-                          </div>
+
+                      {/* Name + title */}
+                      <div>
+                        <h3 className="text-2xl font-headline font-bold text-on-surface">
+                          {m.name}
+                          {m.cv_filename && (
+                            <span className="ml-2 text-[10px] font-label px-1.5 py-0.5 bg-primary/10 text-primary align-middle">CV</span>
+                          )}
+                        </h3>
+                        <p className="text-on-surface-variant font-body text-sm mt-1">
+                          {m.title}
+                          {m.years_experience ? ` · ${m.years_experience} yrs` : ''}
+                        </p>
+                      </div>
+
+                      {/* Tag chips */}
+                      <div className="flex flex-wrap gap-2">
+                        {(m.stated_specialisms || []).slice(0, 3).map(s => (
+                          <span
+                            key={s}
+                            className="px-3 py-1 text-[10px] font-label font-bold uppercase tracking-widest"
+                            style={{ background: '#1a2e2c', color: '#4db6ac' }}
+                          >
+                            {s}
+                          </span>
+                        ))}
+                        {(cv.certifications || []).slice(0, 2).map(c => (
+                          <span
+                            key={c}
+                            className="px-3 py-1 text-[10px] font-label font-bold uppercase tracking-widest"
+                            style={{ background: '#1f261e', color: '#a5d6a7' }}
+                          >
+                            {c}
+                          </span>
                         ))}
                       </div>
-                    </Card>
+
+                      {/* History line */}
+                      {memberHistory.length > 0 && (
+                        <div className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant/60">
+                          {memberHistory.length} project{memberHistory.length === 1 ? '' : 's'} · {memberHistory.filter(h => h.outcome === 'won').length} won
+                        </div>
+                      )}
+
+                      {/* Footer: rate + CTA */}
+                      <div className="mt-auto pt-6 border-t border-outline-variant/10 flex justify-between items-center">
+                        <div className="text-xl font-label font-light text-on-surface">
+                          £{m.day_rate_client?.toLocaleString() || '—'}
+                          <span className="text-xs text-on-surface-variant ml-1">/ day</span>
+                        </div>
+                        {!selectMode && (
+                          <button
+                            onClick={() => { setEditMember(m); setShowAdd(true); }}
+                            className="text-primary group-hover:translate-x-1 transition-transform"
+                            title="Edit member"
+                          >
+                            <span className="material-symbols-outlined">arrow_forward</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   );
                 })}
-                <button onClick={() => { setEditMember(null); setShowAdd(true); }}
-                  className="w-full border-2 border-dashed rounded-lg p-5 text-center transition-all hover:border-teal/50" style={{ borderColor: '#ddd5c4' }}>
-                  <div className="text-xl mb-1 opacity-40">⊕</div>
-                  <div className="text-sm" style={{ color: '#6b6456' }}>Add another team member</div>
+
+                {/* Recruit / add member card */}
+                <button
+                  onClick={() => { setEditMember(null); setShowAdd(true); }}
+                  className="bg-surface-container-lowest border-2 border-dashed border-outline-variant/20 p-8 flex flex-col justify-center items-center text-center gap-4 hover:border-primary/50 transition-colors"
+                >
+                  <div className="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
+                    <span className="material-symbols-outlined text-3xl">add</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-headline font-bold text-on-surface">Add to the Consortium</h3>
+                    <p className="text-on-surface-variant text-sm mt-2">Add a team member manually or import via spreadsheet.</p>
+                  </div>
+                  <span className="mt-2 text-primary text-xs font-label font-bold uppercase tracking-widest border-b border-primary pb-1">
+                    New Member
+                  </span>
                 </button>
               </div>
             )}
           {activeTab === 'ratecard' && (
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto bg-surface">
+              {/* Editorial divider */}
+              <div className="flex items-center gap-6 mb-12">
+                <div className="h-[1px] flex-grow bg-outline-variant/20" />
+                <h2 className="text-3xl md:text-4xl font-headline italic text-on-surface-variant">Strategic Rate Card</h2>
+                <div className="h-[1px] flex-grow bg-outline-variant/20" />
+              </div>
+
               {/* Role import preview */}
               {showRoleImport && (
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <h2 className="font-serif text-base">Review Role Import</h2>
-                      <p className="text-xs mt-0.5" style={{color:'#6b6456'}}>{roleImportRows.length} roles found — review then import.</p>
+                      <h2 className="font-headline text-lg text-on-surface">Review Role Import</h2>
+                      <p className="text-xs mt-0.5 text-on-surface-variant">{roleImportRows.length} roles found — review then import.</p>
                     </div>
                     <div className="flex gap-2">
                       <Btn variant="ghost" onClick={()=>{setShowRoleImport(false);setRoleImportRows([]);}}>Cancel</Btn>
