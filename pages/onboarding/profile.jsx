@@ -167,7 +167,7 @@ export default function OnboardingProfile() {
   if (authLoading) return null;
   if (!user) return null;
   if (loading) return (
-    <div className="flex items-center justify-center h-screen" style={{ background: '#faf7f2' }}>
+    <div className="flex items-center justify-center h-screen bg-surface">
       <Spinner size={28} />
     </div>
   );
@@ -175,62 +175,88 @@ export default function OnboardingProfile() {
   return (
     <>
       <Head><title>Organisation Profile — ProposalIQ</title></Head>
-      <Layout title="Organisation Profile" subtitle="Tell ProposalIQ what your organisation actually does — so recommendations match your real capabilities." user={user}>
-        <div className="max-w-4xl mx-auto p-6">
+      <Layout title="Organisation Profile" user={user}>
+        <div className="bg-surface min-h-screen">
+        <div className="max-w-4xl mx-auto p-6 md:p-8">
+
+          {/* Editorial header */}
+          <header className="mb-10">
+            <h1 className="text-4xl md:text-5xl font-headline font-bold tracking-tight text-on-surface mb-3">Organisation Profile</h1>
+            <p className="text-on-surface-variant font-body max-w-2xl leading-relaxed">
+              Tell ProposalIQ what your organisation actually does — so recommendations match your real capabilities.
+            </p>
+          </header>
 
           {/* Existing-profile banner — only when returning to edit */}
           {existing && existing.confirmed_profile?.offerings?.length > 0 && (
-            <div className="rounded-lg p-3 mb-5 text-xs flex items-center gap-3"
-              style={{ background: '#edf3ec', border: '1px solid rgba(61,92,58,.25)', color: '#3d5c3a' }}>
-              <span style={{ fontSize: 14 }}>✓</span>
-              <span className="flex-1">
-                Editing the confirmed profile for <strong>{existing.org_name || 'your organisation'}</strong>.
+            <div className="bg-primary/5 border-l-2 border-primary p-4 mb-6 text-sm flex items-start gap-3">
+              <span className="material-symbols-outlined text-primary text-base flex-shrink-0">check_circle</span>
+              <span className="flex-1 text-on-surface leading-relaxed">
+                Editing the confirmed profile for <strong className="text-primary">{existing.org_name || 'your organisation'}</strong>.
                 Changes save when you click "Save confirmed profile" at the bottom.
-                To switch to a different company entirely, use <a href="/settings" className="underline">Settings → Danger Zone</a>.
+                To switch to a different company entirely, use <a href="/settings" className="underline hover:text-primary">Settings → Danger Zone</a>.
               </span>
             </div>
           )}
 
           {/* Step 1: website URL + scan */}
-          <Card className="p-6 mb-6">
-            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: '#6b6456' }}>
+          <div className="bg-surface-container-low p-6 md:p-8 mb-5">
+            <div className="font-label text-[10px] uppercase tracking-widest mb-4 text-primary">
               {existing?.confirmed_profile?.offerings?.length > 0 ? 'Re-scan website (optional)' : 'Step 1 · Tell us where to look'}
             </div>
 
-            <label className="text-xs font-medium block mb-1.5" style={{ color: '#1a1816' }}>Organisation name</label>
-            <DebouncedInput value={orgName} onCommit={setOrgName} delay={300}
+            <label className="font-label text-[10px] uppercase tracking-widest block mb-2 text-on-surface-variant">Organisation name</label>
+            <DebouncedInput
+              value={orgName}
+              onCommit={setOrgName}
+              delay={300}
               placeholder="e.g. NorthStar Consulting"
-              className="w-full text-sm px-3 py-2 mb-4 border rounded outline-none"
-              style={{ borderColor: '#ddd5c4' }} />
+              className="w-full bg-transparent border-0 border-b border-outline-variant/30 focus:border-primary focus:ring-0 focus:outline-none py-2 mb-6 text-on-surface placeholder:text-outline transition-colors"
+            />
 
             {!showPaste ? (
               <>
-                <label className="text-xs font-medium block mb-1.5" style={{ color: '#1a1816' }}>Website URL</label>
-                <div className="flex gap-2">
-                  <DebouncedInput value={websiteUrl} onCommit={setWebsiteUrl} delay={300}
+                <label className="font-label text-[10px] uppercase tracking-widest block mb-2 text-on-surface-variant">Website URL</label>
+                <div className="flex gap-3 items-end">
+                  <DebouncedInput
+                    value={websiteUrl}
+                    onCommit={setWebsiteUrl}
+                    delay={300}
                     placeholder="https://yourcompany.com"
-                    className="flex-1 text-sm px-3 py-2 border rounded outline-none"
-                    style={{ borderColor: '#ddd5c4' }} />
-                  <Btn variant="teal" onClick={runScan} disabled={scanning || !websiteUrl.trim()}>
-                    {scanning ? <><Spinner size={12} /> Scanning…</> : 'Scan website'}
-                  </Btn>
+                    className="flex-1 bg-transparent border-0 border-b border-outline-variant/30 focus:border-primary focus:ring-0 focus:outline-none py-2 text-on-surface placeholder:text-outline transition-colors"
+                  />
+                  <button
+                    onClick={runScan}
+                    disabled={scanning || !websiteUrl.trim()}
+                    className="bg-primary text-on-primary px-4 py-2 text-[10px] font-label uppercase tracking-widest font-bold disabled:opacity-50 flex items-center gap-2 whitespace-nowrap"
+                  >
+                    {scanning ? <><Spinner size={12} /> Scanning…</> : <>Scan website</>}
+                  </button>
                 </div>
-                <button onClick={() => setShowPaste(true)} className="mt-2 text-[11px] underline" style={{ color: '#6b6456' }}>
+                <button onClick={() => setShowPaste(true)} className="mt-3 text-[11px] font-label uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors">
                   Can't scan your site? Paste your services list instead →
                 </button>
               </>
             ) : (
               <>
-                <label className="text-xs font-medium block mb-1.5" style={{ color: '#1a1816' }}>Paste your services / capabilities text</label>
-                <DebouncedTextarea value={pastedText} onCommit={setPastedText} delay={400}
-                  rows={8} placeholder="Paste the services section from your website, a capability statement, or a credentials deck. The AI will extract structured offerings from whatever you give it."
-                  className="w-full text-sm px-3 py-2 border rounded outline-none font-serif"
-                  style={{ borderColor: '#ddd5c4' }} />
-                <div className="flex gap-2 mt-2">
-                  <Btn variant="teal" onClick={runScan} disabled={scanning || pastedText.trim().length < 20}>
+                <label className="font-label text-[10px] uppercase tracking-widest block mb-2 text-on-surface-variant">Paste your services / capabilities text</label>
+                <DebouncedTextarea
+                  value={pastedText}
+                  onCommit={setPastedText}
+                  delay={400}
+                  rows={8}
+                  placeholder="Paste the services section from your website, a capability statement, or a credentials deck. The AI will extract structured offerings from whatever you give it."
+                  className="w-full bg-surface-container-lowest border border-outline-variant/20 focus:border-primary focus:ring-0 focus:outline-none p-3 text-sm text-on-surface placeholder:text-outline transition-colors font-body"
+                />
+                <div className="flex gap-3 mt-3 items-center">
+                  <button
+                    onClick={runScan}
+                    disabled={scanning || pastedText.trim().length < 20}
+                    className="bg-primary text-on-primary px-4 py-2 text-[10px] font-label uppercase tracking-widest font-bold disabled:opacity-50 flex items-center gap-2"
+                  >
                     {scanning ? <><Spinner size={12} /> Extracting…</> : 'Extract offerings'}
-                  </Btn>
-                  <button onClick={() => setShowPaste(false)} className="text-[11px] underline" style={{ color: '#6b6456' }}>
+                  </button>
+                  <button onClick={() => setShowPaste(false)} className="text-[11px] font-label uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors">
                     ← Back to website URL
                   </button>
                 </div>
@@ -238,39 +264,36 @@ export default function OnboardingProfile() {
             )}
 
             {scanError && (
-              <div className="mt-3 rounded-lg p-3 text-xs" style={{ background: '#faeeeb', color: '#b04030' }}>
+              <div className="mt-4 bg-error-container/20 border-l-2 border-error p-3 text-xs text-error">
                 {scanError}
               </div>
             )}
             {source && source.pages_scraped > 0 && (
-              <div className="mt-3 text-[11px] font-mono" style={{ color: '#9b8e80' }}>
+              <div className="mt-4 text-[11px] font-label uppercase tracking-widest text-on-surface-variant/60">
                 Scanned {source.pages_scraped} page{source.pages_scraped > 1 ? 's' : ''} from {source.hostname}
               </div>
             )}
-          </Card>
+          </div>
 
           {/* Step 2: Review extracted offerings */}
           {offerings.length > 0 && (
-            <Card className="p-6 mb-6">
+            <div className="bg-surface-container-low p-6 md:p-8 mb-5">
               <div className="flex items-baseline justify-between mb-2">
                 <div>
-                  <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#6b6456' }}>Step 2 · Confirm offerings</div>
-                  <h2 className="font-serif text-xl mt-0.5">Here's what we think your offerings are</h2>
+                  <div className="font-label text-[10px] uppercase tracking-widest text-primary">Step 2 · Confirm offerings</div>
+                  <h2 className="font-headline text-xl md:text-2xl mt-1 text-on-surface">Here's what we think your offerings are</h2>
                 </div>
               </div>
-              <p className="text-xs mb-5" style={{ color: '#6b6456' }}>
+              <p className="text-sm text-on-surface-variant mb-6 leading-relaxed">
                 Remove anything wrong, edit wording, and add anything missing.
-                Pin the most central ones as <strong>core</strong>.
+                Pin the most central ones as <strong className="text-on-surface">core</strong>.
                 Your confirmed profile will cascade into gap analysis, win strategy,
-                and recommendations — overwriting any future website scans.
+                and recommendations.
               </p>
 
-              {/* Core offerings section */}
               {coreOfferings.length > 0 && (
-                <div className="mb-5">
-                  <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#3d5c3a' }}>
-                    ★ Core offerings
-                  </div>
+                <div className="mb-6">
+                  <div className="font-label text-[10px] uppercase tracking-widest mb-3 text-primary">★ Core offerings</div>
                   <div className="flex flex-wrap gap-2">
                     {coreOfferings.map((o) => {
                       const i = offerings.indexOf(o);
@@ -281,14 +304,13 @@ export default function OnboardingProfile() {
                 </div>
               )}
 
-              {/* All / secondary offerings */}
               <div className="mb-4">
-                <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#6b6456' }}>
+                <div className="font-label text-[10px] uppercase tracking-widest mb-3 text-on-surface-variant">
                   {coreOfferings.length > 0 ? 'Other offerings' : 'Offerings'}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {secondaryOfferings.length === 0 && coreOfferings.length === 0 && (
-                    <span className="text-xs italic" style={{ color: '#9b8e80' }}>No offerings yet — scan a site or add one manually below.</span>
+                    <span className="text-xs italic text-on-surface-variant/60">No offerings yet — scan a site or add one manually below.</span>
                   )}
                   {secondaryOfferings.map((o) => {
                     const i = offerings.indexOf(o);
@@ -298,80 +320,112 @@ export default function OnboardingProfile() {
                 </div>
               </div>
 
-              {/* Add new offering */}
-              <div className="flex gap-2 mt-4 pt-4 border-t" style={{ borderColor: '#f0ebe0' }}>
-                <DebouncedInput value={newOfferingLabel} onCommit={setNewOfferingLabel} delay={200}
+              <div className="flex gap-3 items-center mt-6 pt-6 border-t border-outline-variant/10">
+                <DebouncedInput
+                  value={newOfferingLabel}
+                  onCommit={setNewOfferingLabel}
+                  delay={200}
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addOffering(); } }}
                   placeholder="Add an offering we missed (e.g. Crisis Communications)"
-                  className="flex-1 text-sm px-3 py-2 border rounded outline-none"
-                  style={{ borderColor: '#ddd5c4' }} />
-                <Btn variant="ghost" onClick={addOffering} disabled={!newOfferingLabel.trim()}>+ Add</Btn>
+                  className="flex-1 bg-transparent border-0 border-b border-outline-variant/30 focus:border-primary focus:ring-0 focus:outline-none py-2 text-on-surface placeholder:text-outline transition-colors"
+                />
+                <button
+                  onClick={addOffering}
+                  disabled={!newOfferingLabel.trim()}
+                  className="px-4 py-2 border border-outline/30 text-on-surface-variant hover:text-primary hover:border-primary text-[10px] font-label uppercase tracking-widest disabled:opacity-40 transition-colors"
+                >
+                  + Add
+                </button>
               </div>
-            </Card>
+            </div>
           )}
 
           {/* Client types */}
           {clientTypes.length > 0 && (
-            <Card className="p-6 mb-6">
-              <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: '#6b6456' }}>Client types you serve</div>
+            <div className="bg-surface-container-low p-6 md:p-8 mb-5">
+              <div className="font-label text-[10px] uppercase tracking-widest mb-4 text-primary">Client types you serve</div>
               <div className="flex flex-wrap gap-2">
                 {clientTypes.map((c, i) => (
-                  <span key={i} className="text-xs px-3 py-1.5 rounded-full border"
-                    style={{ borderColor: 'rgba(184,150,46,.4)', background: 'rgba(184,150,46,.08)', color: '#8a6200' }}>
+                  <span
+                    key={i}
+                    className="text-xs px-3 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary flex items-center"
+                  >
                     ◆ {c.label}
-                    <button onClick={() => setClientTypes(p => p.filter((_, idx) => idx !== i))}
-                      className="ml-2 opacity-60 hover:opacity-100">×</button>
+                    <button
+                      onClick={() => setClientTypes(p => p.filter((_, idx) => idx !== i))}
+                      className="ml-2 opacity-60 hover:opacity-100"
+                    >
+                      ×
+                    </button>
                   </span>
                 ))}
               </div>
-            </Card>
+            </div>
           )}
 
           {/* Positioning */}
           {positioningPhrases.length > 0 && (
-            <Card className="p-6 mb-6">
-              <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: '#6b6456' }}>Positioning phrases</div>
+            <div className="bg-surface-container-low p-6 md:p-8 mb-5">
+              <div className="font-label text-[10px] uppercase tracking-widest mb-4 text-primary">Positioning phrases</div>
               {positioningPhrases.map((p, i) => (
-                <div key={i} className="text-sm italic font-serif mb-2 pl-3 border-l-2" style={{ borderColor: '#b8962e', color: '#5a4810' }}>
+                <div
+                  key={i}
+                  className="text-sm italic font-headline mb-3 pl-4 border-l-2 border-primary text-on-surface-variant leading-relaxed"
+                >
                   "{p}"
-                  <button onClick={() => setPositioningPhrases(arr => arr.filter((_, idx) => idx !== i))}
-                    className="ml-2 text-xs opacity-50 hover:opacity-100">remove</button>
+                  <button
+                    onClick={() => setPositioningPhrases(arr => arr.filter((_, idx) => idx !== i))}
+                    className="ml-3 text-[10px] font-label uppercase tracking-widest text-on-surface-variant/60 hover:text-error transition-colors not-italic"
+                  >
+                    remove
+                  </button>
                 </div>
               ))}
-            </Card>
+            </div>
           )}
 
           {/* Differentiators */}
           {differentiators.length > 0 && (
-            <Card className="p-6 mb-6">
-              <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: '#6b6456' }}>Differentiators</div>
-              <ul className="space-y-1.5">
+            <div className="bg-surface-container-low p-6 md:p-8 mb-5">
+              <div className="font-label text-[10px] uppercase tracking-widest mb-4 text-primary">Differentiators</div>
+              <ul className="space-y-2">
                 {differentiators.map((d, i) => (
-                  <li key={i} className="text-sm flex items-start gap-2">
-                    <span className="flex-shrink-0" style={{ color: '#3d5c3a' }}>▸</span>
-                    <span className="flex-1" style={{ color: '#1a1816' }}>{d}</span>
-                    <button onClick={() => setDifferentiators(arr => arr.filter((_, idx) => idx !== i))}
-                      className="text-xs opacity-50 hover:opacity-100">remove</button>
+                  <li key={i} className="text-sm flex items-start gap-3">
+                    <span className="flex-shrink-0 text-primary">▸</span>
+                    <span className="flex-1 text-on-surface leading-relaxed">{d}</span>
+                    <button
+                      onClick={() => setDifferentiators(arr => arr.filter((_, idx) => idx !== i))}
+                      className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant/60 hover:text-error transition-colors"
+                    >
+                      remove
+                    </button>
                   </li>
                 ))}
               </ul>
-            </Card>
+            </div>
           )}
 
           {/* Save */}
           {offerings.length > 0 && (
-            <div className="flex items-center gap-3 sticky bottom-4">
-              <Btn variant="teal" onClick={saveProfile} disabled={saving}>
-                {saving ? <><Spinner size={12} /> Saving…</> : '✓ Save confirmed profile'}
-              </Btn>
-              <Link href="/settings" className="text-xs" style={{ color: '#6b6456' }}>← Back to settings</Link>
+            <div className="flex items-center gap-4 mt-6 flex-wrap">
+              <button
+                onClick={saveProfile}
+                disabled={saving}
+                className="bg-primary text-on-primary px-6 py-3 text-[10px] font-label uppercase tracking-widest font-bold disabled:opacity-50 flex items-center gap-2"
+              >
+                {saving ? <><Spinner size={12} /> Saving…</> : 'Save confirmed profile'}
+              </button>
+              <Link href="/settings" className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors">
+                ← Back to settings
+              </Link>
               {existing?.updated_at && (
-                <span className="text-[11px] ml-auto font-mono" style={{ color: '#9b8e80' }}>
+                <span className="text-[10px] ml-auto font-label text-on-surface-variant/60 uppercase tracking-widest">
                   Last saved {new Date(existing.updated_at).toLocaleString()}
                 </span>
               )}
             </div>
           )}
+        </div>
         </div>
       </Layout>
       <Toast msg={toast} onClose={() => setToast('')} />
@@ -384,47 +438,54 @@ const OfferingChip = memo(function OfferingChip({ offering, onRemove, onEdit, on
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(offering.label);
 
-  const confColor = offering.confidence === 'high' ? '#3d5c3a' :
-                    offering.confidence === 'low'  ? '#b04030' : '#b8962e';
-  const bg = isCore ? 'rgba(61,92,58,.10)' : 'rgba(30,74,82,.06)';
-  const borderColor = isCore ? 'rgba(61,92,58,.5)' : 'rgba(30,74,82,.3)';
-  const textColor = isCore ? '#3d5c3a' : '#1e4a52';
+  const chipClass = isCore
+    ? 'bg-primary/10 border-primary/40 text-primary'
+    : 'bg-surface-container-highest border-outline-variant/30 text-on-surface-variant';
 
   if (editing) {
     return (
-      <div className="inline-flex items-center gap-1 rounded-full border px-2 py-1"
-        style={{ background: 'white', borderColor: '#1e4a52' }}>
-        <input value={label} onChange={e => setLabel(e.target.value)} autoFocus
+      <div className="inline-flex items-center gap-1 rounded-full border border-primary px-3 py-1 bg-surface-container">
+        <input
+          value={label}
+          onChange={e => setLabel(e.target.value)}
+          autoFocus
           onKeyDown={e => {
             if (e.key === 'Enter') { onEdit({ label: label.trim() }); setEditing(false); }
             if (e.key === 'Escape') { setLabel(offering.label); setEditing(false); }
           }}
-          className="text-xs px-1 outline-none" style={{ minWidth: 120 }} />
+          className="text-xs px-1 outline-none bg-transparent text-on-surface"
+          style={{ minWidth: 120 }}
+        />
         <button onClick={() => { onEdit({ label: label.trim() }); setEditing(false); }}
-          className="text-[10px] px-1" style={{ color: '#1e4a52' }}>✓</button>
+          className="text-[10px] px-1 text-primary">✓</button>
         <button onClick={() => { setLabel(offering.label); setEditing(false); }}
-          className="text-[10px] px-1" style={{ color: '#9b8e80' }}>×</button>
+          className="text-[10px] px-1 text-on-surface-variant">×</button>
       </div>
     );
   }
 
   return (
-    <div className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5"
-      style={{ background: bg, borderColor, color: textColor }}
-      title={offering.evidence ? `"${offering.evidence}"` : undefined}>
+    <div
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 ${chipClass}`}
+      title={offering.evidence ? `"${offering.evidence}"` : undefined}
+    >
       <button onClick={onToggleCore}
-        className="text-[10px] leading-none"
+        className="text-[10px] leading-none hover:brightness-125"
         title={isCore ? 'Unpin as core' : 'Pin as core'}>
         {isCore ? '★' : '☆'}
       </button>
       <span className="text-xs font-medium">{offering.label}</span>
       {offering.canonical_taxonomy_match && (
-        <span className="text-[9px] font-mono opacity-60" title={`Canonical match: ${offering.canonical_taxonomy_match}`}>
+        <span className="text-[9px] font-label opacity-60" title={`Canonical match: ${offering.canonical_taxonomy_match}`}>
           ◈
         </span>
       )}
       {offering.confidence && offering.source === 'website' && (
-        <span className="text-[9px] font-mono" style={{ color: confColor }}>{offering.confidence[0]}</span>
+        <span className={`text-[9px] font-label uppercase ${
+          offering.confidence === 'high' ? 'text-[#6ab187]' :
+          offering.confidence === 'low' ? 'text-error' :
+          'text-secondary'
+        }`}>{offering.confidence[0]}</span>
       )}
       <button onClick={() => setEditing(true)} className="text-[10px] opacity-50 hover:opacity-100" title="Edit">✎</button>
       <button onClick={onRemove} className="text-[11px] opacity-50 hover:opacity-100" title="Remove">×</button>

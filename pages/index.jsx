@@ -8,18 +8,6 @@ const PROMISES = [
   { n: '04', title: 'Work efficiently', body: 'Every proposal your team writes compounds into a smarter engine, reducing burnout and increasing throughput.' },
 ];
 
-const PIPELINE = [
-  'Ingest Knowledge Base',
-  'Vectorize Win-Themes',
-  'Tender Analysis',
-  'Gap Identification',
-  'Semantic Retrieval',
-  'Draft Generation',
-  'Compliance Audit',
-  'Peer Intelligence',
-  'Final Submission',
-];
-
 const INDUSTRIES = [
   { name: 'Management Consulting', body: 'Synthesize complex frameworks and past engagement successes into persuasive technical proposals.' },
   { name: 'Creative & PR', body: 'Protect your creative IP while ensuring historical campaign data supports every brand pitch.' },
@@ -108,43 +96,6 @@ export default function Home() {
                   <p className="font-body text-sm text-on-surface-variant leading-relaxed">{p.body}</p>
                 </div>
               ))}
-            </div>
-          </section>
-
-          {/* ── HOW IT WORKS ─────────────────────────────────────────────── */}
-          <section className="bg-[#0f0e0c] py-32 px-6 md:px-12 flex flex-col md:flex-row gap-20">
-            <div className="md:w-5/12">
-              <span className="font-label text-xs tracking-[0.3em] text-primary uppercase block mb-6">One Engine, Two Views</span>
-              <h2 className="font-headline text-5xl leading-tight mb-12">Designed for the entire proposal lifecycle.</h2>
-              <div className="space-y-8">
-                <div className="bg-surface-container-low p-8 border-l-2 border-primary">
-                  <h4 className="font-headline text-xl mb-2 text-primary">QuickIQ</h4>
-                  <p className="font-body text-sm text-on-surface-variant">Rapid assessment and thematic drafting for tight deadlines and preliminary rounds.</p>
-                </div>
-                <div className="bg-surface-container-low p-8 border-l-2 border-outline-variant">
-                  <h4 className="font-headline text-xl mb-2">ProIQ</h4>
-                  <p className="font-body text-sm text-on-surface-variant">Deep-dive compliance checking and multi-stakeholder collaboration for high-stakes tenders.</p>
-                </div>
-              </div>
-              <Link href="/how-it-works" className="inline-block mt-12 font-label text-[10px] uppercase tracking-widest border-b border-primary text-primary pb-1">
-                View the Full Pipeline
-              </Link>
-            </div>
-            <div className="md:w-7/12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 content-center">
-              {PIPELINE.map((step, i) => {
-                const active = i === 0;
-                return (
-                  <div
-                    key={step}
-                    className={`p-6 flex flex-col justify-between aspect-square ${active ? 'bg-surface-container border border-primary/20' : 'bg-surface-container-lowest'}`}
-                  >
-                    <span className={`font-label text-lg ${active ? 'text-primary' : 'text-on-surface-variant'}`}>
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span className="font-label text-[11px] uppercase tracking-widest leading-snug">{step}</span>
-                  </div>
-                );
-              })}
             </div>
           </section>
 

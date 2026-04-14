@@ -89,34 +89,6 @@ export default function Platform() {
             </div>
           </section>
 
-          {/* ── INTELLIGENCE PIPELINE ────────────────────────────────────── */}
-          <section className="py-32 px-8 max-w-screen-2xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-baseline mb-24 gap-8">
-              <h2 className="font-headline text-5xl md:text-6xl max-w-2xl">The Intelligence Pipeline</h2>
-              <span className="font-label text-sm text-outline tracking-widest">9-STEP ANALYTIC FRAMEWORK</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {[
-                { n: '01', phase: 'Understanding', bg: 'bg-surface-container-lowest', items: [['01', 'Taxonomy Extraction'], ['02', 'Constraint Mapping']] },
-                { n: '02', phase: 'Matching', bg: 'bg-surface-container-low', items: [['03', 'Evidence Synthesis'], ['04', 'Expert Locator']] },
-                { n: '03', phase: 'Analysis', bg: 'bg-surface-container-high', items: [['05', 'Gap Identification'], ['06', 'Ghosting Strategy'], ['07', 'Compliance Validation']] },
-                { n: '04', phase: 'Strategy', bg: 'bg-surface-container-highest', items: [['08', 'Value Propositioning'], ['09', 'Thematic Overlay']] },
-              ].map(phase => (
-                <div key={phase.n} className={`${phase.bg} p-8 border-l border-primary/20`}>
-                  <p className="font-label text-[10px] text-primary uppercase mb-12">{phase.n} / {phase.phase}</p>
-                  <ul className="space-y-6">
-                    {phase.items.map(([num, label]) => (
-                      <li key={num} className="flex gap-4 items-start">
-                        <span className="font-label text-primary text-xs">{num}</span>
-                        <span className="text-sm font-body">{label}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </section>
-
           {/* ── WHAT MAKES IT DIFFERENT ──────────────────────────────────── */}
           <section className="py-32 px-8 bg-[#0f0e0c]">
             <div className="max-w-screen-2xl mx-auto">

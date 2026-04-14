@@ -38,8 +38,8 @@ export default function Solutions() {
             <div className="grid grid-cols-12 gap-8 items-end">
               <div className="col-span-12 lg:col-span-8">
                 <span className="font-label text-primary text-sm tracking-[0.3em] uppercase mb-6 block">Industry Specific Logic</span>
-                <h1 className="font-headline text-7xl md:text-8xl lg:text-9xl font-extrabold leading-[0.85] tracking-tighter text-on-surface">
-                  Built for the way your team <span className="italic font-light text-on-surface-variant">actually</span> bids.
+                <h1 className="font-headline text-7xl md:text-8xl leading-[1.1] text-on-surface tracking-tight">
+                  Built for the way your team <span className="italic text-on-surface-variant">actually</span> bids.
                 </h1>
               </div>
               <div className="col-span-12 lg:col-span-4 lg:pb-6">
