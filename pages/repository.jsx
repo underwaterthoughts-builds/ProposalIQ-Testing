@@ -177,22 +177,22 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
         </div>
         {!selectMode && (
           <div className="flex items-center gap-2 flex-shrink-0">
-            {p.analysis_model === 'gpt' && (
+            {p.analysis_model === 'gpt' ? (
               <span
                 className="px-2 py-0.5 text-[10px] font-label font-bold tracking-widest bg-primary/10 text-primary border border-primary/20"
                 title="Full scan — analysed with OpenAI (deep reasoning)"
               >
                 FULL SCAN
               </span>
-            )}
-            {p.analysis_model === 'gemini' && (
+            ) : p.indexing_status === 'complete' ? (
+              // Null / 'gemini' / anything else that's complete → treat as quick scan
               <span
                 className="px-2 py-0.5 text-[10px] font-label font-bold tracking-widest bg-secondary/10 text-secondary border border-secondary/20"
                 title="Quick scan — analysed with Gemini 2.5 Flash. Rescan with OpenAI configured for full thinking."
               >
                 QUICK SCAN
               </span>
-            )}
+            ) : null}
             <span className={`px-2 py-0.5 text-[10px] font-label font-bold tracking-widest border ${outcomeStyle}`}>
               {outcomeLabel}
             </span>
@@ -200,8 +200,8 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
         )}
       </div>
 
-      {/* Quick scan disclaimer */}
-      {!isIndexing && !isFailed && p.analysis_model === 'gemini' && (
+      {/* Quick scan disclaimer (shows for complete-but-not-gpt projects) */}
+      {!isIndexing && !isFailed && p.indexing_status === 'complete' && p.analysis_model !== 'gpt' && (
         <div className="flex items-start gap-2 text-[10px] font-label uppercase tracking-widest text-secondary bg-secondary/5 px-2 py-1.5 -mt-2">
           <span className="material-symbols-outlined text-sm mt-[-2px]">info</span>
           <span>Quick scan only — rescan with OpenAI enabled for full thinking.</span>

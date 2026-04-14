@@ -81,7 +81,7 @@ const TagList = memo(function TagList({ items = [], onSave, color = '#e8c357', b
   function remove(tag) { setTags(tags.filter(t => t !== tag)); setDirty(true); }
   return (
     <div>
-      <div className="flex flex-wrap gap-1.5 p-2.5 border rounded-md min-h-[42px]" style={{ borderColor: 'rgba(77,70,54,0.3)', background: 'white' }}>
+      <div className="flex flex-wrap gap-1.5 p-2.5 border rounded-md min-h-[42px]" style={{ borderColor: 'rgba(77,70,54,0.3)', background: '#1d1b19' }}>
         {tags.map(t => (
           <span key={t} className="inline-flex items-center gap-1 text-[11px] font-label px-2 py-0.5 rounded" style={{ background: bg, color }}>
             {t}<button onClick={() => remove(t)} className="opacity-50 hover:opacity-100 ml-0.5 text-[10px]">✕</button>
@@ -136,7 +136,7 @@ const ProjectDetailsEditor = memo(function ProjectDetailsEditor({ project, onSav
   const ratings = [0, 1, 2, 3, 4, 5];
 
   return (
-    <Card className="mb-4" style={{ background: 'white' }}>
+    <Card className="mb-4" style={{ background: '#1d1b19' }}>
       <button onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-4 py-3 text-left">
         <div>
@@ -323,7 +323,7 @@ const TaxonomyEditor = memo(function TaxonomyEditor({ project, taxItems, onSave 
                       className="text-[10px] px-2 py-0.5 rounded-full border transition-colors"
                       style={on
                         ? { background: 'rgba(184,150,46,.18)', borderColor: '#b8962e', color: '#8a6200' }
-                        : { background: 'white', borderColor: 'rgba(77,70,54,0.3)', color: '#d0c5b0' }}>
+                        : { background: 'rgba(33,31,29,0.6)', borderColor: 'rgba(77,70,54,0.3)', color: '#d0c5b0' }}>
                       {on ? '✓ ' : '+ '}{s}
                     </button>
                   );
@@ -359,7 +359,7 @@ const TaxonomyEditor = memo(function TaxonomyEditor({ project, taxItems, onSave 
                       className="text-[10px] px-2 py-0.5 rounded-full border transition-colors"
                       style={on
                         ? { background: 'rgba(30,74,82,.18)', borderColor: '#e8c357', color: '#e8c357' }
-                        : { background: 'white', borderColor: 'rgba(77,70,54,0.3)', color: '#d0c5b0' }}>
+                        : { background: 'rgba(33,31,29,0.6)', borderColor: 'rgba(77,70,54,0.3)', color: '#d0c5b0' }}>
                       {on ? '✓ ' : '+ '}{s}
                     </button>
                   );
@@ -672,28 +672,27 @@ export default function ProjectDetail() {
                         Outcome: {project.outcome || 'pending'}
                       </span>
                     </div>
-                    {project.analysis_model === 'gpt' && (
+                    {project.analysis_model === 'gpt' ? (
                       <span
                         className="px-3 py-1 text-[10px] font-label font-bold tracking-widest bg-primary/10 text-primary border border-primary/20 rounded-full"
                         title="Full scan — analysed with OpenAI (deep reasoning)"
                       >
                         FULL SCAN
                       </span>
-                    )}
-                    {project.analysis_model === 'gemini' && (
+                    ) : project.indexing_status === 'complete' ? (
                       <span
                         className="px-3 py-1 text-[10px] font-label font-bold tracking-widest bg-secondary/10 text-secondary border border-secondary/20 rounded-full"
                         title="Quick scan — analysed with Gemini 2.5 Flash. Rescan with OpenAI configured for full thinking."
                       >
                         QUICK SCAN
                       </span>
-                    )}
+                    ) : null}
                     <div className="flex gap-2">
                       {files.map(f => <FileChip key={f.id} type={f.file_type} />)}
                     </div>
                   </div>
 
-                  {project.analysis_model === 'gemini' && (
+                  {project.indexing_status === 'complete' && project.analysis_model !== 'gpt' && (
                     <div className="flex items-start gap-2 text-xs text-secondary bg-secondary/5 px-4 py-3 border-l-2 border-secondary">
                       <span className="material-symbols-outlined text-base flex-shrink-0">info</span>
                       <span>
@@ -756,7 +755,7 @@ export default function ProjectDetail() {
 
             {/* Writing scores bar */}
             {hasWritingAnalysis && (
-              <div className="flex items-center gap-6 p-4 rounded-lg mb-4 border" style={{ background: 'white', borderColor: 'rgba(77,70,54,0.3)' }}>
+              <div className="flex items-center gap-6 p-4 rounded-lg mb-4 border" style={{ background: '#1d1b19', borderColor: 'rgba(77,70,54,0.3)' }}>
                 <ScoreCircle score={wq.overall_score} label="Writing" />
                 <ScoreCircle score={aq.overall_score} label="Approach" />
                 <ScoreCircle score={cq.overall_score} label="Credibility" />
@@ -1101,7 +1100,7 @@ export default function ProjectDetail() {
                           <button key={t.value} onClick={() => setEntryType(t.value)}
                             className="text-[11px] font-label px-2.5 py-1 rounded border transition-all"
                             style={{
-                              background: entryType === t.value ? ec.bg : 'white',
+                              background: entryType === t.value ? ec.bg : 'transparent',
                               borderColor: entryType === t.value ? ec.color : 'rgba(77,70,54,0.3)',
                               color: entryType === t.value ? ec.color : '#d0c5b0',
                             }}>
