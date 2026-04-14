@@ -520,27 +520,28 @@ ${sectionHtml('Winning Language', languageHtml)}
     return (
       <>
         <Head><title>{scan.name} — RFP Intelligence</title></Head>
-        <Layout title={scan.name} subtitle={rfpData.client ? `${rfpData.client} · ${rfpData.sector}` : 'RFP Intelligence'} user={user}
-          actions={
-            <div className="flex gap-2">
-              <a href={`/api/rfp/${id}/download`} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12.5px] font-medium rounded-md border border-[#ddd5c4] hover:bg-cream transition-all"
-                style={{ color: '#6b6456' }}>
-                View RFP ↗
-              </a>
-              <Btn variant="ghost" onClick={exportBriefing} disabled={exporting}>
-                {exporting ? 'Exporting…' : '↓ Export'}
-              </Btn>
-              <Btn variant="teal" onClick={() => generateTemplate()} disabled={generatingTemplate}>
-                {generatingTemplate ? 'Building…' : '📄 Template'}
-              </Btn>
-            </div>
-          }>
-          <div className="h-full overflow-y-auto p-4 md:p-6" style={{ background: '#faf7f2' }}>
+        <Layout title={scan.name} user={user}>
+          <div className="min-h-screen bg-surface px-6 md:px-8">
             {scan.status === 'processing' ? (
-              <div className="py-16 text-center"><Spinner size={32}/><p className="text-sm mt-4" style={{ color:'#6b6456' }}>Running intelligence pipeline — fast brief in ~30s…</p></div>
+              <div className="py-24 text-center max-w-4xl mx-auto">
+                <div className="w-12 h-12 mx-auto rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                <p className="font-body text-sm mt-6 text-on-surface-variant">
+                  Running intelligence pipeline — fast brief in ~30s…
+                </p>
+              </div>
             ) : (
-              <ExecutiveBrief brief={executiveBrief} bidScore={bidScore} matches={matches} onJumpTab={null} />
+              <ExecutiveBrief
+                brief={executiveBrief}
+                bidScore={bidScore}
+                matches={matches}
+                onJumpTab={null}
+                scanName={scan.name}
+                scanId={id}
+                onExport={exportBriefing}
+                onGenerateTemplate={generateTemplate}
+                exporting={exporting}
+                generatingTemplate={generatingTemplate}
+              />
             )}
           </div>
         </Layout>
@@ -705,7 +706,7 @@ ${sectionHtml('Winning Language', languageHtml)}
               {scan.status === 'processing' ? (
                 <div className="py-16 text-center"><Spinner size={32}/><p className="text-sm mt-4" style={{ color:'#6b6456' }}>Running intelligence pipeline — fast brief in ~30s…</p></div>
               ) : activeTab === 'brief' ? (
-                <ExecutiveBrief brief={executiveBrief} bidScore={bidScore} matches={matches} onJumpTab={setActiveTab} />
+                <ExecutiveBrief brief={executiveBrief} bidScore={bidScore} matches={matches} onJumpTab={setActiveTab} scanName={scan.name} scanId={id} />
               ) : activeTab === 'matches' ? (
                 <div>
                   {isPro && (
@@ -2241,209 +2242,304 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
 // The default tab. Renders the verdict at the top, then top priorities,
 // risks, recommended assets, and immediate next actions. Designed so the
 // bid director can read it in 90 seconds and walk away with a decision.
-const ExecutiveBrief = memo(function ExecutiveBrief({ brief, bidScore, matches, onJumpTab }) {
+const ExecutiveBrief = memo(function ExecutiveBrief({ brief, bidScore, matches, onJumpTab, scanName, scanId, onExport, onGenerateTemplate, exporting, generatingTemplate }) {
   if (!brief) {
     return (
       <div className="py-16 text-center">
-        <div className="text-3xl mb-3 opacity-25">★</div>
-        <p className="text-sm" style={{ color: '#6b6456' }}>Executive brief not available for this scan.</p>
-        <p className="text-xs mt-2" style={{ color: '#9b8e80' }}>Re-run the scan to generate one.</p>
+        <div className="text-3xl mb-3 opacity-25 text-primary">★</div>
+        <p className="text-sm text-on-surface-variant">Executive brief not available for this scan.</p>
+        <p className="text-xs mt-2 text-on-surface-variant/60">Re-run the scan to generate one.</p>
       </div>
     );
   }
 
   const verdict = brief.verdict || {};
   const decision = String(verdict.decision || '').toUpperCase();
-  const decisionColor =
-    decision.includes('STRONG') ? '#3d5c3a' :
-    decision.includes('NO BID') ? '#b04030' :
-    decision.includes('CONDITIONAL') ? '#b8962e' :
-    decision.includes('BID') ? '#1e4a52' : '#6b6456';
-  const decisionBg = decisionColor + '14';
+
+  // Verdict panel colour map — dark theme (Stitch palette)
+  const isNoBid = decision.includes('NO BID');
+  const isConditional = decision.includes('CONDITIONAL');
+  const verdictPanel = isNoBid
+    ? { bg: '#3a1f1a', label: 'text-[#e6a29b]', title: 'text-[#f5c8c1]' }
+    : isConditional
+    ? { bg: '#3d2f00', label: 'text-[#d4b458]', title: 'text-primary-fixed' }
+    : { bg: '#1e2d24', label: 'text-[#8fb49a]', title: 'text-[#c5e1cd]' };
 
   const priorities = Array.isArray(brief.top_3_priorities) ? brief.top_3_priorities : [];
   const risks = Array.isArray(brief.top_3_risks) ? brief.top_3_risks : [];
   const assets = Array.isArray(brief.recommended_assets_to_use) ? brief.recommended_assets_to_use : [];
   const nextActions = Array.isArray(brief.immediate_next_actions) ? brief.immediate_next_actions : [];
-  const deprioritise = Array.isArray(brief.what_to_deprioritise) ? brief.what_to_deprioritise : [];
+
+  // Score ring — SVG arc maths
+  const score = bidScore?.score != null ? Math.max(0, Math.min(100, bidScore.score)) : null;
+  const confidenceText = verdict.confidence ? String(verdict.confidence).toUpperCase() : null;
+
+  // Project code — derived from scanId for the editorial label
+  const projectCode = scanId ? `CODE: ${String(scanId).slice(0, 8).toUpperCase()}` : null;
 
   return (
-    <div className="space-y-5 max-w-5xl mx-auto">
-      {/* ── VERDICT BANNER ── */}
-      <div className="rounded-xl p-5 border-2" style={{ borderColor: decisionColor, background: decisionBg }}>
-        <div className="flex items-baseline justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: decisionColor, opacity: 0.7 }}>Verdict</span>
-            <span className="text-sm font-semibold px-3 py-1 rounded-full" style={{ background: decisionColor, color: 'white' }}>
-              {decision || 'CONDITIONAL'}
+    <div className="max-w-4xl mx-auto py-8 md:py-12">
+
+      {/* ── EDITORIAL HEADER ────────────────────────────────────── */}
+      <section className="mb-12">
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
+          {projectCode && (
+            <span className="font-label text-xs uppercase tracking-[0.2em] text-outline">{projectCode}</span>
+          )}
+          <span className="h-px w-8 bg-outline-variant" />
+          <span className="font-label text-xs uppercase tracking-[0.2em] text-outline">Intelligence Brief</span>
+        </div>
+        <h1 className="font-headline text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-on-surface leading-[1.1] mb-2">
+          {scanName || 'RFP Intelligence'}
+        </h1>
+        <p className="font-headline text-lg md:text-xl text-on-surface-variant italic">
+          Executive briefing prepared for the decision committee
+        </p>
+      </section>
+
+      {/* ── VERDICT BANNER ──────────────────────────────────────── */}
+      <section className="bg-surface-container-low rounded-xl p-1 mb-16 overflow-hidden shadow-lg">
+        <div className="flex flex-col md:flex-row items-stretch border border-outline-variant/10 rounded-lg overflow-hidden">
+
+          {/* Recommendation panel */}
+          <div className="flex-1 flex flex-col items-center justify-center py-10 px-8 text-center" style={{ backgroundColor: verdictPanel.bg }}>
+            <span className={`font-label text-[10px] uppercase tracking-[0.3em] ${verdictPanel.label} mb-2`}>
+              Recommendation
             </span>
-            {verdict.confidence && (
-              <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: decisionColor, opacity: 0.6 }}>
-                {verdict.confidence} confidence
-              </span>
+            <h2 className={`text-5xl md:text-6xl font-black tracking-tighter ${verdictPanel.title} font-headline`}>
+              {decision || 'PENDING'}
+            </h2>
+            {verdict.headline && (
+              <p className={`mt-4 ${verdictPanel.label} font-body text-sm max-w-[280px] leading-relaxed`}>
+                {verdict.headline}
+              </p>
             )}
           </div>
-          {bidScore?.score != null && (
-            <div className="text-right">
-              <div className="font-serif text-2xl" style={{ color: decisionColor }}>{bidScore.score}<span className="text-sm opacity-50">/100</span></div>
-              <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: decisionColor, opacity: 0.6 }}>Bid score</div>
+
+          {/* Metrics panel */}
+          <div className="flex-[1.5] bg-surface-container-high flex flex-wrap md:flex-nowrap items-center justify-between p-8 md:p-10 gap-6">
+            <div className="flex-1 min-w-[120px]">
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-4xl font-bold text-primary font-label">{score != null ? score : '—'}</span>
+                {score != null && <span className="text-lg text-outline font-label">%</span>}
+              </div>
+              <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Intelligence Score</p>
             </div>
-          )}
-        </div>
-        {verdict.headline && (
-          <p className="text-base leading-relaxed font-serif" style={{ color: '#1a1816' }}>{verdict.headline}</p>
-        )}
-        {verdict.score_summary && (
-          <p className="text-xs mt-2 italic" style={{ color: '#6b6456' }}>{verdict.score_summary}</p>
-        )}
-      </div>
-
-      {/* ── WINNING THESIS ── */}
-      {brief.winning_thesis_one_liner && (
-        <div className="rounded-lg p-4" style={{ background: '#1e4a52', color: 'white' }}>
-          <div className="text-[10px] font-mono uppercase tracking-widest mb-2 opacity-70">Winning Thesis</div>
-          <p className="text-sm leading-relaxed italic">"{brief.winning_thesis_one_liner}"</p>
-        </div>
-      )}
-
-      {/* ── WHAT IT'S REALLY ASKING / FIT ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {brief.what_this_brief_is_really_asking_for && (
-          <div className="rounded-lg p-4 border" style={{ background: 'white', borderColor: '#ddd5c4' }}>
-            <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#6b6456' }}>What this RFP is really asking for</div>
-            <p className="text-sm leading-relaxed" style={{ color: '#1a1816' }}>{brief.what_this_brief_is_really_asking_for}</p>
-          </div>
-        )}
-        {brief.are_we_a_strong_fit && (
-          <div className="rounded-lg p-4 border" style={{ background: 'white', borderColor: '#ddd5c4' }}>
-            <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#6b6456' }}>Are we a strong fit?</div>
-            <p className="text-sm leading-relaxed" style={{ color: '#1a1816' }}>{brief.are_we_a_strong_fit}</p>
-          </div>
-        )}
-      </div>
-
-      {/* ── PRIORITIES + RISKS ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {priorities.length > 0 && (
-          <div className="rounded-lg p-4 border" style={{ background: '#edf3ec', borderColor: 'rgba(61,92,58,.25)' }}>
-            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: '#3d5c3a' }}>Top 3 priorities</div>
-            <ol className="space-y-3">
-              {priorities.slice(0, 3).map((p, i) => (
-                <li key={i} className="text-sm">
-                  <div className="flex gap-2">
-                    <span className="font-mono font-bold flex-shrink-0" style={{ color: '#3d5c3a' }}>{i + 1}.</span>
-                    <div className="flex-1">
-                      <div className="font-medium" style={{ color: '#1a1816' }}>{p.priority || p}</div>
-                      {p.why_it_matters && <div className="text-xs mt-1 italic" style={{ color: '#3d5c3a' }}>Why: {p.why_it_matters}</div>}
-                      {p.evidence && <div className="text-xs mt-0.5 font-mono" style={{ color: '#6b6456' }}>Evidence: {p.evidence}</div>}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
-        {risks.length > 0 && (
-          <div className="rounded-lg p-4 border" style={{ background: '#faeeeb', borderColor: 'rgba(176,64,48,.25)' }}>
-            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color: '#b04030' }}>Top 3 risks</div>
-            <ol className="space-y-3">
-              {risks.slice(0, 3).map((r, i) => (
-                <li key={i} className="text-sm">
-                  <div className="flex gap-2">
-                    <span className="font-mono font-bold flex-shrink-0" style={{ color: '#b04030' }}>{i + 1}.</span>
-                    <div className="flex-1">
-                      <div className="font-medium" style={{ color: '#1a1816' }}>{r.risk || r}</div>
-                      {r.mitigation && <div className="text-xs mt-1" style={{ color: '#b04030' }}>→ {r.mitigation}</div>}
-                      {r.owner && <div className="text-[10px] mt-0.5 font-mono uppercase tracking-wide" style={{ color: '#6b6456' }}>{r.owner}</div>}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
-      </div>
-
-      {/* ── STYLE / STRUCTURE ── */}
-      {(brief.best_fit_style || brief.best_fit_structure) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {brief.best_fit_style && (
-            <div className="rounded-lg p-4 border" style={{ background: '#faf4e2', borderColor: 'rgba(184,150,46,.3)' }}>
-              <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#8a6200' }}>Best-fit style</div>
-              <p className="text-sm" style={{ color: '#5a4810' }}>{brief.best_fit_style}</p>
+            <div className="hidden md:block h-16 w-px bg-outline-variant/30" />
+            <div className="flex-1 min-w-[120px]">
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-4xl font-bold text-on-surface font-label">{confidenceText || '—'}</span>
+              </div>
+              <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Confidence</p>
             </div>
-          )}
-          {brief.best_fit_structure && (
-            <div className="rounded-lg p-4 border" style={{ background: '#faf4e2', borderColor: 'rgba(184,150,46,.3)' }}>
-              <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#8a6200' }}>Best-fit structure</div>
-              <p className="text-sm" style={{ color: '#5a4810' }}>{brief.best_fit_structure}</p>
-            </div>
-          )}
-        </div>
-      )}
 
-      {/* ── RECOMMENDED ASSETS ── */}
-      {assets.length > 0 && (
-        <div className="rounded-lg p-4 border" style={{ background: 'white', borderColor: '#ddd5c4' }}>
-          <div className="flex items-baseline justify-between mb-3">
-            <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#1e4a52' }}>Past assets to use</div>
-            <button onClick={() => onJumpTab && onJumpTab('matches')} className="text-[11px] font-mono" style={{ color: '#1e4a52' }}>
-              See all matches →
-            </button>
-          </div>
-          <div className="space-y-2">
-            {assets.slice(0, 5).map((a, i) => (
-              <div key={i} className="flex gap-3 text-sm py-2 border-b last:border-0" style={{ borderColor: '#f0ebe0' }}>
-                <span className="font-mono text-xs flex-shrink-0 mt-0.5" style={{ color: '#1e4a52' }}>◆</span>
-                <div className="flex-1">
-                  <div className="font-medium" style={{ color: '#1a1816' }}>{a.name}</div>
-                  {a.why && <div className="text-xs mt-0.5" style={{ color: '#6b6456' }}>{a.why}</div>}
-                  {a.use_for && <div className="text-[10px] mt-0.5 font-mono uppercase tracking-wide" style={{ color: '#9b8e80' }}>Use for: {a.use_for}</div>}
+            {/* Score ring */}
+            {score != null && (
+              <div className="hidden sm:block relative w-20 h-20 flex-shrink-0">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
+                  <circle className="text-surface-variant" cx="40" cy="40" r="34" fill="transparent" stroke="currentColor" strokeWidth="4" />
+                  <circle
+                    className="text-primary"
+                    cx="40" cy="40" r="34"
+                    fill="transparent"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    strokeDasharray={2 * Math.PI * 34}
+                    strokeDashoffset={(2 * Math.PI * 34) * (1 - score / 100)}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-primary text-xl">bolt</span>
                 </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── WINNING THESIS + FIT ASSESSMENT ─────────────────────── */}
+      {(brief.winning_thesis_one_liner || brief.are_we_a_strong_fit || brief.what_this_brief_is_really_asking_for) && (
+        <section className="mb-20">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
+            <div className="md:col-span-4">
+              <h3 className="font-headline text-2xl md:text-3xl font-bold leading-tight text-on-surface border-l-2 border-primary pl-6">
+                Winning Thesis
+              </h3>
+            </div>
+            <div className="md:col-span-8">
+              {brief.winning_thesis_one_liner && (
+                <p className="font-body text-lg leading-relaxed text-on-surface-variant mb-8">
+                  {brief.winning_thesis_one_liner}
+                </p>
+              )}
+              {brief.are_we_a_strong_fit && (
+                <div className="bg-surface-container-lowest p-8 border-l-2 border-primary-container">
+                  <h4 className="font-label text-xs uppercase tracking-widest text-primary-container mb-4">Fit Assessment</h4>
+                  <p className="font-body text-sm leading-relaxed text-on-surface-variant">
+                    {brief.are_we_a_strong_fit}
+                  </p>
+                </div>
+              )}
+              {!brief.are_we_a_strong_fit && brief.what_this_brief_is_really_asking_for && (
+                <div className="bg-surface-container-lowest p-8 border-l-2 border-primary-container">
+                  <h4 className="font-label text-xs uppercase tracking-widest text-primary-container mb-4">What this RFP is really asking for</h4>
+                  <p className="font-body text-sm leading-relaxed text-on-surface-variant">
+                    {brief.what_this_brief_is_really_asking_for}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── PRIORITIES + RISKS ──────────────────────────────────── */}
+      {(priorities.length > 0 || risks.length > 0) && (
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 mb-24">
+
+          {priorities.length > 0 && (
+            <div className="space-y-8">
+              <div className="flex items-center gap-4">
+                <span className="material-symbols-outlined text-primary-container">priority_high</span>
+                <h3 className="font-headline text-2xl font-bold">Strategic Priorities</h3>
+              </div>
+              <ul className="space-y-6">
+                {priorities.slice(0, 3).map((p, i) => (
+                  <li key={i} className="group">
+                    <span className="font-label text-[10px] text-primary-container block mb-1">
+                      PRIORITY {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <p className="text-on-surface-variant group-hover:text-on-surface transition-colors">
+                      {p.priority || p}
+                    </p>
+                    {p.why_it_matters && (
+                      <p className="text-xs mt-1 italic text-on-surface-variant/70">{p.why_it_matters}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {risks.length > 0 && (
+            <div className="space-y-8">
+              <div className="flex items-center gap-4">
+                <span className="material-symbols-outlined text-error">warning</span>
+                <h3 className="font-headline text-2xl font-bold">Identified Risks</h3>
+              </div>
+              <ul className="space-y-6">
+                {risks.slice(0, 3).map((r, i) => (
+                  <li key={i} className="flex gap-4">
+                    <div className="w-1.5 h-1.5 rounded-full bg-error mt-2.5 shrink-0" />
+                    <div>
+                      <p className="font-semibold text-on-surface text-sm">{r.risk || r}</p>
+                      {r.mitigation && (
+                        <p className="text-xs text-on-surface-variant leading-relaxed mt-1">{r.mitigation}</p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── RECOMMENDED ASSETS ──────────────────────────────────── */}
+      {assets.length > 0 && (
+        <section className="border-t border-outline-variant pt-16">
+          <div className="flex justify-between items-end mb-10 flex-wrap gap-4">
+            <div>
+              <h3 className="font-headline text-2xl md:text-3xl font-bold">Recommended Assets</h3>
+              <p className="text-on-surface-variant font-body mt-2">AI-matched historical documents for rapid assembly.</p>
+            </div>
+            {onJumpTab && (
+              <button
+                onClick={() => onJumpTab('matches')}
+                className="text-primary font-label text-xs uppercase tracking-widest hover:underline"
+              >
+                View All
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {assets.slice(0, 4).map((a, i) => (
+              <div
+                key={i}
+                className="flex items-center p-6 bg-surface-container-low hover:bg-surface-container-high transition-all group"
+              >
+                <div className="w-12 h-12 bg-surface-container-highest flex items-center justify-center text-primary-container group-hover:text-primary transition-colors flex-shrink-0">
+                  <span className="material-symbols-outlined">description</span>
+                </div>
+                <div className="ml-4 flex-1 min-w-0">
+                  <h4 className="font-semibold text-sm text-on-surface truncate">{a.name}</h4>
+                  {(a.why || a.use_for) && (
+                    <p className="text-xs text-on-surface-variant mt-1 truncate">{a.why || a.use_for}</p>
+                  )}
+                </div>
+                <span className="material-symbols-outlined text-outline group-hover:text-primary opacity-0 group-hover:opacity-100 transition-all text-sm flex-shrink-0">
+                  arrow_outward
+                </span>
               </div>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* ── DEPRIORITISE ── */}
-      {deprioritise.length > 0 && (
-        <div className="rounded-lg p-4 border" style={{ background: '#f8f6f2', borderColor: '#ddd5c4' }}>
-          <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#6b6456' }}>Do not waste effort on</div>
-          <ul className="space-y-1">
-            {deprioritise.map((d, i) => (
-              <li key={i} className="text-sm flex gap-2" style={{ color: '#6b6456' }}>
-                <span className="flex-shrink-0">✕</span>
-                <span>{d}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* ── IMMEDIATE NEXT ACTIONS ── */}
+      {/* ── IMMEDIATE NEXT ACTIONS (preserved) ──────────────────── */}
       {nextActions.length > 0 && (
-        <div className="rounded-lg p-4 border-2" style={{ background: '#1e4a52', borderColor: '#1e4a52', color: 'white' }}>
-          <div className="text-[10px] font-mono uppercase tracking-widest mb-3 opacity-70">Do these today</div>
-          <ol className="space-y-2">
+        <section className="mt-16 rounded-lg p-8 bg-primary-container/10 border border-primary/20">
+          <div className="font-label text-[10px] uppercase tracking-widest mb-4 text-primary">Do these today</div>
+          <ol className="space-y-3">
             {nextActions.slice(0, 5).map((a, i) => (
-              <li key={i} className="flex gap-3 text-sm">
-                <span className="font-mono font-bold opacity-60 flex-shrink-0">{i + 1}.</span>
+              <li key={i} className="flex gap-3 text-sm text-on-surface">
+                <span className="font-mono font-bold opacity-60 flex-shrink-0 text-primary">{i + 1}.</span>
                 <div className="flex-1">
                   <div>{a.action || a}</div>
-                  <div className="flex gap-3 mt-0.5 text-[10px] font-mono uppercase tracking-wide opacity-70">
-                    {a.owner && <span>👤 {a.owner}</span>}
-                    {a.deadline && <span>⏱ {a.deadline}</span>}
+                  <div className="flex gap-3 mt-0.5 text-[10px] font-mono uppercase tracking-wide text-on-surface-variant">
+                    {a.owner && <span>{a.owner}</span>}
+                    {a.deadline && <span>{a.deadline}</span>}
                   </div>
                 </div>
               </li>
             ))}
           </ol>
-        </div>
+        </section>
+      )}
+
+      {/* ── FOOTER ACTIONS ──────────────────────────────────────── */}
+      {(onExport || onGenerateTemplate) && (
+        <footer className="mt-20 pt-12 border-t border-outline-variant/20 flex flex-wrap justify-between items-center gap-4">
+          <p className="font-label text-xs text-outline uppercase tracking-widest">
+            Intelligence Brief · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+          </p>
+          <div className="flex gap-4">
+            {onExport && (
+              <button
+                onClick={onExport}
+                disabled={exporting}
+                className="bg-surface-container-high px-6 py-2 text-xs font-bold font-label uppercase tracking-widest hover:bg-surface-container-highest transition-colors disabled:opacity-50"
+              >
+                {exporting ? 'Exporting…' : 'Download'}
+              </button>
+            )}
+            {onGenerateTemplate && (
+              <button
+                onClick={onGenerateTemplate}
+                disabled={generatingTemplate}
+                className="bg-primary text-on-primary px-6 py-2 text-xs font-bold font-label uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50"
+              >
+                {generatingTemplate ? 'Building…' : 'Begin Drafting'}
+              </button>
+            )}
+          </div>
+        </footer>
       )}
     </div>
   );
 });
+
 
 // ── Tiered match grouping ────────────────────────────────────────────────
 // Groups matches by their taxonomy_tier and renders each group as a section.
