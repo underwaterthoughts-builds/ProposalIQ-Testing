@@ -7,7 +7,7 @@
 body {
   background: #faf7f2;
   color: #0f0e0c;
-  font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Manrope', 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -17,8 +17,11 @@ body {
 ::-webkit-scrollbar-thumb { background: #ddd5c4; border-radius: 3px; }
 
 /* ── FONT UTILITIES ─────────────────────────────────────────────────────────── */
-.font-serif { font-family: Georgia, 'Times New Roman', serif; }
-.font-mono { font-family: 'Courier New', Courier, monospace; }
+.font-serif { font-family: 'Newsreader', Georgia, 'Times New Roman', serif; }
+.font-mono  { font-family: 'Space Grotesk', 'Courier New', Courier, monospace; }
+.font-body  { font-family: 'Manrope', 'Segoe UI', system-ui, sans-serif; }
+.font-headline { font-family: 'Newsreader', Georgia, serif; }
+.font-label { font-family: 'Space Grotesk', 'Courier New', monospace; }
 
 /* ── ANIMATIONS ─────────────────────────────────────────────────────────────── */
 @keyframes fadeIn  { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
