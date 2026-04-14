@@ -642,9 +642,9 @@ ${sectionHtml('Winning Language', languageHtml)}
 
             {/* Breadcrumb + Intelligence Workbench title + RFP Details + Actions */}
             <section className="px-6 md:px-8 py-6 bg-surface">
-              <div className="flex items-start justify-between gap-8 flex-wrap">
 
-                {/* Left: breadcrumb + title + taxonomy */}
+              {/* Top row: breadcrumb/title on the left, stacked buttons on the right */}
+              <div className="flex items-start justify-between gap-6 flex-wrap">
                 <div className="flex flex-col min-w-0 flex-1">
                   <div className="flex items-center gap-2 text-xs font-label text-on-surface-variant/50 uppercase tracking-widest mb-2">
                     <Link href="/rfp" className="hover:text-primary transition-colors">Intelligence</Link>
@@ -660,50 +660,49 @@ ${sectionHtml('Winning Language', languageHtml)}
                   </div>
                 </div>
 
-                {/* Right: RFP Details card + stacked action buttons */}
-                <div className="flex items-start gap-4 flex-wrap">
-                  {/* RFP Details compact card */}
-                  {(rfpData.client || rfpData.sector || rfpData.contract_value_hint || rfpData.deadline || rfpData.procurement_framework) && (
-                    <div className="bg-surface-container-lowest p-5 w-[320px] max-w-full">
-                      <div className="font-label text-[10px] uppercase tracking-widest text-primary mb-3">RFP Details</div>
-                      {[
-                        ['Client', rfpData.client],
-                        ['Sector', rfpData.sector],
-                        ['Value hint', rfpData.contract_value_hint],
-                        ['Deadline', rfpData.deadline],
-                        ['Framework', rfpData.procurement_framework],
-                      ]
-                        .filter(([, v]) => v && v !== 'Unknown')
-                        .map(([k, v]) => (
-                          <div key={k} className="flex justify-between gap-3 py-1.5 text-xs first:pt-0 last:pb-0">
-                            <span className="font-label uppercase tracking-wider text-on-surface-variant/60 whitespace-nowrap">{k}</span>
-                            <span className="text-on-surface text-right">{v}</span>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-
-                  {/* Stacked action buttons */}
-                  <div className="flex flex-col gap-2 w-[140px]">
-                    <button
-                      onClick={rescan}
-                      disabled={rescanning || scan?.status === 'processing'}
-                      className="bg-primary text-on-primary px-4 py-3 text-[10px] font-label font-bold uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                      title="Re-run the full intelligence pipeline"
-                    >
-                      <span className="material-symbols-outlined text-sm">refresh</span>
-                      {rescanning || scan?.status === 'processing' ? 'Rescanning…' : 'Rescan'}
-                    </button>
-                    <Link
-                      href="/rfp"
-                      className="border border-outline/30 text-on-surface-variant px-4 py-3 text-[10px] font-label font-bold uppercase tracking-widest hover:bg-surface-container-high hover:text-on-surface transition-all flex items-center justify-center gap-2"
-                    >
-                      <span className="material-symbols-outlined text-sm">add</span>
-                      New Scan
-                    </Link>
-                  </div>
+                {/* Stacked action buttons */}
+                <div className="flex flex-col gap-2 w-[140px] flex-shrink-0">
+                  <button
+                    onClick={rescan}
+                    disabled={rescanning || scan?.status === 'processing'}
+                    className="bg-primary text-on-primary px-4 py-3 text-[10px] font-label font-bold uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    title="Re-run the full intelligence pipeline"
+                  >
+                    <span className="material-symbols-outlined text-sm">refresh</span>
+                    {rescanning || scan?.status === 'processing' ? 'Rescanning…' : 'Rescan'}
+                  </button>
+                  <Link
+                    href="/rfp"
+                    className="border border-outline/30 text-on-surface-variant px-4 py-3 text-[10px] font-label font-bold uppercase tracking-widest hover:bg-surface-container-high hover:text-on-surface transition-all flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-sm">add</span>
+                    New Scan
+                  </Link>
                 </div>
               </div>
+
+              {/* RFP Details strip — full-width horizontal row so the header
+                  doesn't get taller than the Active Tags line. */}
+              {(rfpData.client || rfpData.sector || rfpData.contract_value_hint || rfpData.deadline || rfpData.procurement_framework) && (
+                <div className="mt-5 bg-surface-container-lowest px-5 py-3 flex flex-wrap gap-x-8 gap-y-3">
+                  {[
+                    ['Client', rfpData.client],
+                    ['Sector', rfpData.sector],
+                    ['Value hint', rfpData.contract_value_hint],
+                    ['Deadline', rfpData.deadline],
+                    ['Framework', rfpData.procurement_framework],
+                  ]
+                    .filter(([, v]) => v && v !== 'Unknown')
+                    .map(([k, v]) => (
+                      <div key={k} className="min-w-0 flex-1 md:flex-none md:max-w-[22%]">
+                        <div className="font-label text-[9px] uppercase tracking-widest text-primary mb-1">{k}</div>
+                        <div className="text-xs text-on-surface leading-snug line-clamp-2" title={v}>
+                          {v}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
             </section>
 
             {/* Tabs — Stitch editorial style */}
