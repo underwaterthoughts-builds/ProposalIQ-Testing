@@ -20,6 +20,9 @@ import fs from 'fs';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const CACHE_TTL_MS = 6 * 3600 * 1000;
+// Bump when the response shape changes so the client never receives an
+// old payload that's missing keys it depends on.
+const CACHE_VERSION = 2;
 
 function cachePath(scope, userId) {
   const safeId = (userId || 'global').replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -30,6 +33,8 @@ function readCache(file) {
   try {
     if (!fs.existsSync(file)) return null;
     const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+    // Reject caches from an older schema — their shape will crash the UI.
+    if (data.cache_version !== CACHE_VERSION) return null;
     if (Date.now() - new Date(data.generated_at).getTime() < CACHE_TTL_MS) return data;
   } catch {}
   return null;
@@ -287,6 +292,7 @@ async function handler(req, res) {
   }
 
   const result = {
+    cache_version: CACHE_VERSION,
     generated_at: new Date().toISOString(),
     scope,
     summary: {

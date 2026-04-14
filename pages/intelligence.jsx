@@ -50,12 +50,54 @@ export default function IntelligencePage() {
   const [toast, setToast] = useState('');
   const [playbookState, setPlaybookState] = useState({ open: false, weakness: null, data: null, loading: false, error: null });
 
+  // Normalise any shape (including stale caches from the previous endpoint
+  // version) into the structure this page renders against. Missing keys
+  // default to empty arrays/objects so the UI never crashes on partial data.
+  function normalise(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const o = raw.outcomes || {};
+    return {
+      ...raw,
+      summary: {
+        total: 0, won: 0, lost: 0, decided: 0, win_rate: 0,
+        ...(raw.summary || {}),
+      },
+      outcomes: {
+        by_rating: o.by_rating || raw.by_rating || [],
+        by_sector: o.by_sector || raw.by_sector || [],
+        by_client: o.by_client || raw.by_client || [],
+        by_service_industry: o.by_service_industry || [],
+        by_client_industry: o.by_client_industry || [],
+        by_value_band: o.by_value_band || [],
+        by_year: o.by_year || [],
+      },
+      concentration: {
+        client_hhi: null, top_client_pct: 0, top3_client_pct: 0,
+        top_sector_pct: 0, distinct_winning_clients: 0, distinct_winning_sectors: 0,
+        ...(raw.concentration || {}),
+      },
+      quality_scores: {
+        won: null, lost: null,
+        ...(raw.quality_scores || {}),
+      },
+      capability: {
+        frequent_gaps: [], top_methodologies: [], team_on_wins: [],
+        ...(raw.capability || {}),
+      },
+      confidence: {
+        level: 'medium', reasons: [],
+        ...(raw.confidence || {}),
+      },
+      ai_patterns: raw.ai_patterns || null,
+    };
+  }
+
   useEffect(() => {
     if (authLoading || !user) return;
     setLoading(true);
     fetch(`/api/win-patterns?scope=${scope}`)
       .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
+      .then(d => { setData(normalise(d)); setLoading(false); })
       .catch(e => { setToast(`Load failed: ${e.message}`); setLoading(false); });
   }, [authLoading, user, scope]);
 
@@ -65,7 +107,7 @@ export default function IntelligencePage() {
       const r = await fetch(`/api/win-patterns?scope=${scope}`, { method: 'POST' });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
-      setData(d);
+      setData(normalise(d));
       setToast('Analysis complete');
     } catch (e) {
       setToast(`Analysis failed: ${e.message}`);
