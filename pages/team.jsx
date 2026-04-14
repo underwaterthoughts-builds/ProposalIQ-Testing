@@ -250,33 +250,29 @@ export default function Team() {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,#e8c357_0%,transparent_50%)]" />
           </div>
 
-          {/* Editorial hero */}
-          <header className="relative z-10 px-6 md:px-12 pt-12 pb-8 grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
-            <div className="col-span-12 md:col-span-5">
-              <h1 className="text-5xl md:text-7xl font-headline leading-[0.95] tracking-tighter text-on-surface">
-                The <br/>
-                <span className="text-primary italic">Consortium.</span>
-              </h1>
-            </div>
-            <div className="col-span-12 md:col-span-6 md:col-start-7">
-              <p className="text-base md:text-lg text-on-surface-variant leading-relaxed max-w-xl">
-                Your strategic bid team: architects, technical writers, and domain experts. Managed through a transparent rate card and CV-matched to each opportunity.
-              </p>
-              <div className="mt-8 flex gap-6 border-b border-outline-variant/10">
-                {[['members', 'Team Members'], ['ratecard', 'Rate Card']].map(([id, label]) => (
-                  <button
-                    key={id}
-                    onClick={() => setActiveTab(id)}
-                    className={`pb-4 border-b-2 font-label text-sm tracking-widest uppercase transition-colors ${
-                      activeTab === id
-                        ? 'border-primary text-primary font-bold'
-                        : 'border-transparent text-on-surface-variant hover:text-on-surface'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+          {/* Editorial hero — title + description + tab switcher, all left-aligned */}
+          <header className="relative z-10 px-6 md:px-12 pt-12 pb-8 max-w-3xl">
+            <h1 className="text-5xl md:text-7xl font-headline leading-[0.95] tracking-tighter text-on-surface mb-8">
+              The <br />
+              <span className="text-primary italic">Consortium.</span>
+            </h1>
+            <p className="text-base md:text-lg text-on-surface-variant leading-relaxed max-w-2xl">
+              Your strategic bid team: architects, technical writers, and domain experts. Managed through a transparent rate card and CV-matched to each opportunity.
+            </p>
+            <div className="mt-8 flex gap-6 border-b border-outline-variant/10">
+              {[['members', 'Team Members'], ['ratecard', 'Rate Card']].map(([id, label]) => (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id)}
+                  className={`pb-4 border-b-2 font-label text-sm tracking-widest uppercase transition-colors ${
+                    activeTab === id
+                      ? 'border-primary text-primary font-bold'
+                      : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </header>
 
@@ -366,6 +362,20 @@ export default function Team() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Recruit card — top-left */}
+                <button
+                  onClick={() => { setEditMember(null); setShowAdd(true); }}
+                  className="bg-surface-container-lowest border-2 border-dashed border-outline-variant/20 p-4 flex items-center justify-center gap-3 hover:border-primary/50 transition-colors min-h-[80px]"
+                >
+                  <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary flex-shrink-0">
+                    <span className="material-symbols-outlined">add</span>
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-sm font-headline font-bold text-on-surface">Add to the Consortium</h3>
+                    <span className="text-primary text-[10px] font-label font-bold uppercase tracking-widest">New Member</span>
+                  </div>
+                </button>
+
                 {members.map(m => {
                   const memberHistory = history.filter(h => h.member_id === m.id);
                   const cv = m.cv_extracted || {};
@@ -446,19 +456,6 @@ export default function Team() {
                   );
                 })}
 
-                {/* Recruit / add member card — compressed */}
-                <button
-                  onClick={() => { setEditMember(null); setShowAdd(true); }}
-                  className="bg-surface-container-lowest border-2 border-dashed border-outline-variant/20 p-4 flex items-center justify-center gap-3 hover:border-primary/50 transition-colors min-h-[80px]"
-                >
-                  <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary flex-shrink-0">
-                    <span className="material-symbols-outlined">add</span>
-                  </div>
-                  <div className="text-left">
-                    <h3 className="text-sm font-headline font-bold text-on-surface">Add to the Consortium</h3>
-                    <span className="text-primary text-[10px] font-label font-bold uppercase tracking-widest">New Member</span>
-                  </div>
-                </button>
               </div>
             )}
             </>}
