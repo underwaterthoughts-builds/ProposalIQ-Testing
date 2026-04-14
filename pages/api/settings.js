@@ -14,7 +14,7 @@ async function handler(req, res) {
       gemini_model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
       has_api_key: !!process.env.GEMINI_API_KEY,
       has_openai: !!process.env.OPENAI_API_KEY,
-      openai_model: process.env.OPENAI_MODEL || 'gpt-5.4',
+      openai_model: process.env.OPENAI_MODEL || 'gpt-4o',
     });
   }
   if (req.method === 'POST') {
