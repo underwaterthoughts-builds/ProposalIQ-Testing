@@ -873,7 +873,7 @@ export default function ProjectDetail() {
             <TaxonomyEditor project={project} taxItems={taxItems} onSave={saveTaxonomy} />
 
             {/* Tabs — wrap to two lines when the row outgrows a single line */}
-            <div className="flex flex-wrap border-b mb-5 gap-y-1" style={{ borderColor: 'rgba(77,70,54,0.3)' }}>
+            <div className="flex flex-wrap justify-center border-b mb-5 gap-y-1" style={{ borderColor: 'rgba(77,70,54,0.3)' }}>
               {tabs.map(t => (
                 <button key={t.id} onClick={() => setActiveTab(t.id)}
                   className="px-4 py-2 text-[12.5px] font-medium border-b-2 transition-all flex items-center gap-2 whitespace-nowrap"
