@@ -65,7 +65,7 @@ const ScoreBar = memo(function ScoreBar({ label, value, note }) {
   );
 });
 
-const TagList = memo(function TagList({ items = [], onSave, color = '#e8c357', bg = '#e8f2f4' }) {
+const TagList = memo(function TagList({ items = [], onSave, color = '#e8c357', bg = 'rgba(232,195,87,0.12)' }) {
   const [tags, setTags] = useState(items);
   const [input, setInput] = useState('');
   const [dirty, setDirty] = useState(false);
@@ -597,7 +597,7 @@ export default function ProjectDetail() {
   const ENTRY_COLORS = {
     win_factor: { bg: 'rgba(232,195,87,0.08)', color: '#3d5c3a', icon: '+' },
     loss_factor: { bg: 'rgba(255,180,171,0.1)', color: '#b04030', icon: '−' },
-    client_feedback: { bg: '#e8f2f4', color: '#e8c357', icon: '◎' },
+    client_feedback: { bg: 'rgba(232,195,87,0.12)', color: '#e8c357', icon: '◎' },
     delivery_note: { bg: 'rgba(77,70,54,0.15)', color: '#d0c5b0', icon: '·' },
     lesson: { bg: 'rgba(232,195,87,0.1)', color: '#8a6200', icon: '?' },
     note: { bg: '#211f1d', color: '#d0c5b0', icon: '·' },
@@ -608,6 +608,9 @@ export default function ProjectDetail() {
     { id: 'writing', label: 'Writing Analysis', badge: hasWritingAnalysis ? `${wq.overall_score}/100` : null },
     { id: 'metadata', label: 'AI Metadata' },
     { id: 'narrative', label: 'Project Narrative', badge: narrativeEntries.length > 0 ? `${narrativeEntries.length}` : null },
+    { id: 'document', label: 'View Document' },
+    { id: 'plaintext', label: 'View Plain Text' },
+    { id: 'librarydata', label: 'View Library Data' },
   ];
 
   return (
@@ -798,7 +801,7 @@ export default function ProjectDetail() {
                     <Card className="p-4">
                       <div className="text-[10px] font-label uppercase tracking-widest mb-2" style={{ color: '#d0c5b0' }}>Key Themes</div>
                       <div className="flex flex-wrap gap-1.5">
-                        {meta.key_themes.map(t => <span key={t} className="text-xs font-label px-2 py-0.5 rounded" style={{ background: '#e8f2f4', color: '#e8c357' }}>{t}</span>)}
+                        {meta.key_themes.map(t => <span key={t} className="text-xs font-label px-2 py-0.5 rounded" style={{ background: 'rgba(232,195,87,0.12)', color: '#e8c357' }}>{t}</span>)}
                       </div>
                     </Card>
                   )}
@@ -1016,12 +1019,12 @@ export default function ProjectDetail() {
                   </Card>
                 )}
                 {[
-                  ['key_themes', 'Key Themes', '#e8c357', '#e8f2f4'],
+                  ['key_themes', 'Key Themes', '#e8c357', 'rgba(232,195,87,0.12)'],
                   ['deliverables', 'Deliverables', '#3d5c3a', 'rgba(232,195,87,0.08)'],
                   ['methodologies', 'Methodologies', '#3d5c3a', 'rgba(232,195,87,0.08)'],
                   ['tools_technologies', 'Tools & Technologies', '#d0c5b0', 'rgba(77,70,54,0.15)'],
                   ['client_pain_points', 'Client Pain Points', '#8a6200', 'rgba(232,195,87,0.1)'],
-                  ['value_propositions', 'Value Propositions', '#e8c357', '#e8f2f4'],
+                  ['value_propositions', 'Value Propositions', '#e8c357', 'rgba(232,195,87,0.12)'],
                   ['win_indicators', 'Win Indicators', '#3d5c3a', 'rgba(232,195,87,0.08)'],
                   ['loss_risks', 'Loss Risks', '#b04030', 'rgba(255,180,171,0.1)'],
                 ].map(([field, label, color, bg]) => (
@@ -1120,6 +1123,10 @@ export default function ProjectDetail() {
                 </Card>
               </div>
             )}
+
+            {activeTab === 'document' && <DocumentViewerTab id={id} files={files} />}
+            {activeTab === 'plaintext' && <PlainTextTab id={id} />}
+            {activeTab === 'librarydata' && <LibraryDataTab id={id} />}
             </div> {/* close .max-w-[900px] inner container */}
           </div>
 
@@ -1220,3 +1227,148 @@ export default function ProjectDetail() {
     </>
   );
 }
+
+// ── VIEW DOCUMENT TAB ──────────────────────────────────────────────────
+// Renders the raw source file inline. PDFs via <iframe>; DOCX/other types
+// fall back to a download prompt because browsers can't preview them.
+const DocumentViewerTab = memo(function DocumentViewerTab({ id, files }) {
+  const [loaded, setLoaded] = useState(false);
+  const primaryFile = files.find(f => f.file_type === 'proposal') || files[0];
+  const ext = (primaryFile?.file_name || primaryFile?.path || '').toLowerCase().split('.').pop();
+  const isPdf = ext === 'pdf';
+
+  if (!primaryFile) {
+    return <div className="text-center py-16 text-on-surface-variant">No source file attached to this project.</div>;
+  }
+
+  if (!loaded) {
+    return (
+      <div className="text-center py-16 bg-surface-container-low">
+        <span className="material-symbols-outlined text-5xl text-primary/40">picture_as_pdf</span>
+        <h3 className="font-headline text-xl mt-4 text-on-surface">{primaryFile.file_name || 'Proposal document'}</h3>
+        <p className="font-body text-sm mt-2 text-on-surface-variant max-w-md mx-auto">
+          {isPdf
+            ? 'Click to load the full PDF inline. Deferred so the page stays snappy on navigation.'
+            : `This document is a .${ext} file — inline preview is only supported for PDFs. Use the download link to view it.`}
+        </p>
+        <div className="flex gap-3 justify-center mt-6">
+          {isPdf && (
+            <button
+              onClick={() => setLoaded(true)}
+              className="bg-primary text-on-primary px-6 py-3 text-[10px] font-label uppercase tracking-widest font-bold"
+            >
+              Load PDF
+            </button>
+          )}
+          <a
+            href={`/api/projects/${id}/download`}
+            className="border border-outline/30 text-on-surface-variant hover:text-on-surface px-6 py-3 text-[10px] font-label uppercase tracking-widest flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-sm">download</span>
+            Download
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-surface-container-lowest">
+      <iframe
+        src={`/api/projects/${id}/download?inline=1`}
+        title="Project document"
+        className="w-full"
+        style={{ height: 'calc(100vh - 280px)', minHeight: 600, border: 'none' }}
+      />
+    </div>
+  );
+});
+
+// ── VIEW PLAIN TEXT TAB ────────────────────────────────────────────────
+const PlainTextTab = memo(function PlainTextTab({ id }) {
+  const [state, setState] = useState({ loading: true, text: null, error: null, stats: null });
+
+  useEffect(() => {
+    let alive = true;
+    fetch(`/api/projects/${id}/text`)
+      .then(async r => {
+        const d = await r.json();
+        if (!alive) return;
+        if (!r.ok) setState({ loading: false, text: null, error: d.error || 'Failed to load', stats: null });
+        else setState({ loading: false, text: d.text, error: null, stats: { length: d.length, words: d.words } });
+      })
+      .catch(e => alive && setState({ loading: false, text: null, error: e.message, stats: null }));
+    return () => { alive = false; };
+  }, [id]);
+
+  if (state.loading) return <div className="py-16 text-center text-on-surface-variant"><Spinner /> Loading extracted text…</div>;
+  if (state.error) return (
+    <div className="bg-surface-container-low p-6 border-l-2 border-error text-sm text-error">
+      {state.error}
+    </div>
+  );
+
+  return (
+    <div className="bg-surface-container-low">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-outline-variant/10">
+        <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
+          Extracted Text
+        </div>
+        <div className="font-label text-[10px] text-on-surface-variant/60">
+          {state.stats.words.toLocaleString()} words · {state.stats.length.toLocaleString()} chars
+        </div>
+      </div>
+      <pre className="font-body text-sm leading-relaxed whitespace-pre-wrap text-on-surface p-6 overflow-auto max-h-[75vh]">
+        {state.text}
+      </pre>
+    </div>
+  );
+});
+
+// ── VIEW LIBRARY DATA TAB ──────────────────────────────────────────────
+// Dumps everything the system has saved for this project — DB columns,
+// AI metadata, files, indexing log, narrative entries, on-disk library.json.
+const LibraryDataTab = memo(function LibraryDataTab({ id }) {
+  const [state, setState] = useState({ loading: true, data: null, error: null });
+
+  useEffect(() => {
+    let alive = true;
+    fetch(`/api/projects/${id}/library-data`)
+      .then(async r => {
+        const d = await r.json();
+        if (!alive) return;
+        if (!r.ok) setState({ loading: false, data: null, error: d.error || 'Failed to load' });
+        else setState({ loading: false, data: d, error: null });
+      })
+      .catch(e => alive && setState({ loading: false, data: null, error: e.message }));
+    return () => { alive = false; };
+  }, [id]);
+
+  if (state.loading) return <div className="py-16 text-center text-on-surface-variant"><Spinner /> Loading library data…</div>;
+  if (state.error) return (
+    <div className="bg-surface-container-low p-6 border-l-2 border-error text-sm text-error">
+      {state.error}
+    </div>
+  );
+
+  const json = JSON.stringify(state.data, null, 2);
+
+  return (
+    <div className="bg-surface-container-low">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-outline-variant/10">
+        <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
+          Library Data
+        </div>
+        <button
+          onClick={() => { navigator.clipboard.writeText(json); }}
+          className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors"
+        >
+          Copy JSON
+        </button>
+      </div>
+      <pre className="font-label text-xs leading-relaxed whitespace-pre-wrap text-on-surface p-6 overflow-auto max-h-[75vh]">
+        {json}
+      </pre>
+    </div>
+  );
+});

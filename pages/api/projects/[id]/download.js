@@ -36,7 +36,8 @@ async function handler(req, res) {
   const contentType = contentTypes[ext.toLowerCase()] || 'application/octet-stream';
 
   res.setHeader('Content-Type', contentType);
-  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  const disposition = req.query?.inline ? 'inline' : 'attachment';
+  res.setHeader('Content-Disposition', `${disposition}; filename="${filename}"`);
   const stream = fs.createReadStream(file.path);
   stream.on('error', () => res.status(500).end());
   stream.pipe(res);
