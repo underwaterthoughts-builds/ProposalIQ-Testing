@@ -566,11 +566,6 @@ ${sectionHtml('Winning Language', languageHtml)}
                 {generatingTemplate && templateDraftMode ? <><Spinner size={12}/> Writing…</> : '✍ Draft'}
               </Btn>
             </div>
-            <Btn variant="ghost" onClick={() => router.push('/rfp')}>← All Scans</Btn>
-            <Btn variant="ghost" onClick={rescan} disabled={rescanning || scan?.status === 'processing'}
-              title="Re-run the full intelligence pipeline against this RFP">
-              {rescanning || scan?.status === 'processing' ? <><Spinner size={12}/> Re-analysing…</> : '⟳ Re-analyse'}
-            </Btn>
             <Btn variant="ghost" onClick={deleteScan} disabled={deleting}
               style={{ color:'#b04030', borderColor:'#f5c6c0' }}>
               {deleting ? <><Spinner size={12}/> Deleting…</> : '✕ Delete Scan'}
@@ -645,21 +640,69 @@ ${sectionHtml('Winning Language', languageHtml)}
                 header below; the editable dropdown bar is still available
                 for correction via the tag chips (future enhancement). */}
 
-            {/* Breadcrumb + Intelligence Workbench title (Stitch design) */}
-            <section className="px-6 md:px-8 py-6 bg-surface flex items-start justify-between gap-6 flex-wrap">
-              <div className="flex flex-col min-w-0">
-                <div className="flex items-center gap-2 text-xs font-label text-on-surface-variant/50 uppercase tracking-widest mb-2">
-                  <Link href="/rfp" className="hover:text-primary transition-colors">Intelligence</Link>
-                  <span className="material-symbols-outlined text-xs">chevron_right</span>
-                  <span className="text-on-surface truncate max-w-[240px]">{scan.name}</span>
+            {/* Breadcrumb + Intelligence Workbench title + RFP Details + Actions */}
+            <section className="px-6 md:px-8 py-6 bg-surface">
+              <div className="flex items-start justify-between gap-8 flex-wrap">
+
+                {/* Left: breadcrumb + title + taxonomy */}
+                <div className="flex flex-col min-w-0 flex-1">
+                  <div className="flex items-center gap-2 text-xs font-label text-on-surface-variant/50 uppercase tracking-widest mb-2">
+                    <Link href="/rfp" className="hover:text-primary transition-colors">Intelligence</Link>
+                    <span className="material-symbols-outlined text-xs">chevron_right</span>
+                    <span className="text-on-surface truncate max-w-[240px]">{scan.name}</span>
+                  </div>
+                  <h1 className="text-3xl md:text-4xl font-headline font-medium tracking-tight text-on-surface mb-4">
+                    Intelligence Workbench
+                  </h1>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="font-label text-xs text-on-surface-variant uppercase">Active Tags:</span>
+                    <RfpTaxonomyBar scan={scan} rfpData={rfpData} scanId={id} />
+                  </div>
                 </div>
-                <h1 className="text-3xl md:text-4xl font-headline font-medium tracking-tight text-on-surface">
-                  Intelligence Workbench
-                </h1>
-              </div>
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className="font-label text-xs text-on-surface-variant uppercase">Active Tags:</span>
-                <RfpTaxonomyBar scan={scan} rfpData={rfpData} scanId={id} />
+
+                {/* Right: RFP Details card + stacked action buttons */}
+                <div className="flex items-start gap-4 flex-wrap">
+                  {/* RFP Details compact card */}
+                  {(rfpData.client || rfpData.sector || rfpData.contract_value_hint || rfpData.deadline || rfpData.procurement_framework) && (
+                    <div className="bg-surface-container-lowest p-5 w-[320px] max-w-full">
+                      <div className="font-label text-[10px] uppercase tracking-widest text-primary mb-3">RFP Details</div>
+                      {[
+                        ['Client', rfpData.client],
+                        ['Sector', rfpData.sector],
+                        ['Value hint', rfpData.contract_value_hint],
+                        ['Deadline', rfpData.deadline],
+                        ['Framework', rfpData.procurement_framework],
+                      ]
+                        .filter(([, v]) => v && v !== 'Unknown')
+                        .map(([k, v]) => (
+                          <div key={k} className="flex justify-between gap-3 py-1.5 text-xs first:pt-0 last:pb-0">
+                            <span className="font-label uppercase tracking-wider text-on-surface-variant/60 whitespace-nowrap">{k}</span>
+                            <span className="text-on-surface text-right">{v}</span>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+
+                  {/* Stacked action buttons */}
+                  <div className="flex flex-col gap-2 w-[140px]">
+                    <button
+                      onClick={rescan}
+                      disabled={rescanning || scan?.status === 'processing'}
+                      className="bg-primary text-on-primary px-4 py-3 text-[10px] font-label font-bold uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                      title="Re-run the full intelligence pipeline"
+                    >
+                      <span className="material-symbols-outlined text-sm">refresh</span>
+                      {rescanning || scan?.status === 'processing' ? 'Rescanning…' : 'Rescan'}
+                    </button>
+                    <Link
+                      href="/rfp"
+                      className="border border-outline/30 text-on-surface-variant px-4 py-3 text-[10px] font-label font-bold uppercase tracking-widest hover:bg-surface-container-high hover:text-on-surface transition-all flex items-center justify-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-sm">add</span>
+                      New Scan
+                    </Link>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -1234,89 +1277,6 @@ ${sectionHtml('Winning Language', languageHtml)}
                 <div className="text-center py-12"><p className="text-sm" style={{ color:'#6b6456' }}>Select a tab above.</p></div>
               )}
             </div>
-          </div>
-
-          {/* Right panel - hidden on mobile */}
-          <div className="hidden lg:block w-80 flex-shrink-0 overflow-y-auto p-4 space-y-4" style={{ background:'#f0ebe0' }}>
-            <Card className="p-4">
-              <div className="text-[9px] font-mono uppercase tracking-widest mb-3" style={{ color:'#6b6456' }}>Scan Summary</div>
-              <div className="grid grid-cols-2 gap-2">
-                {[['Matches',matches.length,'#1e4a52'],['Gaps',gaps.length,'#b04030'],['News',news.length,'#3d5c3a'],['Team Fits',team.length,'#b8962e']].map(([l,v,c]) => (
-                  <div key={l} className="rounded-lg p-2.5 text-center" style={{ background:'#f0ebe0' }}>
-                    <div className="font-serif text-2xl" style={{ color:c }}>{v}</div>
-                    <div className="text-[10px] font-mono" style={{ color:'#6b6456' }}>{l}</div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            {rfpData.title && (
-              <Card className="p-4">
-                <div className="text-[9px] font-mono uppercase tracking-widest mb-3" style={{ color:'#6b6456' }}>RFP Details</div>
-                {[['Client',rfpData.client],['Sector',rfpData.sector],['Value hint',rfpData.contract_value_hint],['Deadline',rfpData.deadline],['Framework',rfpData.procurement_framework]].filter(([,v])=>v).map(([k,v]) => (
-                  <div key={k} className="flex justify-between py-1.5 border-b text-xs last:border-0" style={{ borderColor:'#f0ebe0' }}>
-                    <span style={{ color:'#6b6456' }}>{k}</span><span className="font-medium text-right max-w-[160px]">{v}</span>
-                  </div>
-                ))}
-              </Card>
-            )}
-
-            {/* Coverage */}
-            {Object.keys(coverage).length > 0 && (
-              <Card className="p-4">
-                <div className="text-[9px] font-mono uppercase tracking-widest mb-3" style={{ color:'#6b6456' }}>Criteria Coverage</div>
-                {Object.entries(coverage).filter(([,v])=>v!==null).map(([sec,pct]) => (
-                  <div key={sec} className="mb-2">
-                    <div className="flex justify-between text-xs mb-1"><span>{sec}</span><span className="font-mono" style={{ color:pct<40?'#b04030':pct<70?'#b8962e':'#3d5c3a' }}>{pct}%</span></div>
-                    <ProgressBar value={pct} color={pct<40?'#b04030':pct<70?'#b8962e':'#3d5c3a'} />
-                  </div>
-                ))}
-              </Card>
-            )}
-
-            {/* Narrative advice — now in its own tab */}
-            {narrativeText && !narrativeText.startsWith('Error:') && (
-              <Card className="p-4 cursor-pointer hover:bg-[#f8f6f2] transition-colors" onClick={() => setActiveTab('narrative')}>
-                <div className="text-[9px] font-mono uppercase tracking-widest mb-2" style={{ color:'#6b6456' }}>Narrative Advice</div>
-                <p className="text-xs leading-relaxed line-clamp-3" style={{ color:'#6b6456' }}>{narrativeText}</p>
-                <div className="text-[10px] mt-2 font-mono" style={{ color:'#1e4a52' }}>View full advice →</div>
-              </Card>
-            )}
-
-            {/* Team */}
-            {team.length > 0 && (
-              <Card>
-                <div className="px-4 py-3 border-b text-[9px] font-mono uppercase tracking-widest" style={{ borderColor:'#f0ebe0', color:'#6b6456' }}>Suggested Team</div>
-                {team.slice(0,5).map(m => (
-                  <div key={m.id} className="flex items-center gap-3 px-4 py-2.5 border-b last:border-0" style={{ borderColor:'#f0ebe0' }}>
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0" style={{ background:m.color||'#2d6b78' }}>
-                      {m.name.split(' ').map(n=>n[0]).join('')}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium truncate">{m.name}</div>
-                      <div className="text-[10px] truncate" style={{ color:'#6b6456' }}>{m.title}</div>
-                    </div>
-                    <div className="text-[10px] font-mono font-medium" style={{ color:'#1e4a52' }}>{m.fit_score}%</div>
-                  </div>
-                ))}
-                <div className="p-3"><Link href="/team"><Btn variant="ghost" size="sm" className="w-full justify-center">View Team →</Btn></Link></div>
-              </Card>
-            )}
-
-            {/* Financial model */}
-            {financial.total_revenue > 0 && (
-              <Card className="p-4">
-                <div className="text-[9px] font-mono uppercase tracking-widest mb-3" style={{ color:'#6b6456' }}>Indicative Financial Model</div>
-                {[['Revenue',`£${(financial.total_revenue).toLocaleString()}`],['Labour Cost',`£${(financial.total_labour_cost).toLocaleString()}`],['Overhead (12%)',`£${(financial.overhead).toLocaleString()}`],['Est. Margin',`${financial.net_margin}%`]].map(([k,v]) => (
-                  <div key={k} className="flex justify-between py-1.5 border-b text-xs last:border-0 last:font-semibold" style={{ borderColor:'#f0ebe0' }}>
-                    <span style={{ color:'#6b6456' }}>{k}</span><span className="font-mono" style={{ color:k==='Est. Margin'?(financial.net_margin>25?'#3d5c3a':'#b04030'):undefined }}>{v}</span>
-                  </div>
-                ))}
-                <p className="text-[10px] mt-2" style={{ color:'#6b6456' }}>Based on {financial.estimated_days} days · indicative only</p>
-              </Card>
-            )}
-
-            <Link href="/rfp"><Btn variant="ghost" size="sm" className="w-full justify-center">← New Scan</Btn></Link>
           </div>
         </div>
       </Layout>
