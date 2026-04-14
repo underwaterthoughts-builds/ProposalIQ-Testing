@@ -65,160 +65,318 @@ export default function Clients() {
       <Head><title>Client Intelligence — ProposalIQ</title></Head>
       <Layout title="Client Intelligence" subtitle="Relationship history and account context" user={user}
         actions={<Btn variant="teal" onClick={() => { setSelected(null); setEditForm({ name:'', notes:'', sector:'', relationship_status:'prospect' }); setShowAdd(true); }}>⊕ Add Client</Btn>}>
-        <div className="flex h-full overflow-hidden">
+        <div className="flex h-full overflow-hidden bg-surface">
 
           {/* Client list */}
-          <div className="w-64 flex-shrink-0 border-r flex flex-col" style={{ borderColor:'#ddd5c4', background:'#f0ebe0' }}>
-            <div className="p-3 border-b" style={{ borderColor:'#ddd5c4' }}>
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search clients…"
-                className="w-full px-3 py-1.5 border rounded-md text-xs outline-none" style={{ borderColor:'#ddd5c4' }} />
+          <aside className="w-64 flex-shrink-0 flex flex-col bg-surface-container-low border-r border-outline-variant/10">
+            <div className="p-6 border-b border-outline-variant/10">
+              <h3 className="font-headline text-xl text-on-surface">Client Directory</h3>
+              <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mt-1">
+                Total: {allNames.length} {allNames.length === 1 ? 'account' : 'accounts'}
+              </p>
             </div>
-            <div className="flex-1 overflow-y-auto p-2">
-              {loading ? <div className="flex justify-center py-8"><Spinner /></div> : (
-                <>
-                  {filtered.map(name => {
-                    const profile = clients.find(c => c.name === name);
-                    const raw = unprofiled.find(c => c.name === name);
-                    const data = profile || raw;
-                    const wr = (data.won + data.lost) > 0 ? Math.round((data.won / (data.won + data.lost)) * 100) : null;
-                    return (
-                      <button key={name} onClick={() => selectClient(name)}
-                        className={`w-full text-left px-3 py-2.5 rounded-md mb-1 transition-all ${selected?.name === name ? 'bg-white shadow-sm' : 'hover:bg-white/60'}`}>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium truncate">{name}</span>
-                          {!profile && <span className="text-[9px] font-mono px-1 rounded" style={{ background:'#f0ebe0', color:'#9b8e80' }}>auto</span>}
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] font-mono" style={{ color:'#6b6456' }}>{data.project_count} project{data.project_count!==1?'s':''}</span>
-                          {wr !== null && <span className="text-[10px] font-mono" style={{ color: wr>=60?'#3d5c3a':wr>=40?'#b8962e':'#b04030' }}>{wr}% win</span>}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </>
+            <div className="p-4 border-b border-outline-variant/10">
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search clients…"
+                className="w-full bg-transparent border-b border-outline-variant focus:border-primary focus:ring-0 focus:outline-none py-2 text-sm placeholder:text-outline transition-colors"
+              />
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {loading ? (
+                <div className="flex justify-center py-12"><Spinner /></div>
+              ) : (
+                filtered.map(name => {
+                  const profile = clients.find(c => c.name === name);
+                  const raw = unprofiled.find(c => c.name === name);
+                  const data = profile || raw;
+                  const wr = (data.won + data.lost) > 0 ? Math.round((data.won / (data.won + data.lost)) * 100) : null;
+                  const isActive = selected?.name === name;
+                  return (
+                    <button
+                      key={name}
+                      onClick={() => selectClient(name)}
+                      className={`w-full text-left p-6 border-b border-outline-variant/5 transition-colors cursor-pointer group ${
+                        isActive
+                          ? 'bg-surface-container-high border-l-2 border-l-primary'
+                          : 'hover:bg-surface-container-high/50 border-l-2 border-l-transparent'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className={`font-body text-sm font-bold truncate ${isActive ? 'text-on-surface' : 'text-on-surface-variant group-hover:text-on-surface'}`}>
+                          {name}
+                        </span>
+                        {!profile && (
+                          <span className="text-[9px] font-label uppercase px-1.5 py-0.5 bg-surface-container-highest text-outline">
+                            auto
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="font-label text-[10px] text-on-surface-variant uppercase tracking-wider">
+                          {data.project_count} {data.project_count === 1 ? 'project' : 'projects'}
+                        </span>
+                        {wr !== null && (
+                          <span className={`font-label text-xs ${isActive ? 'text-primary' : 'text-on-surface-variant'}`}>
+                            {wr}% win
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })
               )}
             </div>
-            <div className="p-3 border-t" style={{ borderColor:'#ddd5c4' }}>
-              <div className="flex justify-between text-xs font-mono" style={{ color:'#6b6456' }}>
-                <span>{allNames.length} clients</span>
-                <span>{totalWon}W / {totalLost}L</span>
-              </div>
+            <div className="p-4 border-t border-outline-variant/10">
+              <button
+                onClick={() => {
+                  setSelected(null);
+                  setEditForm({ name: '', notes: '', sector: '', relationship_status: 'prospect' });
+                  setShowAdd(true);
+                }}
+                className="w-full py-3 bg-primary text-on-primary font-bold text-xs uppercase tracking-widest"
+              >
+                + New Client
+              </button>
             </div>
-          </div>
+          </aside>
 
           {/* Client detail */}
-          <div className="flex-1 overflow-y-auto p-6">
-            {!selected && !showAdd ? (
-              <div className="text-center py-20">
-                <div className="text-4xl mb-3 opacity-20">◎</div>
-                <p className="text-sm" style={{ color:'#6b6456' }}>Select a client to view their history and relationship notes.</p>
-              </div>
-            ) : showAdd ? (
-              <div className="max-w-lg">
-                <h2 className="font-serif text-xl mb-5">Add Client Profile</h2>
-                <Card className="p-5 space-y-4">
-                  {[['name','Client Name','e.g. NHS England'],['sector','Sector','e.g. Healthcare & NHS']].map(([k,l,ph]) => (
-                    <div key={k}>
-                      <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{ color:'#6b6456' }}>{l}</label>
-                      <input value={editForm[k]||''} onChange={e => setEditForm(p=>({...p,[k]:e.target.value}))} placeholder={ph}
-                        className="w-full px-3 py-2 border rounded-md text-sm outline-none focus:border-[#1e4a52]" style={{ borderColor:'#ddd5c4' }} />
-                    </div>
-                  ))}
-                  <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{ color:'#6b6456' }}>Relationship Status</label>
-                    <select value={editForm.relationship_status||'prospect'} onChange={e => setEditForm(p=>({...p,relationship_status:e.target.value}))}
-                      className="w-full px-3 py-2 border rounded-md text-sm outline-none" style={{ borderColor:'#ddd5c4' }}>
-                      {['active','prospect','inactive','lost'].map(s => <option key={s}>{s}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{ color:'#6b6456' }}>Notes</label>
-                    <textarea value={editForm.notes||''} onChange={e => setEditForm(p=>({...p,notes:e.target.value}))} rows={3}
-                      placeholder="Key contacts, relationship history, strategic notes…"
-                      className="w-full px-3 py-2 border rounded-md text-sm outline-none focus:border-[#1e4a52]" style={{ borderColor:'#ddd5c4', resize:'vertical' }} />
-                  </div>
-                  <div className="flex gap-3 pt-2">
-                    <Btn variant="teal" onClick={saveProfile} disabled={saving || !editForm.name?.trim()}>
-                      {saving ? <><Spinner size={12}/> Saving…</> : 'Create Profile'}
-                    </Btn>
-                    <Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn>
-                  </div>
-                </Card>
-              </div>
-            ) : (
-              <div className="max-w-3xl space-y-5">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h2 className="font-serif text-2xl">{selected.name}</h2>
-                    {selected.sector && <p className="text-sm mt-0.5" style={{ color:'#6b6456' }}>{selected.sector}</p>}
-                  </div>
-                  {selected.relationship_status && (
-                    <span className="text-[11px] font-mono px-3 py-1 rounded-full capitalize" style={{ background: (STATUS_COLORS[selected.relationship_status]||'#6b6456')+'20', color: STATUS_COLORS[selected.relationship_status]||'#6b6456' }}>
-                      {selected.relationship_status}
-                    </span>
-                  )}
+          <div className="flex-1 overflow-y-auto bg-surface relative">
+
+            {/* Background accent */}
+            <div className="absolute inset-0 pointer-events-none opacity-5 overflow-hidden">
+              <div className="absolute -top-20 -right-20 w-[600px] h-[600px] bg-primary blur-[140px] rounded-full" />
+            </div>
+
+            <div className="relative z-10 p-8 md:p-12">
+              {!selected && !showAdd ? (
+                <div className="text-center py-32">
+                  <span className="material-symbols-outlined text-6xl text-outline opacity-40">handshake</span>
+                  <p className="font-body text-on-surface-variant mt-6 max-w-md mx-auto">
+                    Select a client from the directory to view their intelligence profile and proposal history.
+                  </p>
                 </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-4 gap-3">
-                  {[
-                    ['Projects', selectedProjects.length],
-                    ['Won', selectedProjects.filter(p=>p.outcome==='won').length],
-                    ['Lost', selectedProjects.filter(p=>p.outcome==='lost').length],
-                    ['Win Rate', selectedProjects.filter(p=>['won','lost'].includes(p.outcome)).length > 0
-                      ? Math.round(selectedProjects.filter(p=>p.outcome==='won').length / selectedProjects.filter(p=>['won','lost'].includes(p.outcome)).length * 100) + '%'
-                      : '—'],
-                  ].map(([l,v]) => (
-                    <Card key={l} className="p-3 text-center">
-                      <div className="font-mono text-xl font-bold" style={{ color:'#1e4a52' }}>{v}</div>
-                      <div className="text-[10px] font-mono uppercase tracking-widest mt-0.5" style={{ color:'#6b6456' }}>{l}</div>
-                    </Card>
-                  ))}
-                </div>
-
-                {/* Notes */}
-                {selected.id && (
-                  <Card className="p-5">
-                    <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#6b6456' }}>Relationship Notes</div>
-                    <textarea value={editForm.notes||''} onChange={e => setEditForm(p=>({...p,notes:e.target.value}))} rows={4}
-                      placeholder="Key contacts, relationship context, strategic observations, incumbent info…"
-                      className="w-full px-3 py-2 border rounded-md text-sm outline-none focus:border-[#1e4a52] mb-3" style={{ borderColor:'#ddd5c4', resize:'vertical' }} />
-                    <Btn variant="teal" onClick={saveProfile} disabled={saving}>
-                      {saving ? <><Spinner size={12}/> Saving…</> : 'Save Notes'}
-                    </Btn>
-                  </Card>
-                )}
-                {!selected.id && (
-                  <Card className="p-4" style={{ background:'#faf4e2', border:'1px solid rgba(184,150,46,.3)' }}>
-                    <p className="text-sm" style={{ color:'#8a6200' }}>This client was detected from your proposals but has no profile yet.</p>
-                    <Btn variant="teal" size="sm" className="mt-3" onClick={() => { setEditForm({ name:selected.name, notes:'', sector:'', relationship_status:'active' }); setShowAdd(true); }}>Create Profile →</Btn>
-                  </Card>
-                )}
-
-                {/* Project history */}
-                <div>
-                  <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#6b6456' }}>Project History</div>
-                  <div className="space-y-2">
-                    {selectedProjects.map(p => (
-                      <Link key={p.id} href={`/repository/${p.id}`}>
-                        <Card className="p-4 flex items-center gap-4 hover:bg-[#f8f6f2] transition-colors cursor-pointer">
-                          <OutcomeLabel outcome={p.outcome} />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium truncate">{p.name}</div>
-                            <div className="text-xs mt-0.5" style={{ color:'#6b6456' }}>{p.date_submitted?.slice(0,4)} · {p.sector}</div>
-                          </div>
-                          <div className="text-sm font-mono font-medium flex-shrink-0" style={{ color:'#1e4a52' }}>
-                            {formatMoney(p.contract_value, p.currency)}
-                          </div>
-                          <span className="text-xs" style={{ color:'#1e4a52' }}>→</span>
-                        </Card>
-                      </Link>
+              ) : showAdd ? (
+                <div className="max-w-lg">
+                  <h2 className="font-headline text-3xl mb-8">Add Client Profile</h2>
+                  <div className="bg-surface-container-low p-8 space-y-6">
+                    {[['name', 'Client Name', 'e.g. NHS England'], ['sector', 'Sector', 'e.g. Healthcare & NHS']].map(([k, l, ph]) => (
+                      <div key={k}>
+                        <label className="block font-label text-[10px] text-outline uppercase tracking-widest mb-2">{l}</label>
+                        <input
+                          value={editForm[k] || ''}
+                          onChange={e => setEditForm(p => ({ ...p, [k]: e.target.value }))}
+                          placeholder={ph}
+                          className="w-full bg-transparent border-b border-outline-variant focus:border-primary focus:ring-0 focus:outline-none py-2 text-on-surface transition-colors"
+                        />
+                      </div>
                     ))}
-                    {selectedProjects.length === 0 && <p className="text-sm py-4" style={{ color:'#6b6456' }}>No projects found for this client yet.</p>}
+                    <div>
+                      <label className="block font-label text-[10px] text-outline uppercase tracking-widest mb-2">Relationship Status</label>
+                      <select
+                        value={editForm.relationship_status || 'prospect'}
+                        onChange={e => setEditForm(p => ({ ...p, relationship_status: e.target.value }))}
+                        className="w-full bg-transparent border-b border-outline-variant focus:border-primary focus:ring-0 focus:outline-none py-2 text-on-surface appearance-none"
+                      >
+                        {['active', 'prospect', 'inactive', 'lost'].map(s => <option key={s} className="bg-surface-container">{s}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block font-label text-[10px] text-outline uppercase tracking-widest mb-2">Notes</label>
+                      <textarea
+                        value={editForm.notes || ''}
+                        onChange={e => setEditForm(p => ({ ...p, notes: e.target.value }))}
+                        rows={4}
+                        placeholder="Key contacts, relationship history, strategic notes…"
+                        className="w-full bg-surface-container-lowest border-none focus:ring-0 focus:outline-none p-4 text-on-surface-variant text-sm resize-y"
+                      />
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={saveProfile}
+                        disabled={saving || !editForm.name?.trim()}
+                        className="bg-primary text-on-primary px-6 py-3 text-xs font-label uppercase tracking-widest font-bold disabled:opacity-50"
+                      >
+                        {saving ? 'Saving…' : 'Create Profile'}
+                      </button>
+                      <button
+                        onClick={() => setShowAdd(false)}
+                        className="px-6 py-3 border border-outline/30 text-on-surface-variant text-xs font-label uppercase tracking-widest hover:bg-surface-container-high transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="space-y-12">
+
+                  {/* Hero header */}
+                  <div className="flex justify-between items-start gap-6 flex-wrap">
+                    <div className="max-w-2xl">
+                      <div className="flex items-center gap-4 mb-3 flex-wrap">
+                        <h1 className="font-headline text-5xl md:text-6xl font-bold text-on-surface tracking-tighter">
+                          {selected.name}
+                        </h1>
+                        {selected.relationship_status && (
+                          <span
+                            className="px-3 py-1 bg-primary/10 border border-primary/20 text-primary text-[10px] font-label uppercase tracking-widest rounded-full"
+                            style={{ color: STATUS_COLORS[selected.relationship_status] || '#e8c357' }}
+                          >
+                            {selected.relationship_status}
+                          </span>
+                        )}
+                      </div>
+                      {selected.sector && (
+                        <p className="text-lg text-on-surface-variant font-body leading-relaxed">
+                          {selected.sector}
+                        </p>
+                      )}
+                    </div>
+                    {selected.id && (
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={() => setShowAdd(false)}
+                          className="flex items-center gap-2 px-6 py-3 border border-outline/30 text-primary hover:bg-primary/5 transition-colors font-medium text-sm"
+                        >
+                          <span className="material-symbols-outlined text-sm">edit</span>
+                          Edit Details
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Auto-detected banner */}
+                  {!selected.id && (
+                    <div className="p-8 bg-gradient-to-r from-primary-container to-secondary-container rounded-lg border border-primary/20 flex items-center justify-between gap-6 flex-wrap shadow-2xl">
+                      <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-on-primary-container flex items-center justify-center rounded-full flex-shrink-0">
+                          <span className="material-symbols-outlined text-primary text-3xl">auto_awesome</span>
+                        </div>
+                        <div>
+                          <h4 className="text-on-primary-container font-headline text-2xl font-bold">Auto-Detected Opportunity</h4>
+                          <p className="text-on-primary-container/80 text-sm font-body mt-1">
+                            This client was found in your proposal repository but has no intelligence profile yet.
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => { setEditForm({ name: selected.name, notes: '', sector: '', relationship_status: 'active' }); setShowAdd(true); }}
+                        className="bg-primary text-on-primary px-8 py-4 font-bold text-sm tracking-widest uppercase shadow-lg hover:scale-[1.02] transition-transform"
+                      >
+                        Create Intelligence Profile
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Metrics grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {(() => {
+                      const wonCount = selectedProjects.filter(p => p.outcome === 'won').length;
+                      const lostCount = selectedProjects.filter(p => p.outcome === 'lost').length;
+                      const pendingCount = selectedProjects.filter(p => !['won', 'lost', 'withdrawn'].includes(p.outcome)).length;
+                      const winPct = (wonCount + lostCount) > 0 ? Math.round((wonCount / (wonCount + lostCount)) * 100) : null;
+                      const totalValue = selectedProjects.reduce((a, p) => a + (p.contract_value || 0), 0);
+                      const metrics = [
+                        { label: 'Total Contract Value', value: formatMoney(totalValue, selectedProjects[0]?.currency || 'GBP'), accent: 'border-primary-container' },
+                        { label: 'Active RFPs', value: String(pendingCount).padStart(2, '0'), accent: 'border-outline-variant' },
+                        { label: 'Win Rate', value: winPct !== null ? `${winPct}%` : '—', accent: 'border-primary', highlight: true },
+                        { label: 'Total Projects', value: selectedProjects.length, accent: 'border-outline-variant' },
+                      ];
+                      return metrics.map(m => (
+                        <div key={m.label} className={`p-6 md:p-8 bg-surface-container-lowest border-l-2 ${m.accent}`}>
+                          <span className="block font-label text-[10px] text-on-surface-variant uppercase tracking-[0.2em] mb-2">{m.label}</span>
+                          <span className={`text-2xl md:text-3xl font-headline font-bold ${m.highlight ? 'text-primary' : 'text-on-surface'}`}>
+                            {m.value}
+                          </span>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+
+                  {/* Main grid — notes + proposal history */}
+                  <div className="grid grid-cols-12 gap-8 md:gap-12">
+
+                    {/* Notes */}
+                    <div className="col-span-12 md:col-span-4">
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="font-headline text-2xl text-on-surface">Internal Notes</h3>
+                        <span className="material-symbols-outlined text-on-surface-variant text-lg">add_notes</span>
+                      </div>
+                      {selected.id ? (
+                        <div className="bg-surface-container-low p-6 rounded-md">
+                          <textarea
+                            value={editForm.notes || ''}
+                            onChange={e => setEditForm(p => ({ ...p, notes: e.target.value }))}
+                            rows={6}
+                            placeholder="Key contacts, relationship context, strategic observations…"
+                            className="w-full bg-transparent border-none focus:ring-0 focus:outline-none text-sm font-body text-on-surface-variant leading-relaxed resize-y"
+                          />
+                          <button
+                            onClick={saveProfile}
+                            disabled={saving}
+                            className="mt-4 bg-primary text-on-primary px-4 py-2 text-[10px] font-label uppercase tracking-widest font-bold disabled:opacity-50"
+                          >
+                            {saving ? 'Saving…' : 'Save Notes'}
+                          </button>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-on-surface-variant italic">Create a profile to add relationship notes.</p>
+                      )}
+                    </div>
+
+                    {/* Proposal history */}
+                    <div className="col-span-12 md:col-span-8">
+                      <h3 className="font-headline text-2xl text-on-surface mb-8">Proposal History</h3>
+                      {selectedProjects.length === 0 ? (
+                        <p className="text-sm text-on-surface-variant italic">No projects found for this client yet.</p>
+                      ) : (
+                        <div className="bg-surface-container-lowest overflow-hidden border border-outline-variant/10">
+                          <table className="w-full text-left">
+                            <thead>
+                              <tr className="bg-surface-container-low">
+                                <th className="px-6 py-4 font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Project Name</th>
+                                <th className="px-6 py-4 font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Status</th>
+                                <th className="px-6 py-4 font-label text-[10px] uppercase tracking-widest text-on-surface-variant text-right">Value</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-outline-variant/10">
+                              {selectedProjects.map(p => {
+                                const isWon = p.outcome === 'won';
+                                const isLost = p.outcome === 'lost';
+                                const statusDot = isWon ? 'bg-primary' : isLost ? 'bg-error' : 'bg-outline-variant';
+                                const statusColor = isWon ? 'text-primary' : isLost ? 'text-error' : 'text-on-surface-variant';
+                                return (
+                                  <tr key={p.id} className="group hover:bg-surface-container-high/40 transition-colors cursor-pointer" onClick={() => window.location.assign(`/repository/${p.id}`)}>
+                                    <td className="px-6 py-5">
+                                      <span className="block font-body text-sm font-bold text-on-surface truncate">{p.name}</span>
+                                      <span className="text-[10px] font-label text-on-surface-variant uppercase">
+                                        {p.date_submitted?.slice(0, 4) || '—'} · {p.sector || 'Untagged'}
+                                      </span>
+                                    </td>
+                                    <td className="px-6 py-5">
+                                      <span className={`flex items-center gap-2 text-[10px] font-label uppercase ${statusColor}`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${statusDot}`} />
+                                        {p.outcome || 'pending'}
+                                      </span>
+                                    </td>
+                                    <td className="px-6 py-5 text-right font-headline text-base text-on-surface whitespace-nowrap">
+                                      {formatMoney(p.contract_value, p.currency)}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </Layout>
