@@ -86,6 +86,28 @@ const AddNewInline = memo(function AddNewInline({ field, label, placeholder, sho
 
 // ─── PROJECT CARD ─────────────────────────────────────────────────────────────
 
+// Compact "last scanned" line rendered directly beneath the Full / Quick
+// Scan pill. UK-style HH:mm DD/M/YY so it reads unambiguously but stays
+// inside the visual width of the pill above it.
+const ScanTimestamp = memo(function ScanTimestamp({ indexedAt }) {
+  if (!indexedAt) return null;
+  const d = new Date(indexedAt);
+  if (isNaN(d.getTime())) return null;
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const day = d.getDate();
+  const month = d.getMonth() + 1;
+  const yy = String(d.getFullYear()).slice(-2);
+  return (
+    <span
+      className="text-[8.5px] font-label text-outline tracking-wider leading-none"
+      title={`Last scanned ${d.toLocaleString()}`}
+    >
+      {hh}:{mm} {day}/{month}/{yy}
+    </span>
+  );
+});
+
 // Three labelled rows — User / AI / System — each shown as 5 stars with
 // fractional fill (derived from the underlying percentage) plus the raw
 // percentage on the right. Quiet when no numbers exist at all.
@@ -236,22 +258,27 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
           </h2>
         </div>
         {!selectMode && (
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-start gap-2 flex-shrink-0">
             {p.analysis_model === 'gpt' ? (
-              <span
-                className="px-2 py-0.5 text-[10px] font-label font-bold tracking-widest bg-[#1f3a1c] text-[#7bd07a] border border-[#7bd07a]/30"
-                title="Full scan — analysed with OpenAI (deep reasoning)"
-              >
-                FULL SCAN
-              </span>
+              <div className="flex flex-col items-center gap-0.5">
+                <span
+                  className="px-2 py-0.5 text-[10px] font-label font-bold tracking-widest bg-[#1f3a1c] text-[#7bd07a] border border-[#7bd07a]/30"
+                  title="Full scan — analysed with OpenAI (deep reasoning)"
+                >
+                  FULL SCAN
+                </span>
+                <ScanTimestamp indexedAt={p.indexed_at} />
+              </div>
             ) : p.indexing_status === 'complete' ? (
-              // Null / 'gemini' / anything else that's complete → treat as quick scan
-              <span
-                className="px-2 py-0.5 text-[10px] font-label font-bold tracking-widest bg-secondary/10 text-secondary border border-secondary/20"
-                title="Quick scan — analysed with Gemini 2.5 Flash. Rescan with OpenAI configured for full thinking."
-              >
-                QUICK SCAN
-              </span>
+              <div className="flex flex-col items-center gap-0.5">
+                <span
+                  className="px-2 py-0.5 text-[10px] font-label font-bold tracking-widest bg-secondary/10 text-secondary border border-secondary/20"
+                  title="Quick scan — analysed with Gemini 2.5 Flash. Rescan with OpenAI configured for full thinking."
+                >
+                  QUICK SCAN
+                </span>
+                <ScanTimestamp indexedAt={p.indexed_at} />
+              </div>
             ) : null}
             <span className={`px-2 py-0.5 text-[10px] font-label font-bold tracking-widest border ${outcomeStyle}`}>
               {outcomeLabel}
