@@ -385,7 +385,7 @@ function IntelligenceMode({ projects, scans, patterns, winRate, won, lost }) {
     knowledgeHealth.reduce((a, h) => a + (h.pct || 0), 0) / knowledgeHealth.length
   );
 
-  const topRecommendation = patterns?.ai_analysis?.top_recommendation;
+  const topRecommendation = patterns?.ai_patterns?.top_recommendation;
 
   const recent = [...projects]
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
