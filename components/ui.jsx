@@ -1,5 +1,7 @@
 // Shared UI primitives — Sovereign Editorial dark theme
 
+import React from 'react';
+
 export function Btn({ children, onClick, variant = 'ghost', size = 'md', disabled, className = '', type = 'button' }) {
   const base = 'inline-flex items-center gap-1.5 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer font-label uppercase tracking-widest';
   const sizes = { sm: 'px-2.5 py-1 text-[10px]', md: 'px-3.5 py-1.5 text-[11px]', lg: 'px-5 py-2 text-xs' };
@@ -41,6 +43,85 @@ export function Stars({ rating, size = 'sm' }) {
         <span key={i} className={i <= rating ? 'text-primary' : 'text-outline-variant/40'}>★</span>
       ))}
     </span>
+  );
+}
+
+// Inline-editable client field. Shows the client name, or an "Add client"
+// affordance when the value is empty or the upload-time placeholder
+// "Unknown". Click to edit; Enter/blur saves via PATCH; Escape cancels.
+// Stops event propagation so parent onClick/Link handlers don't fire while
+// editing — the card itself is often a navigable element.
+export function ClientField({ project, onSaved, size = 'sm', labelClassName = '', className = '' }) {
+  const [editing, setEditing] = React.useState(false);
+  const [value, setValue] = React.useState(project.client || '');
+  const [saving, setSaving] = React.useState(false);
+  const isUnknown = !project.client || project.client === 'Unknown';
+  const sz = size === 'sm' ? 'text-sm' : 'text-base';
+
+  React.useEffect(() => { setValue(project.client || ''); }, [project.client, project.id]);
+
+  async function save() {
+    const trimmed = value.trim();
+    if (!trimmed || trimmed === project.client) { setEditing(false); return; }
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client: trimmed }),
+      });
+      if (res.ok && onSaved) onSaved(trimmed);
+    } catch {}
+    setSaving(false);
+    setEditing(false);
+  }
+
+  const stop = (e) => { e.stopPropagation(); e.preventDefault(); };
+
+  if (editing) {
+    return (
+      <span className={`inline-flex items-center gap-2 ${className}`} onClick={stop}>
+        <input
+          autoFocus
+          value={value}
+          disabled={saving}
+          onChange={e => setValue(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter') save();
+            if (e.key === 'Escape') { setEditing(false); setValue(project.client || ''); }
+          }}
+          onBlur={save}
+          onClick={stop}
+          className={`bg-surface-container border-b border-primary px-1 py-0.5 outline-none text-on-surface ${sz}`}
+          placeholder="Client name…"
+        />
+      </span>
+    );
+  }
+
+  if (isUnknown) {
+    return (
+      <button
+        type="button"
+        onClick={(e) => { stop(e); setEditing(true); }}
+        className={`${sz} text-primary hover:text-on-surface inline-flex items-center gap-1 ${labelClassName}`}
+        title="Click to add client name"
+      >
+        <span className="material-symbols-outlined text-[14px]">edit</span>
+        Add client
+      </button>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={(e) => { stop(e); setEditing(true); }}
+      className={`${sz} text-on-surface hover:text-primary transition-colors ${className}`}
+      title="Click to edit client"
+    >
+      {project.client}
+    </button>
   );
 }
 

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import Layout from '../../components/Layout';
-import { Btn, Card, Stars, StarsPct, OutcomeLabel, FileChip, Spinner, Toast } from '../../components/ui';
+import { Btn, Card, Stars, StarsPct, ClientField, OutcomeLabel, FileChip, Spinner, Toast } from '../../components/ui';
 import { useUser } from '../../lib/useUser';
 import { formatMoney, currencySymbol } from '../../lib/format';
 import { DebouncedInput, DebouncedTextarea } from '../../lib/useDebounce';
@@ -745,7 +745,13 @@ export default function ProjectDetail() {
                   <div className="flex flex-wrap items-end justify-between gap-6 pt-6">
                     <div>
                       <p className="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-1">Lead Client</p>
-                      <p className="text-xl font-headline italic">{project.client || '—'}</p>
+                      <div className="text-xl font-headline italic">
+                        <ClientField
+                          project={project}
+                          size="base"
+                          onSaved={(name) => setProject(p => ({ ...p, client: name }))}
+                        />
+                      </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <DetailRatingBreakdown project={project} />

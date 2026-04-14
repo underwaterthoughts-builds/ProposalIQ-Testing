@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback, memo } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Layout from '../components/Layout';
-import { Btn, Card, Stars, StarsPct, OutcomeLabel, FileChip, Spinner, Toast } from '../components/ui';
+import { Btn, Card, Stars, StarsPct, ClientField, OutcomeLabel, FileChip, Spinner, Toast } from '../components/ui';
 import { useUser } from '../lib/useUser';
 import { formatMoney } from '../lib/format';
 import { DebouncedSearch } from '../lib/useDebounce';
@@ -269,7 +269,7 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <span className="font-label text-[10px] text-outline block mb-1 uppercase">Client</span>
-            <span className="text-sm font-medium truncate block">{p.client || '—'}</span>
+            <ClientField project={p} onSaved={(name) => onUpdated?.(p.id, { client: name })} className="truncate block font-medium" />
           </div>
           <div className="text-right">
             <span className="font-label text-[10px] text-outline block mb-1 uppercase">Year</span>
