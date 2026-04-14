@@ -2,6 +2,7 @@ import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { generateInsightPlaybook } from '../../../lib/gemini';
 import { safe } from '../../../lib/embeddings';
+import { systemPct } from '../../../lib/rating';
 
 // POST /api/win-patterns/playbook
 // Body: { scope?: 'workspace'|'repository', weakness: { title, evidence, remedy } }
@@ -24,7 +25,10 @@ function scoreRelevance(project, weakness) {
     ...(meta.key_themes || []), ...(meta.methodologies || []),
     ...(meta.win_indicators || []), project.description || '',
   ].join(' ').toLowerCase();
-  let score = (project.user_rating || 0) * 2;
+  // System rating (0-100) weighted like a /5 score — replaces raw stars
+  // so highly-rated-but-thin proposals don't rank ahead of well-evidenced ones.
+  const sys = systemPct(project);
+  let score = (sys ?? 0) / 10; // ~10 = 5★ equivalent under old scheme
   for (const token of needle.split(/\W+/).filter(t => t.length >= 4)) {
     if (hay.includes(token)) score += 1;
   }

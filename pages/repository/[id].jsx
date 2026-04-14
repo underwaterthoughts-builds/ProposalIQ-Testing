@@ -7,6 +7,7 @@ import { Btn, Card, Stars, OutcomeLabel, FileChip, Spinner, Toast } from '../../
 import { useUser } from '../../lib/useUser';
 import { formatMoney, currencySymbol } from '../../lib/format';
 import { DebouncedInput, DebouncedTextarea } from '../../lib/useDebounce';
+import { computeSystemRating } from '../../lib/rating';
 
 const CURRENCY_OPTIONS = ['GBP','USD','EUR','AUD','CAD','NZD','CHF','JPY','CNY','SGD','HKD','AED','SAR','ZAR','INR','KRW','TRY','BRL','MXN','RUB'];
 
@@ -235,6 +236,34 @@ const ProjectDetailsEditor = memo(function ProjectDetailsEditor({ project, onSav
         </div>
       )}
     </Card>
+  );
+});
+
+// ── System-rating breakdown ───────────────────────────────────────────────
+// Shows AI% and the blended System% beneath the user stars on the detail
+// header. Quiet when neither value exists.
+const DetailRatingBreakdown = memo(function DetailRatingBreakdown({ project }) {
+  const sr = computeSystemRating(project);
+  if (sr.system_pct === null) return null;
+  const label = sr.source === 'user-only' ? 'System (user only)'
+    : sr.source === 'ai-only' ? 'System (AI only)'
+    : 'System (60/40)';
+  return (
+    <div className="text-right space-y-0.5">
+      {sr.ai_pct !== null && (
+        <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
+          AI <span className="text-on-surface font-bold ml-1">{sr.ai_pct}%</span>
+        </div>
+      )}
+      <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
+        {label} <span className={`font-bold ml-1 ${sr.system_pct >= 70 ? 'text-primary' : sr.system_pct >= 45 ? 'text-on-surface' : 'text-outline'}`}>{sr.system_pct}%</span>
+      </div>
+      {sr.disagreement && (
+        <div className="text-[9px] text-outline" title={`User rated ${sr.disagreement.user_higher ? 'higher than' : 'lower than'} the AI by ${sr.disagreement.gap} points`}>
+          ⚠ {sr.disagreement.gap}pt user/AI gap
+        </div>
+      )}
+    </div>
   );
 });
 
@@ -714,11 +743,14 @@ export default function ProjectDetail() {
                       <p className="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-1">Lead Client</p>
                       <p className="text-xl font-headline italic">{project.client || '—'}</p>
                     </div>
-                    <div className="flex items-center gap-4">
-                      {project.user_rating > 0 && <Stars rating={project.user_rating} />}
+                    <div className="flex flex-col items-end gap-1">
                       {project.user_rating > 0 && (
-                        <span className="font-label text-lg">{project.user_rating.toFixed(1)}</span>
+                        <div className="flex items-center gap-2">
+                          <Stars rating={project.user_rating} />
+                          <span className="font-label text-lg">{project.user_rating.toFixed(1)}</span>
+                        </div>
                       )}
+                      <DetailRatingBreakdown project={project} />
                     </div>
                     <div className="text-right">
                       <p className="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-1">Value</p>

@@ -6,6 +6,7 @@ import { Btn, Card, Stars, OutcomeLabel, FileChip, Spinner, Toast } from '../com
 import { useUser } from '../lib/useUser';
 import { formatMoney } from '../lib/format';
 import { DebouncedSearch } from '../lib/useDebounce';
+import { computeSystemRating } from '../lib/rating';
 
 const OUTCOMES = ['won','lost','pending','active','withdrawn'];
 const DEFAULT_SECTORS = ['Government & Public Sector','Healthcare & NHS','Aerospace & Defence','Financial Services','Technology','Retail & Consumer','Other'];
@@ -84,6 +85,35 @@ const AddNewInline = memo(function AddNewInline({ field, label, placeholder, sho
 });
 
 // ─── PROJECT CARD ─────────────────────────────────────────────────────────────
+
+// Tiny stack of AI% + System% shown beneath the user stars on cards and the
+// detail page. Quiet when neither number exists, so unindexed projects don't
+// read as errors.
+const RatingBreakdown = memo(function RatingBreakdown({ project }) {
+  const sr = computeSystemRating(project);
+  if (sr.system_pct === null) return null;
+  const label = sr.source === 'user-only' ? 'user-only'
+    : sr.source === 'ai-only' ? 'ai-only'
+    : 'system';
+  return (
+    <div className="mt-1 flex flex-col items-end gap-0.5 text-[10px] font-label text-on-surface-variant">
+      {sr.ai_pct !== null && (
+        <span className="text-outline">AI <span className="text-on-surface-variant">{sr.ai_pct}%</span></span>
+      )}
+      <span className="text-outline">
+        {label === 'system' ? 'System' : label === 'ai-only' ? 'System (AI)' : 'System (user)'}{' '}
+        <span className={`font-bold ${sr.system_pct >= 70 ? 'text-primary' : sr.system_pct >= 45 ? 'text-on-surface-variant' : 'text-outline'}`}>
+          {sr.system_pct}%
+        </span>
+      </span>
+      {sr.disagreement && (
+        <span className="text-[9px] text-outline" title={`${sr.disagreement.gap}pt gap — user rated ${sr.disagreement.user_higher ? 'higher' : 'lower'} than AI`}>
+          ⚠ {sr.disagreement.gap}pt gap
+        </span>
+      )}
+    </div>
+  );
+});
 
 const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, onUpdated, selectMode, selected, onToggleSelect, inWorkspace, onToggleWorkspace }) {
   const router = useRouter();
@@ -248,6 +278,7 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
           <div className="text-right">
             <span className="font-label text-[10px] text-outline block mb-1 uppercase">Rating</span>
             <Stars rating={p.user_rating} />
+            <RatingBreakdown project={p} />
           </div>
         </div>
       )}
