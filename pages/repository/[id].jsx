@@ -49,6 +49,50 @@ const ScoreCircle = memo(function ScoreCircle({ score, label, size = 52 }) {
   );
 });
 
+// Shared layout for the three analysis tabs (Writing / Approach / Credibility).
+// Empty state when the AI hasn't produced a usable score yet; otherwise
+// overview header + detail ScoreBars + optional extras + strengths/weaknesses
+// + a re-analyse footer.
+const AnalysisTab = memo(function AnalysisTab({ title, icon, score, detailBars, extras, project, reindex, reindexing }) {
+  const ok = score && typeof score.overall_score === 'number' && score.overall_score > 0;
+  if (!ok) {
+    return (
+      <div className="text-center py-10">
+        <div className="text-3xl mb-3 opacity-25">{icon}</div>
+        <p className="text-sm mb-2" style={{ color: '#d0c5b0' }}>
+          {project.indexing_status === 'indexing' || reindexing ? 'Analysis in progress…' : `${title} not yet available.`}
+        </p>
+        {project.indexing_status === 'complete' && !reindexing && (
+          <Btn variant="teal" onClick={reindex}>⟳ Run Analysis</Btn>
+        )}
+      </div>
+    );
+  }
+  const colour = score.overall_score >= 75 ? '#7bd07a' : score.overall_score >= 55 ? '#e8c357' : '#ffb4ab';
+  return (
+    <div className="space-y-4">
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-sm font-semibold">{icon} {title}</div>
+          <div className="font-label text-2xl font-bold" style={{ color: colour }}>{score.overall_score}/100</div>
+        </div>
+        {(score.strengths || []).map(s => <Indicator key={s} type="positive">{s}</Indicator>)}
+        {(score.weaknesses || []).map(s => <Indicator key={s} type="negative">{s}</Indicator>)}
+      </Card>
+      <Card className="p-4">
+        <div className="text-[10px] font-label uppercase tracking-widest mb-3" style={{ color: '#d0c5b0' }}>Detail</div>
+        {detailBars.map((b, i) => <ScoreBar key={i} label={b.label} value={b.value} note={b.note} />)}
+      </Card>
+      {extras}
+      <div className="flex justify-end">
+        <Btn variant="ghost" size="sm" onClick={reindex} disabled={reindexing}>
+          {reindexing ? <><Spinner size={12} /> Re-analysing…</> : '⟳ Re-run Analysis'}
+        </Btn>
+      </div>
+    </div>
+  );
+});
+
 const ScoreBar = memo(function ScoreBar({ label, value, note }) {
   if (!value) return null;
   const color = value >= 75 ? '#3d5c3a' : value >= 55 ? '#b8962e' : '#b04030';
@@ -654,7 +698,9 @@ export default function ProjectDetail() {
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
-    { id: 'writing', label: 'Writing Analysis', badge: hasWritingAnalysis ? `${wq.overall_score}/100` : null },
+    { id: 'writing', label: 'Writing', badge: wq.overall_score > 0 ? `${wq.overall_score}/100` : null },
+    { id: 'approach', label: 'Approach', badge: aq.overall_score > 0 ? `${aq.overall_score}/100` : null },
+    { id: 'credibility', label: 'Credibility', badge: cq.overall_score > 0 ? `${cq.overall_score}/100` : null },
     { id: 'metadata', label: 'AI Metadata' },
     { id: 'narrative', label: 'Project Narrative', badge: narrativeEntries.length > 0 ? `${narrativeEntries.length}` : null },
     { id: 'document', label: 'View Document' },
@@ -826,11 +872,11 @@ export default function ProjectDetail() {
                 see and edit taxonomy from any tab without hunting */}
             <TaxonomyEditor project={project} taxItems={taxItems} onSave={saveTaxonomy} />
 
-            {/* Tabs */}
-            <div className="flex border-b mb-5 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0" style={{ borderColor: 'rgba(77,70,54,0.3)' }}>
+            {/* Tabs — wrap to two lines when the row outgrows a single line */}
+            <div className="flex flex-wrap border-b mb-5 gap-y-1" style={{ borderColor: 'rgba(77,70,54,0.3)' }}>
               {tabs.map(t => (
                 <button key={t.id} onClick={() => setActiveTab(t.id)}
-                  className="px-4 py-2 text-[12.5px] font-medium border-b-2 transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+                  className="px-4 py-2 text-[12.5px] font-medium border-b-2 transition-all flex items-center gap-2 whitespace-nowrap"
                   style={{ borderColor: activeTab === t.id ? '#e8c357' : 'transparent', color: activeTab === t.id ? '#e8c357' : '#d0c5b0' }}>
                   {t.label}
                   {t.badge && <span className="text-[10px] px-1.5 py-0.5 rounded font-label" style={{ background: activeTab === t.id ? '#e8c357' : 'rgba(77,70,54,0.15)', color: activeTab === t.id ? 'white' : '#d0c5b0' }}>{t.badge}</span>}
@@ -998,66 +1044,114 @@ export default function ProjectDetail() {
 
             {/* ── TAB: WRITING ANALYSIS ── */}
             {activeTab === 'writing' && (
-              <div className="space-y-4">
-                {!hasWritingAnalysis ? (
-                  <div className="text-center py-10">
-                    <div className="text-3xl mb-3 opacity-25">✍</div>
-                    <p className="text-sm mb-2" style={{ color: '#d0c5b0' }}>
-                      {project.indexing_status === 'indexing' || reindexing ? 'Analysis in progress…' : 'Writing analysis not yet available.'}
-                    </p>
-                    {project.indexing_status === 'complete' && !reindexing && (
-                      <Btn variant="teal" onClick={reindex}>⟳ Run Writing Analysis</Btn>
-                    )}
-                  </div>
-                ) : (
+              <AnalysisTab
+                title="Writing Quality"
+                icon="✍"
+                score={wq}
+                project={project}
+                reindex={reindex}
+                reindexing={reindexing}
+                detailBars={[
+                  { label: 'Specificity of claims', value: wq.specificity_score, note: wq.specificity_notes },
+                  { label: 'Evidence density', value: wq.evidence_density, note: wq.evidence_notes },
+                  { label: 'Client language mirroring', value: wq.client_language_mirroring, note: wq.client_language_notes },
+                  { label: 'Executive summary', value: wq.executive_summary_effectiveness, note: wq.exec_summary_notes },
+                  { label: 'Length calibration', value: wq.length_calibration, note: wq.length_notes },
+                  { label: 'Voice quality', value: wq.voice_quality, note: wq.voice_notes },
+                  { label: 'Generic language score', value: wq.generic_language_score, note: wq.generic_language_notes },
+                ]}
+                extras={
                   <>
-                    <div className="grid grid-cols-3 gap-4">
-                      {[{ label: 'Writing Quality', score: wq, icon: '✍' }, { label: 'Approach Quality', score: aq, icon: '⟳' }, { label: 'Credibility Signals', score: cq, icon: '◎' }].map(({ label, score, icon }) => (
-                        <Card key={label} className="p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="text-xs font-semibold">{icon} {label}</div>
-                            <div className="font-label text-lg font-bold" style={{ color: score.overall_score >= 75 ? '#3d5c3a' : score.overall_score >= 55 ? '#b8962e' : '#b04030' }}>{score.overall_score}/100</div>
-                          </div>
-                          {(score.strengths || []).map(s => <Indicator key={s} type="positive">{s}</Indicator>)}
-                          {(score.weaknesses || []).map(s => <Indicator key={s} type="negative">{s}</Indicator>)}
-                        </Card>
-                      ))}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <Card className="p-4">
-                        <div className="text-[10px] font-label uppercase tracking-widest mb-3" style={{ color: '#d0c5b0' }}>Writing Detail</div>
-                        <ScoreBar label="Specificity of claims" value={wq.specificity_score} note={wq.specificity_notes} />
-                        <ScoreBar label="Evidence density" value={wq.evidence_density} note={wq.evidence_notes} />
-                        <ScoreBar label="Client language mirroring" value={wq.client_language_mirroring} note={wq.client_language_notes} />
-                        <ScoreBar label="Executive summary" value={wq.executive_summary_effectiveness} note={wq.exec_summary_notes} />
+                    {(wq.generic_phrase_hits || []).length > 0 && (
+                      <Card className="p-4" style={{ background: 'rgba(255,180,171,0.08)', border: '1px solid rgba(176,64,48,.3)' }}>
+                        <div className="text-[10px] font-label uppercase tracking-widest mb-3" style={{ color: '#ffb4ab' }}>Generic-phrase hits ({wq.generic_phrase_hits.length})</div>
+                        <div className="flex flex-wrap gap-2">
+                          {wq.generic_phrase_hits.map((p, i) => (
+                            <span key={i} className="text-xs px-2 py-1 rounded" style={{ background: 'rgba(255,180,171,0.1)', color: '#ffb4ab', fontFamily: 'monospace' }}>"{p}"</span>
+                          ))}
+                        </div>
                       </Card>
-                      <Card className="p-4">
-                        <div className="text-[10px] font-label uppercase tracking-widest mb-3" style={{ color: '#d0c5b0' }}>Approach Detail</div>
-                        <ScoreBar label="Methodology clarity" value={aq.methodology_clarity} note={aq.methodology_notes} />
-                        <ScoreBar label="Phasing logic" value={aq.phasing_logic} note={aq.phasing_notes} />
-                        <ScoreBar label="Risk acknowledgement" value={aq.risk_acknowledgement} note={aq.risk_notes} />
-                        <ScoreBar label="Innovation evidence" value={aq.innovation_evidence} note={aq.innovation_notes} />
-                      </Card>
-                    </div>
-
+                    )}
                     {(meta.standout_sentences || []).length > 0 && (
                       <Card className="p-4" style={{ background: 'rgba(232,195,87,0.1)', border: '1px solid rgba(184,150,46,.3)' }}>
-                        <div className="text-[10px] font-label uppercase tracking-widest mb-3" style={{ color: '#b8962e' }}>Standout Sentences</div>
+                        <div className="text-[10px] font-label uppercase tracking-widest mb-3" style={{ color: '#e8c357' }}>Standout Sentences</div>
                         {meta.standout_sentences.map((s, i) => (
-                          <blockquote key={i} className="text-sm italic leading-relaxed border-l-2 pl-3 mb-2 last:mb-0" style={{ borderColor: '#b8962e', color: '#5a4810' }}>"{s}"</blockquote>
+                          <blockquote key={i} className="text-sm italic leading-relaxed border-l-2 pl-3 mb-2 last:mb-0" style={{ borderColor: '#e8c357', color: '#e6e2de' }}>"{s}"</blockquote>
                         ))}
                       </Card>
                     )}
-
-                    <div className="flex justify-end">
-                      <Btn variant="ghost" size="sm" onClick={reindex} disabled={reindexing}>
-                        {reindexing ? <><Spinner size={12} /> Re-analysing…</> : '⟳ Re-run Analysis'}
-                      </Btn>
-                    </div>
                   </>
-                )}
-              </div>
+                }
+              />
+            )}
+
+            {/* ── TAB: APPROACH ANALYSIS ── */}
+            {activeTab === 'approach' && (
+              <AnalysisTab
+                title="Approach Quality"
+                icon="⟳"
+                score={aq}
+                project={project}
+                reindex={reindex}
+                reindexing={reindexing}
+                detailBars={[
+                  { label: 'Methodology clarity', value: aq.methodology_clarity, note: aq.methodology_notes },
+                  { label: 'Phasing logic', value: aq.phasing_logic, note: aq.phasing_notes },
+                  { label: 'Risk acknowledgement', value: aq.risk_acknowledgement, note: aq.risk_notes },
+                  { label: 'Innovation evidence', value: aq.innovation_evidence, note: aq.innovation_notes },
+                ]}
+                extras={
+                  <Card className="p-4">
+                    <div className="text-[10px] font-label uppercase tracking-widest mb-3" style={{ color: '#d0c5b0' }}>Compliance matrix</div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-lg" style={{ color: aq.compliance_matrix_present ? '#7bd07a' : '#ffb4ab' }}>
+                        {aq.compliance_matrix_present ? '✓' : '✕'}
+                      </span>
+                      <div className="flex-1 text-sm">
+                        <div className="font-medium text-on-surface">
+                          {aq.compliance_matrix_present ? 'Present' : 'Not present'}
+                        </div>
+                        {aq.compliance_notes && <div className="text-xs mt-1" style={{ color: '#d0c5b0' }}>{aq.compliance_notes}</div>}
+                      </div>
+                    </div>
+                  </Card>
+                }
+              />
+            )}
+
+            {/* ── TAB: CREDIBILITY ANALYSIS ── */}
+            {activeTab === 'credibility' && (
+              <AnalysisTab
+                title="Credibility Signals"
+                icon="◎"
+                score={cq}
+                project={project}
+                reindex={reindex}
+                reindexing={reindexing}
+                detailBars={[
+                  { label: 'Team credibility', value: cq.team_credibility, note: cq.team_notes },
+                  { label: 'Social proof', value: cq.social_proof, note: cq.social_proof_notes },
+                  { label: 'Differentiator strength', value: cq.differentiator_strength, note: cq.differentiator_notes },
+                  { label: 'Cited work recency (soft)', value: cq.cited_work_recency_score, note: cq.cited_work_recency_notes },
+                  { label: 'Cited work scale match (soft)', value: cq.cited_work_scale_match_score, note: cq.cited_work_scale_match_notes },
+                ]}
+                extras={
+                  <Card className="p-4">
+                    <div className="text-[10px] font-label uppercase tracking-widest mb-3" style={{ color: '#d0c5b0' }}>Named past work</div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-lg" style={{ color: cq.named_past_work ? '#7bd07a' : '#ffb4ab' }}>
+                        {cq.named_past_work ? '✓' : '✕'}
+                      </span>
+                      <div className="flex-1 text-sm">
+                        <div className="font-medium text-on-surface">
+                          {cq.named_past_work ? 'Real client names cited' : 'No real client names in experience section'}
+                        </div>
+                        {cq.named_past_work_notes && <div className="text-xs mt-1" style={{ color: '#d0c5b0' }}>{cq.named_past_work_notes}</div>}
+                      </div>
+                    </div>
+                  </Card>
+                }
+              />
             )}
 
             {/* ── TAB: AI METADATA (editable) ── */}
