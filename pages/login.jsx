@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import Link from 'next/link';
 
 export default function Auth() {
   const router = useRouter();
@@ -10,12 +11,10 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Check if already logged in
     fetch('/api/auth/me')
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d?.user) { router.replace('/dashboard'); return; }
-        // Check if any users exist
         fetch('/api/auth/check')
           .then(r => r.json())
           .then(d => setMode(d.hasUsers ? 'login' : 'setup'))
@@ -47,82 +46,196 @@ export default function Auth() {
   }
 
   if (mode === 'loading') return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#0f0e0c' }}>
-      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid #b8962e', borderTopColor: 'transparent', animation: 'spin .8s linear infinite' }} />
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    <div className="min-h-screen flex items-center justify-center bg-surface-container-lowest">
+      <div className="w-7 h-7 rounded-full border-2 border-primary border-t-transparent animate-spin" />
     </div>
   );
 
+  const isSetup = mode === 'setup';
+  const heading = isSetup ? 'Create Workspace' : 'Sign In';
+  const subHeading = isSetup
+    ? 'Initialize your organization and first administrator account.'
+    : 'Enter your credentials to access the intelligence gateway.';
+  const altLinkText = isSetup ? 'Sign in instead' : 'Create a workspace';
+  const ctaText = loading ? 'Processing…' : isSetup ? 'Initialize Workspace' : 'Access Gateway';
+
   return (
     <>
-      <Head><title>ProposalIQ — {mode === 'setup' ? 'Create Workspace' : 'Sign In'}</title></Head>
-      <div className="min-h-screen flex" style={{ background: '#0f0e0c', fontFamily: "'Segoe UI', Arial, sans-serif" }}>
-        {/* Left panel */}
-        <div className="hidden lg:flex flex-col justify-between w-96 flex-shrink-0 p-12" style={{ borderRight: '1px solid rgba(255,255,255,.07)' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 48 }}>
-              <div style={{ width: 36, height: 36, background: '#b8962e', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Georgia,serif', fontSize: 18, fontWeight: 'bold', color: '#0f0e0c' }}>P</div>
-              <span style={{ fontFamily: 'Georgia,serif', fontSize: 20, color: 'white' }}>ProposalIQ</span>
-            </div>
-            <h2 style={{ fontFamily: 'Georgia,serif', fontSize: 30, color: 'white', fontWeight: 'normal', lineHeight: 1.2, marginBottom: 16 }}>
-              Your institutional knowledge,<br /><span style={{ color: '#d4b458' }}>working for every bid.</span>
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,.4)', fontSize: 14, lineHeight: 1.7 }}>
-              Cross-reference your entire proposal repository in seconds. Find gaps, match past work, generate suggested approaches and budgets.
-            </p>
-          </div>
-          <div style={{ color: 'rgba(255,255,255,.3)', fontSize: 12 }}>
-            {['Repository intelligence', 'RFP gap analysis', 'Team matching', 'Writing quality scoring'].map(f => (
-              <div key={f} style={{ marginBottom: 8 }}>✓ {f}</div>
-            ))}
-          </div>
-        </div>
+      <Head><title>ProposalIQ — {isSetup ? 'Create Workspace' : 'Sign In'}</title></Head>
 
-        {/* Right panel */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
-          <div style={{ width: '100%', maxWidth: 420 }}>
-            <div style={{ background: '#1a1917', border: '1px solid rgba(255,255,255,.1)', borderRadius: 12, overflow: 'hidden' }}>
-              <div style={{ padding: '24px 32px', borderBottom: '1px solid rgba(255,255,255,.07)' }}>
-                <h1 style={{ fontFamily: 'Georgia,serif', fontSize: 22, color: 'white', fontWeight: 'normal', marginBottom: 4 }}>
-                  {mode === 'setup' ? 'Create your workspace' : 'Sign in to ProposalIQ'}
+      <div className="min-h-screen bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary overflow-hidden">
+        <div className="flex h-screen w-full">
+
+          {/* ── LEFT PANEL ─────────────────────────────────────────────── */}
+          <aside className="hidden lg:flex w-[380px] flex-col justify-between bg-surface-container-lowest p-12 border-r border-outline-variant/10">
+            <div className="space-y-12">
+              <div>
+                <span className="font-headline italic text-3xl text-primary font-medium tracking-tight">ProposalIQ</span>
+              </div>
+              <div className="space-y-6">
+                <h1 className="font-headline text-4xl leading-tight text-on-surface font-light">
+                  The art of <span className="text-primary italic">precision</span> in procurement intelligence.
                 </h1>
-                <p style={{ color: 'rgba(255,255,255,.4)', fontSize: 13 }}>
-                  {mode === 'setup' ? 'Set up your organisation and first account.' : 'Enter your credentials to continue.'}
+                <p className="text-on-surface-variant text-sm leading-relaxed max-w-[280px]">
+                  Harnessing proprietary data and predictive analysis to secure your most critical bid opportunities.
                 </p>
               </div>
-              <form onSubmit={submit} style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {mode === 'setup' && (
-                  <>
-                    <Field label="Organisation Name" value={form.org_name} onChange={v => f('org_name', v)} placeholder="e.g. Acme Consulting" />
-                    <Field label="Your Name *" value={form.name} onChange={v => f('name', v)} placeholder="e.g. James Horsman" />
-                  </>
-                )}
-                <Field label="Email *" type="email" value={form.email} onChange={v => f('email', v)} placeholder="you@company.com" />
-                <Field label="Password *" type="password" value={form.password} onChange={v => f('password', v)} placeholder={mode === 'setup' ? 'At least 8 characters' : '••••••••'} />
-                {error && (
-                  <div style={{ background: 'rgba(176,64,48,.15)', border: '1px solid rgba(176,64,48,.3)', borderRadius: 6, padding: '10px 14px', color: '#f87171', fontSize: 13 }}>
-                    {error}
-                  </div>
-                )}
-                <button type="submit" disabled={loading}
-                  style={{ background: '#b8962e', color: 'white', border: 'none', borderRadius: 6, padding: '11px 0', fontSize: 14, fontWeight: 500, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: 4 }}>
-                  {loading ? 'Please wait…' : mode === 'setup' ? 'Create Workspace' : 'Sign In'}
-                </button>
-              </form>
+              <ul className="space-y-6">
+                {[
+                  { icon: 'analytics', n: '01', label: 'Bespoke Intelligence Engine' },
+                  { icon: 'psychology', n: '02', label: 'Predictive Bid Modeling' },
+                  { icon: 'architecture', n: '03', label: 'Structural Integrity Audit' },
+                ].map(m => (
+                  <li key={m.n} className="flex items-start gap-4">
+                    <span className="material-symbols-outlined text-primary-container text-xl">{m.icon}</span>
+                    <div>
+                      <span className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant block mb-1">Module {m.n}</span>
+                      <span className="text-sm font-medium">{m.label}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
+            <footer className="space-y-4">
+              <div className="h-px bg-outline-variant/20 w-12" />
+              <p className="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60">
+                © {new Date().getFullYear()} ProposalIQ.
+              </p>
+            </footer>
+          </aside>
+
+          {/* ── RIGHT PANEL ────────────────────────────────────────────── */}
+          <main className="flex-1 bg-surface flex items-center justify-center p-6 sm:p-12 relative overflow-y-auto">
+            {/* Decorative background */}
+            <div className="absolute inset-0 opacity-5 pointer-events-none">
+              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
+            </div>
+
+            <div className="w-full max-w-md z-10">
+              {/* Mobile logo */}
+              <div className="lg:hidden mb-12 text-center">
+                <Link href="/" className="font-headline italic text-2xl text-primary font-medium tracking-tight">
+                  ProposalIQ
+                </Link>
+              </div>
+
+              {/* Error banner */}
+              {error && (
+                <div className="mb-8 p-4 bg-error-container/30 border-l-2 border-error flex items-center gap-3">
+                  <span className="material-symbols-outlined text-error">warning</span>
+                  <p className="text-xs text-on-error-container uppercase tracking-wider font-medium">{error}</p>
+                </div>
+              )}
+
+              <div className="space-y-10">
+                <header>
+                  <h2 className="font-headline text-3xl text-on-surface mb-2">{heading}</h2>
+                  <p className="text-on-surface-variant text-sm">{subHeading}</p>
+                </header>
+
+                <form onSubmit={submit} className="space-y-8">
+                  <div className="space-y-6">
+
+                    {/* Setup-only: Org Name + Your Name */}
+                    {isSetup && (
+                      <>
+                        <Field
+                          id="org_name"
+                          label="Organization Name"
+                          placeholder="e.g. Acme Global Systems"
+                          value={form.org_name}
+                          onChange={v => f('org_name', v)}
+                        />
+                        <Field
+                          id="user_name"
+                          label="Your Name"
+                          placeholder="Alexander Hamilton"
+                          value={form.name}
+                          onChange={v => f('name', v)}
+                        />
+                      </>
+                    )}
+
+                    {/* Always: Email + Password */}
+                    <Field
+                      id="email"
+                      type="email"
+                      label="Professional Email"
+                      placeholder="name@company.com"
+                      value={form.email}
+                      onChange={v => f('email', v)}
+                      autoComplete="email"
+                    />
+                    <Field
+                      id="password"
+                      type="password"
+                      label="Password"
+                      placeholder={isSetup ? 'At least 8 characters' : '••••••••••••'}
+                      value={form.password}
+                      onChange={v => f('password', v)}
+                      autoComplete={isSetup ? 'new-password' : 'current-password'}
+                    />
+                  </div>
+
+                  <div className="pt-4">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full bg-primary hover:bg-secondary text-on-primary font-bold py-4 px-8 rounded-none transition-all duration-300 transform hover:scale-[1.01] active:scale-[0.98] font-label text-xs uppercase tracking-widest disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    >
+                      {ctaText}
+                    </button>
+                  </div>
+                </form>
+
+                {/* Alt action + footer links */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-6 border-t border-outline-variant/10">
+                  <div className="flex gap-4">
+                    <a href="#" className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors">Terms</a>
+                    <a href="#" className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors">Privacy</a>
+                  </div>
+                  <span className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/40">v2.4.0-Stable</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Decorative grid dots */}
+            <div className="absolute bottom-12 right-12 opacity-10 pointer-events-none">
+              <div className="grid grid-cols-4 gap-2">
+                {Array.from({ length: 16 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-1 h-1 ${[0, 5, 10, 15].includes(i) ? 'bg-primary' : 'bg-outline-variant'}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </main>
         </div>
       </div>
     </>
   );
 }
 
-function Field({ label, type = 'text', value, onChange, placeholder }) {
+function Field({ id, label, type = 'text', placeholder, value, onChange, autoComplete }) {
   return (
-    <div>
-      <label style={{ display: 'block', fontSize: 11, fontFamily: "'Courier New',monospace", textTransform: 'uppercase', letterSpacing: '.1em', color: 'rgba(255,255,255,.4)', marginBottom: 6 }}>{label}</label>
-      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} autoComplete={type === 'password' ? 'current-password' : 'on'}
-        style={{ width: '100%', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 6, padding: '10px 12px', color: 'white', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+    <div className="group relative">
+      <label
+        htmlFor={id}
+        className="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant group-focus-within:text-primary transition-colors"
+      >
+        {label}
+      </label>
+      <input
+        id={id}
+        name={id}
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        className="w-full bg-transparent border-0 border-b border-outline-variant py-3 px-0 text-on-surface placeholder:text-on-surface-variant/30 focus:ring-0 focus:border-primary focus:outline-none transition-all duration-300"
+      />
     </div>
   );
 }
