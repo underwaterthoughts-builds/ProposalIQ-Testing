@@ -84,6 +84,50 @@ const AddNewInline = memo(function AddNewInline({ field, label, placeholder, sho
   );
 });
 
+// ─── PROJECT LIST ROW ─────────────────────────────────────────────────────────
+// Compact single-line row for list view. Intentionally minimal — no
+// RatingBreakdown, no taxonomy chips, no file chips, no live-index poll.
+// Renders orders of magnitude faster than the full card when the user has
+// hundreds of projects and just wants to scan and click through.
+const ProjectListRow = memo(function ProjectListRow({ project: p }) {
+  const router = useRouter();
+  const sys = computeSystemRating(p).system_pct;
+  const outcome = (p.outcome || 'pending').toLowerCase();
+  const outcomeDot =
+    outcome === 'won' ? 'bg-[#7bd07a]' :
+    outcome === 'lost' ? 'bg-error' :
+    outcome === 'withdrawn' ? 'bg-outline/40' :
+    'bg-primary';
+  const date = p.date_submitted?.slice(0, 4) || '';
+
+  function fmtDate(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return '';
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`;
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => router.push(`/repository/${p.id}`)}
+      className="w-full grid items-center gap-3 px-4 py-2.5 bg-surface-container-low hover:bg-surface-container-high border-b border-outline-variant/10 text-left transition-colors"
+      style={{ gridTemplateColumns: '10px minmax(0, 2fr) minmax(0, 1.5fr) minmax(0, 1fr) 70px 70px 60px 70px' }}
+    >
+      <span className={`w-2 h-2 rounded-full ${outcomeDot}`} aria-label={outcome} />
+      <span className="font-medium text-sm text-on-surface truncate">{p.name}</span>
+      <span className="text-xs text-on-surface-variant truncate">{p.client || '—'}</span>
+      <span className="text-[11px] text-on-surface-variant truncate font-label uppercase tracking-wider">{p.sector || '—'}</span>
+      <span className="text-xs text-primary font-medium tabular-nums text-right truncate">{formatMoney(p.contract_value, p.currency)}</span>
+      <span className="text-[10px] font-label text-on-surface-variant uppercase tracking-wider text-center">{outcome}</span>
+      <span className={`text-xs tabular-nums text-right ${sys !== null ? (sys >= 70 ? 'text-primary font-bold' : 'text-on-surface-variant') : 'text-outline/40'}`}>
+        {sys !== null ? `${sys}%` : '—'}
+      </span>
+      <span className="text-[10px] font-label text-outline tabular-nums text-right">{fmtDate(p.indexed_at) || date}</span>
+    </button>
+  );
+});
+
 // ─── PROJECT CARD ─────────────────────────────────────────────────────────────
 
 // Compact "last scanned" line rendered directly beneath the Full / Quick
@@ -481,6 +525,19 @@ export default function Repository() {
   const [workspaceLoaded, setWorkspaceLoaded] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState({'f-gov':true,'f-health':true});
   const [semanticSearch, setSemanticSearch] = useState(false);
+  // View mode — persisted in localStorage so the user's preference survives
+  // page reloads. Default to cards; switch to list for large repositories
+  // where density and faster render matter more than the image-rich card.
+  const [viewMode, setViewMode] = useState('card');
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('repo_view_mode');
+      if (saved === 'list' || saved === 'card') setViewMode(saved);
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try { localStorage.setItem('repo_view_mode', viewMode); } catch {}
+  }, [viewMode]);
   const [analysisHealth, setAnalysisHealth] = useState(null);
   const [taxonomy, setTaxonomy] = useState({ offerings: [], sectors: [], serviceIndustries: [], clientIndustries: [] });
   const [selectedOffering, setSelectedOffering] = useState(null);
@@ -944,17 +1001,29 @@ export default function Repository() {
                       value={search}
                       onSearch={setSearch}
                       delay={400}
-                      placeholder={semanticSearch ? "Search by meaning — e.g. 'NHS data integration'…" : "Search by client, sector, or project keyword…"}
+                      placeholder="Search by client, sector, or project keyword…"
                       className="w-full bg-transparent border-none focus:ring-0 focus:outline-none pl-10 text-sm placeholder:text-outline"
                     />
                   </div>
                   <div className="h-8 w-px bg-outline-variant/20"/>
-                  <div className="flex items-center gap-3 px-2">
-                    <span className="text-xs font-label text-outline uppercase tracking-wider whitespace-nowrap">AI Analysis</span>
-                    <button onClick={()=>setSemanticSearch(s=>!s)}
-                      className="w-10 h-5 bg-surface-container-highest rounded-full relative flex items-center px-1 transition-colors"
-                      title={semanticSearch ? "Switch to keyword search" : "Switch to AI semantic search"}>
-                      <div className={`w-3 h-3 rounded-full transition-all ${semanticSearch ? 'bg-primary ml-auto' : 'bg-outline'}`}/>
+                  <div className="flex items-center gap-1 px-1">
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('card')}
+                      title="Card view"
+                      aria-label="Card view"
+                      className={`p-1.5 rounded transition-colors ${viewMode === 'card' ? 'bg-surface-container-high text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">grid_view</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('list')}
+                      title="List view"
+                      aria-label="List view"
+                      className={`p-1.5 rounded transition-colors ${viewMode === 'list' ? 'bg-surface-container-high text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">view_list</span>
                     </button>
                   </div>
                   <span className="text-[10px] font-label text-outline uppercase tracking-widest whitespace-nowrap">{projects.length} results</span>
@@ -1040,7 +1109,24 @@ export default function Repository() {
                   <p className="text-sm mb-4" style={{color:'#6b6456'}}>{search?'Try a different search term':'Upload your first proposal to get started'}</p>
                   {!search&&<Btn variant="gold" onClick={()=>setShowUpload(true)}>⊕ Upload Project</Btn>}
                 </div>
-              ):(
+              ) : viewMode === 'list' ? (
+                <div className="bg-surface-container-lowest border border-outline-variant/10 rounded-sm overflow-hidden">
+                  <div
+                    className="grid items-center gap-3 px-4 py-2 bg-surface-container-high border-b border-outline-variant/20 text-[10px] font-label uppercase tracking-widest text-on-surface-variant"
+                    style={{ gridTemplateColumns: '10px minmax(0, 2fr) minmax(0, 1.5fr) minmax(0, 1fr) 70px 70px 60px 70px' }}
+                  >
+                    <span />
+                    <span>Project</span>
+                    <span>Client</span>
+                    <span>Sector</span>
+                    <span className="text-right">Value</span>
+                    <span className="text-center">Outcome</span>
+                    <span className="text-right">System</span>
+                    <span className="text-right">Scanned</span>
+                  </div>
+                  {projects.map(p => <ProjectListRow key={p.id} project={p} />)}
+                </div>
+              ) : (
                 <div className="grid gap-4" style={{gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))'}}>
                   {projects.map(p=><ProjectCard key={p.id} project={p} onToast={handleToast} onDeleted={handleDeleted} onUpdated={handleUpdated} selectMode={selectMode} selected={selectedIds.has(p.id)} onToggleSelect={()=>toggleSelect(p.id)} inWorkspace={workspaceIds.has(p.id)} onToggleWorkspace={()=>toggleWorkspace(p.id)}/>)}
                 </div>
