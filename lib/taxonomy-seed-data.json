@@ -1,0 +1,2982 @@
+[
+  {
+    "id": "05d0c49c-3a81-45b7-adda-b8280ca2abff",
+    "name": "Advertising & Campaigns",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "ae3b14f1-2c36-4432-b38f-f132da9ab8b4",
+    "name": "Consumer & Retail",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "e2bce58f-ccaf-4b20-9a01-59a41f86dc97",
+    "name": "Content & Editorial",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "fd02ea98-47b4-4dfb-b0d6-d1ca37d52315",
+    "name": "Corporate & Internal Communications",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "4bf4c207-fd0e-4d2c-b569-1350050f3690",
+    "name": "Creative Strategy & Brand",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "3f967eee-f887-4649-b136-626eb4b82f63",
+    "name": "Design & Experience",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "2d27c708-b251-4cdc-80cb-6d7506cf0e90",
+    "name": "Education",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "0c1b7c46-bea5-4e10-b21b-6a6c331a8a4f",
+    "name": "Energy, Utilities & Resources",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "e19bc17c-dd96-4063-8cb6-5a508db3eeea",
+    "name": "Engineering & Technical",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "5d4ea279-387a-4219-9699-9d37349481af",
+    "name": "Events & Experiential",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "5b2443b9-0c2b-4275-8a9a-908e2245a883",
+    "name": "Film, Video & Audio",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "7c05f027-7fe9-422a-82f3-6ec0913c63d9",
+    "name": "Finance & Commercial",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "b808254a-6a0f-407c-b830-5ab0139f3e14",
+    "name": "Financial Services",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "77671df7-8daa-4f02-a74f-3e7b66a980fd",
+    "name": "Government & Public Sector",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "1f15d289-7419-44a7-8835-0e17f43433c6",
+    "name": "Healthcare & Life Sciences",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "00236d1a-e272-4fe2-8f09-7770a87f36d8",
+    "name": "Hospitality, Travel & Tourism",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "75646c7b-0a00-499f-ad05-b2728ba750e1",
+    "name": "Industrial & Manufacturing",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "356e4c54-1e1d-473c-8f23-56318bff4042",
+    "name": "Legal & Regulatory",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "f4284b79-48ed-493c-b658-0f7924f7556e",
+    "name": "Management Consulting",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "3cd5ec50-1c11-4c9e-8667-0b49ab436938",
+    "name": "PR & Media Relations",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "aeee26dc-b0b8-4c67-859f-39ad96cde9e4",
+    "name": "People & Organisational Development",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "2cff26cc-4cd3-487b-8445-28b43e83402f",
+    "name": "Professional & Business Services",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "b556d284-3293-4a85-b01c-04c2c778742f",
+    "name": "Programme & Project Management",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "1ad67174-3e40-4a83-8736-d577e4232b76",
+    "name": "Real Estate & Infrastructure",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "3e9dc5df-93e4-4149-8e33-134a999e6606",
+    "name": "Research, Insights & Planning",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "60529506-0bcd-4d98-8208-ee07dfaff20c",
+    "name": "Social & Digital Content",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "96c8f60d-88b0-4a33-95fe-d2dda1bb11cb",
+    "name": "Strategy & Advisory",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "0cfa909b-d6f5-44e1-98f7-8bd397e8edbd",
+    "name": "Sustainability & ESG",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "2ee5a8f9-8e21-4d0b-af06-65aa1228eb54",
+    "name": "Technology & Digital",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "d3a7f0ac-65c3-4a5c-932f-3d2177c4fae1",
+    "name": "Technology, Media & Telecommunications (TMT)",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "0baedb15-608c-44a2-a83a-77c83a67e0ca",
+    "name": "Transport, Logistics & Supply Chain",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "70e26224-922b-4a6b-8e97-fe0dd1c18a0b",
+    "name": "Technology, Media & Telecommunications",
+    "category": "Industry",
+    "parent_id": null,
+    "sort_order": 7,
+    "is_default": 1,
+    "created_at": "2026-04-09 09:57:43",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "28a8ac7d-376a-4687-b4be-25171d85fc56",
+    "name": "AI & Automation",
+    "category": "Sector",
+    "parent_id": "2ee5a8f9-8e21-4d0b-af06-65aa1228eb54",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "6463217e-eac6-49fb-b51b-4e54d77fa850",
+    "name": "Accounting & Audit",
+    "category": "Sector",
+    "parent_id": "7c05f027-7fe9-422a-82f3-6ec0913c63d9",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "efa938d7-1c0e-4fdc-9b4d-5c295f9313dd",
+    "name": "Accounting & Audit",
+    "category": "Sector",
+    "parent_id": "2cff26cc-4cd3-487b-8445-28b43e83402f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "b650d1d5-6085-43f5-8f62-07ce8fe7e805",
+    "name": "Advanced Manufacturing / Industry 4.0",
+    "category": "Sector",
+    "parent_id": "75646c7b-0a00-499f-ad05-b2728ba750e1",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "8ac6c3d5-bc45-4ee3-b953-337c0283d0c6",
+    "name": "Aerospace & Defence Manufacturing",
+    "category": "Sector",
+    "parent_id": "75646c7b-0a00-499f-ad05-b2728ba750e1",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "1bae09be-731a-4995-88fb-f04f5e60e472",
+    "name": "Agile Delivery",
+    "category": "Sector",
+    "parent_id": "b556d284-3293-4a85-b01c-04c2c778742f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "b8041dbc-cd34-41bf-a884-44719999ca1d",
+    "name": "Airlines (Commercial)",
+    "category": "Sector",
+    "parent_id": "00236d1a-e272-4fe2-8f09-7770a87f36d8",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "62cd92c6-0b59-4d1e-8e51-6a29ab0412fb",
+    "name": "Animation / Motion Graphics",
+    "category": "Sector",
+    "parent_id": "5b2443b9-0c2b-4275-8a9a-908e2245a883",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "f96ffb27-4be3-4132-b5df-e75d4f3b0159",
+    "name": "Asset & Wealth Management",
+    "category": "Sector",
+    "parent_id": "b808254a-6a0f-407c-b830-5ab0139f3e14",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "e39b5362-fb64-430c-a902-0a8918d991ac",
+    "name": "Audience / Proposition Development",
+    "category": "Sector",
+    "parent_id": "4bf4c207-fd0e-4d2c-b569-1350050f3690",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "23440462-4533-4c6f-8f44-718d0f3456b4",
+    "name": "Audience Research",
+    "category": "Sector",
+    "parent_id": "3e9dc5df-93e4-4149-8e33-134a999e6606",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "1c64ffc7-1d6c-4e9d-bb15-328d469d56a8",
+    "name": "Automotive",
+    "category": "Sector",
+    "parent_id": "75646c7b-0a00-499f-ad05-b2728ba750e1",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "db0f3275-ec21-4f37-8f01-9d585cb02cb0",
+    "name": "Aviation",
+    "category": "Sector",
+    "parent_id": "0baedb15-608c-44a2-a83a-77c83a67e0ca",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "2f2d0845-0435-4159-8892-375a3950ae0e",
+    "name": "Awards / Internal Events",
+    "category": "Sector",
+    "parent_id": "5d4ea279-387a-4219-9699-9d37349481af",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "53fc3eb7-2daf-4f4c-985b-acb74a5b3d2b",
+    "name": "B2B Campaigns",
+    "category": "Sector",
+    "parent_id": "05d0c49c-3a81-45b7-adda-b8280ca2abff",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "66ce6899-4a1b-4d3c-9213-e5bbe2a7f3ed",
+    "name": "Bid Pricing & Commercial Strategy",
+    "category": "Sector",
+    "parent_id": "7c05f027-7fe9-422a-82f3-6ec0913c63d9",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "f5193b75-6f55-45c4-bb3d-53d7877405ff",
+    "name": "Biotechnology",
+    "category": "Sector",
+    "parent_id": "1f15d289-7419-44a7-8835-0e17f43433c6",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "887cc471-c3bd-4bbc-a050-58c0240d5413",
+    "name": "Brand Campaigns",
+    "category": "Sector",
+    "parent_id": "05d0c49c-3a81-45b7-adda-b8280ca2abff",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "83ed7ea8-f0be-45c0-a377-3cf737228116",
+    "name": "Brand Film",
+    "category": "Sector",
+    "parent_id": "5b2443b9-0c2b-4275-8a9a-908e2245a883",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "44bd8e06-7acb-49f3-bf08-af9ab5744b83",
+    "name": "Brand Identity",
+    "category": "Sector",
+    "parent_id": "4bf4c207-fd0e-4d2c-b569-1350050f3690",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "95fc9a60-48be-45a0-92e7-99994b3d9385",
+    "name": "Brand Positioning",
+    "category": "Sector",
+    "parent_id": "4bf4c207-fd0e-4d2c-b569-1350050f3690",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "dd9e71b7-5005-4320-96d4-7309929043af",
+    "name": "Brand Strategy",
+    "category": "Sector",
+    "parent_id": "4bf4c207-fd0e-4d2c-b569-1350050f3690",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "c733e6d6-55b3-4632-be7c-07250bb06d69",
+    "name": "Brand Tracking",
+    "category": "Sector",
+    "parent_id": "3e9dc5df-93e4-4149-8e33-134a999e6606",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "edc3bfc8-29c7-4804-9bfb-6880fe1437dc",
+    "name": "Business Case Development",
+    "category": "Sector",
+    "parent_id": "96c8f60d-88b0-4a33-95fe-d2dda1bb11cb",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "7366e0a7-58d3-4420-b759-410c9fbc17e7",
+    "name": "Business Strategy",
+    "category": "Sector",
+    "parent_id": "96c8f60d-88b0-4a33-95fe-d2dda1bb11cb",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "966e1c06-4823-4f9b-8d86-756aa24682f4",
+    "name": "Business Valuation",
+    "category": "Sector",
+    "parent_id": "7c05f027-7fe9-422a-82f3-6ec0913c63d9",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "25ad08f6-11a3-4139-ae9d-02a250048ce4",
+    "name": "CEO / Leadership Video",
+    "category": "Sector",
+    "parent_id": "5b2443b9-0c2b-4275-8a9a-908e2245a883",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "53c6fcf2-1415-4568-998f-41cd30a13d3a",
+    "name": "Campaign Strategy",
+    "category": "Sector",
+    "parent_id": "4bf4c207-fd0e-4d2c-b569-1350050f3690",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "3197520d-1b68-4b11-ae62-944e59d43503",
+    "name": "Campaign Visual Systems",
+    "category": "Sector",
+    "parent_id": "3f967eee-f887-4649-b136-626eb4b82f63",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "248f8500-dbf5-47c5-8f91-76a68ab15973",
+    "name": "Capital Markets Infrastructure",
+    "category": "Sector",
+    "parent_id": "b808254a-6a0f-407c-b830-5ab0139f3e14",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "d9635bb4-5b7e-401a-9828-0946639c96b2",
+    "name": "Case Studies",
+    "category": "Sector",
+    "parent_id": "e2bce58f-ccaf-4b20-9a01-59a41f86dc97",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "77d71af8-9b3c-473d-886e-40a45710facd",
+    "name": "Cause / Purpose Campaigns",
+    "category": "Sector",
+    "parent_id": "05d0c49c-3a81-45b7-adda-b8280ca2abff",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "fd00dc58-b485-4a09-953e-620bd2aa9f50",
+    "name": "Central Government",
+    "category": "Sector",
+    "parent_id": "77671df7-8daa-4f02-a74f-3e7b66a980fd",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "5ee117ef-865f-41f1-8014-5e56f93bd238",
+    "name": "Change Communications",
+    "category": "Sector",
+    "parent_id": "fd02ea98-47b4-4dfb-b0d6-d1ca37d52315",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "ca978d3e-ca17-474b-8706-fffb8056a735",
+    "name": "Change Management",
+    "category": "Sector",
+    "parent_id": "f4284b79-48ed-493c-b658-0f7924f7556e",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "ec2fe74e-193b-4296-8111-cb25c5afeb83",
+    "name": "Chemicals",
+    "category": "Sector",
+    "parent_id": "75646c7b-0a00-499f-ad05-b2728ba750e1",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "f54a1a39-1de3-4c99-820f-3a914cb929b7",
+    "name": "Civil & Structural Engineering",
+    "category": "Sector",
+    "parent_id": "e19bc17c-dd96-4063-8cb6-5a508db3eeea",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "820a91a4-c471-4d78-90a2-45257f76138f",
+    "name": "Cloud & Infrastructure",
+    "category": "Sector",
+    "parent_id": "d3a7f0ac-65c3-4a5c-932f-3d2177c4fae1",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "2ea4d90e-c605-45ca-811f-c9b9d2ab0abe",
+    "name": "Cloud Migration",
+    "category": "Sector",
+    "parent_id": "2ee5a8f9-8e21-4d0b-af06-65aa1228eb54",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "09abd7e3-faaf-4fd1-aa46-0b39b3cce16d",
+    "name": "Commercial Due Diligence",
+    "category": "Sector",
+    "parent_id": "7c05f027-7fe9-422a-82f3-6ec0913c63d9",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "37cfc248-4de2-4ab9-be3f-2305974cd827",
+    "name": "Commercial Real Estate",
+    "category": "Sector",
+    "parent_id": "1ad67174-3e40-4a83-8736-d577e4232b76",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "d4a062c3-001a-4741-8464-5a53a8e88ada",
+    "name": "Communications Measurement",
+    "category": "Sector",
+    "parent_id": "3e9dc5df-93e4-4149-8e33-134a999e6606",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "847d8158-eec7-4923-9290-795aaef4933e",
+    "name": "Communications Strategy",
+    "category": "Sector",
+    "parent_id": "4bf4c207-fd0e-4d2c-b569-1350050f3690",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "9ddb2f6c-ca41-4949-baad-55735949b021",
+    "name": "Community Management",
+    "category": "Sector",
+    "parent_id": "60529506-0bcd-4d98-8208-ee07dfaff20c",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "de4578b6-e42d-40fb-862b-455b6e89f289",
+    "name": "Competitive Analysis",
+    "category": "Sector",
+    "parent_id": "3e9dc5df-93e4-4149-8e33-134a999e6606",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "ed194890-ba2a-4870-bb11-b70e8f1e4eed",
+    "name": "Competitive Intelligence",
+    "category": "Sector",
+    "parent_id": "96c8f60d-88b0-4a33-95fe-d2dda1bb11cb",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "da03662a-acd4-4b45-9356-cc236c3f95ce",
+    "name": "Conferences / Summits",
+    "category": "Sector",
+    "parent_id": "5d4ea279-387a-4219-9699-9d37349481af",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "8aaf9cee-47d2-4318-a528-986630e6f89e",
+    "name": "Construction Management",
+    "category": "Sector",
+    "parent_id": "b556d284-3293-4a85-b01c-04c2c778742f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "028a13f1-e065-4529-8a34-dd320c2267b5",
+    "name": "Construction Materials",
+    "category": "Sector",
+    "parent_id": "75646c7b-0a00-499f-ad05-b2728ba750e1",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "1b2b36cf-9419-4e45-9268-3e04a6806c88",
+    "name": "Consulting Services",
+    "category": "Sector",
+    "parent_id": "2cff26cc-4cd3-487b-8445-28b43e83402f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "1e863763-e3a7-4b32-863c-4ba2746c7d3f",
+    "name": "Consumer PR",
+    "category": "Sector",
+    "parent_id": "3cd5ec50-1c11-4c9e-8667-0b49ab436938",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "f655d5a1-7cb0-4763-8978-74739d7ce37c",
+    "name": "Consumer Packaged Goods (CPG / FMCG)",
+    "category": "Sector",
+    "parent_id": "ae3b14f1-2c36-4432-b38f-f132da9ab8b4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "c8cff030-9d22-4eca-9026-68d04400c5e1",
+    "name": "Content Series",
+    "category": "Sector",
+    "parent_id": "e2bce58f-ccaf-4b20-9a01-59a41f86dc97",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "d2dd00f8-b23d-437a-993e-2b56309e2dec",
+    "name": "Content Strategy",
+    "category": "Sector",
+    "parent_id": "4bf4c207-fd0e-4d2c-b569-1350050f3690",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "ee9f754c-ab0d-407f-8805-17498a367ce8",
+    "name": "Contract Management",
+    "category": "Sector",
+    "parent_id": "356e4c54-1e1d-473c-8f23-56318bff4042",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "0fee7bea-e163-4f80-afca-8358227d4fa4",
+    "name": "Copywriting",
+    "category": "Sector",
+    "parent_id": "e2bce58f-ccaf-4b20-9a01-59a41f86dc97",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "cfeee360-ce90-47da-828f-61f2377dcae5",
+    "name": "Corporate & Investment Banking",
+    "category": "Sector",
+    "parent_id": "b808254a-6a0f-407c-b830-5ab0139f3e14",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "0f2db139-7c5a-4fa4-8739-b7e64f9309ca",
+    "name": "Corporate Film",
+    "category": "Sector",
+    "parent_id": "5b2443b9-0c2b-4275-8a9a-908e2245a883",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "be20b93f-4d77-4d3d-a125-fd7bdf7c242c",
+    "name": "Corporate Learning & Development",
+    "category": "Sector",
+    "parent_id": "2d27c708-b251-4cdc-80cb-6d7506cf0e90",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "8d891f6a-4066-4d41-9d22-876a25d4dc10",
+    "name": "Corporate PR",
+    "category": "Sector",
+    "parent_id": "3cd5ec50-1c11-4c9e-8667-0b49ab436938",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "3d26d936-45f5-4588-8333-f96623553cf9",
+    "name": "Corporate Strategy",
+    "category": "Sector",
+    "parent_id": "96c8f60d-88b0-4a33-95fe-d2dda1bb11cb",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "f1506553-55a4-44cf-add9-8f65ed3ec54b",
+    "name": "Cost Reduction",
+    "category": "Sector",
+    "parent_id": "f4284b79-48ed-493c-b658-0f7924f7556e",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "e243b329-f04a-4013-b3aa-e28322c43e7e",
+    "name": "Crisis Communications",
+    "category": "Sector",
+    "parent_id": "3cd5ec50-1c11-4c9e-8667-0b49ab436938",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "ce856963-d780-4b24-aba0-c6534c544e10",
+    "name": "Cruise Lines",
+    "category": "Sector",
+    "parent_id": "00236d1a-e272-4fe2-8f09-7770a87f36d8",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "247fc827-8283-41f1-abb9-b1abece25b73",
+    "name": "Culture & Engagement",
+    "category": "Sector",
+    "parent_id": "aeee26dc-b0b8-4c67-859f-39ad96cde9e4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "75e88975-abad-450f-9ee8-33381f13a8ae",
+    "name": "Culture & Values Communications",
+    "category": "Sector",
+    "parent_id": "fd02ea98-47b4-4dfb-b0d6-d1ca37d52315",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "1e30a69e-2140-48df-8859-9888605c3dea",
+    "name": "Cybersecurity",
+    "category": "Sector",
+    "parent_id": "2ee5a8f9-8e21-4d0b-af06-65aa1228eb54",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "249e8863-cd9e-4fae-a952-3250431881b7",
+    "name": "Data & AI Platforms",
+    "category": "Sector",
+    "parent_id": "d3a7f0ac-65c3-4a5c-932f-3d2177c4fae1",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "0dadb1b7-582e-4d98-8dfc-39e566b7d8a9",
+    "name": "Data & Analytics",
+    "category": "Sector",
+    "parent_id": "2ee5a8f9-8e21-4d0b-af06-65aa1228eb54",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "3aaeae54-e880-4a00-89a9-316d3c7a65b9",
+    "name": "Defence & Security",
+    "category": "Sector",
+    "parent_id": "77671df7-8daa-4f02-a74f-3e7b66a980fd",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "224a5ad6-4841-4977-ad1e-27054e4f2a1f",
+    "name": "Digital Content Campaigns",
+    "category": "Sector",
+    "parent_id": "60529506-0bcd-4d98-8208-ee07dfaff20c",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "f3bdc11e-d36a-4b07-a151-7031cb9c5263",
+    "name": "Digital Health",
+    "category": "Sector",
+    "parent_id": "1f15d289-7419-44a7-8835-0e17f43433c6",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "701787fc-225e-43b8-9043-dfaec32185ed",
+    "name": "Digital Transformation",
+    "category": "Sector",
+    "parent_id": "2ee5a8f9-8e21-4d0b-af06-65aa1228eb54",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "883a69b0-ec5b-436e-a04e-5207f8a86f95",
+    "name": "Dispute Resolution",
+    "category": "Sector",
+    "parent_id": "356e4c54-1e1d-473c-8f23-56318bff4042",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "406c9fe9-a23f-4366-a6a8-393337c85181",
+    "name": "Diversity & Inclusion",
+    "category": "Sector",
+    "parent_id": "aeee26dc-b0b8-4c67-859f-39ad96cde9e4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "e51f8e28-e3ef-4817-939a-8c1b46ba30fe",
+    "name": "Documentary / Case Story",
+    "category": "Sector",
+    "parent_id": "5b2443b9-0c2b-4275-8a9a-908e2245a883",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "73782820-0715-4500-98db-ba86865f3d21",
+    "name": "E-commerce",
+    "category": "Sector",
+    "parent_id": "ae3b14f1-2c36-4432-b38f-f132da9ab8b4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "4d5392f0-a289-4da3-ada7-b5e53df376ac",
+    "name": "ESG Strategy",
+    "category": "Sector",
+    "parent_id": "0cfa909b-d6f5-44e1-98f7-8bd397e8edbd",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "73c01748-e55a-4189-82cc-1faedd2e4f5d",
+    "name": "EdTech",
+    "category": "Sector",
+    "parent_id": "2d27c708-b251-4cdc-80cb-6d7506cf0e90",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "cae3a4e0-bc2d-4c21-8be0-c9a7b6c29a93",
+    "name": "Editorial Content",
+    "category": "Sector",
+    "parent_id": "e2bce58f-ccaf-4b20-9a01-59a41f86dc97",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "a2678dd9-c9a7-4ccc-953e-5a073ed8b4f5",
+    "name": "Education Policy & Regulation",
+    "category": "Sector",
+    "parent_id": "2d27c708-b251-4cdc-80cb-6d7506cf0e90",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "04a5225d-64c0-4a21-9a13-fb4ff27be330",
+    "name": "Electronics Manufacturing",
+    "category": "Sector",
+    "parent_id": "75646c7b-0a00-499f-ad05-b2728ba750e1",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "e7f7b5e7-c2e9-4638-9e86-4fd523c7e6bb",
+    "name": "Email / CRM Content",
+    "category": "Sector",
+    "parent_id": "60529506-0bcd-4d98-8208-ee07dfaff20c",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "6d016106-24db-4dd4-bcc7-02fbf86dd575",
+    "name": "Employee Engagement",
+    "category": "Sector",
+    "parent_id": "fd02ea98-47b4-4dfb-b0d6-d1ca37d52315",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "25defc8b-930d-49c7-a1a3-769763440113",
+    "name": "Employer Brand Campaigns",
+    "category": "Sector",
+    "parent_id": "05d0c49c-3a81-45b7-adda-b8280ca2abff",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "ca163f0b-e2b1-4a54-8e6b-3149190ec885",
+    "name": "Employer Communications",
+    "category": "Sector",
+    "parent_id": "fd02ea98-47b4-4dfb-b0d6-d1ca37d52315",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "145ac071-1116-4654-9a92-2f67bdc50439",
+    "name": "Employment Law",
+    "category": "Sector",
+    "parent_id": "356e4c54-1e1d-473c-8f23-56318bff4042",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "dbf31984-f91c-4da3-8b14-cb6b00fb9925",
+    "name": "Energy Systems",
+    "category": "Sector",
+    "parent_id": "e19bc17c-dd96-4063-8cb6-5a508db3eeea",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "701a9718-9b3c-4663-80df-88b17fe9c0e4",
+    "name": "Energy Trading & Retail",
+    "category": "Sector",
+    "parent_id": "0c1b7c46-bea5-4e10-b21b-6a6c331a8a4f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "bba8ad6d-4296-4898-adb9-73eb3415fec5",
+    "name": "Environmental Assessment",
+    "category": "Sector",
+    "parent_id": "0cfa909b-d6f5-44e1-98f7-8bd397e8edbd",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "2819ea55-ac00-4540-9829-3b980e5d387f",
+    "name": "Environmental Engineering",
+    "category": "Sector",
+    "parent_id": "e19bc17c-dd96-4063-8cb6-5a508db3eeea",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "44ec91ac-e239-40fe-b220-ff67c167ec1b",
+    "name": "Event Film / Highlights",
+    "category": "Sector",
+    "parent_id": "5b2443b9-0c2b-4275-8a9a-908e2245a883",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "f3e1a307-662a-4900-a5a0-4bf1673f1abd",
+    "name": "Events & Entertainment Venues",
+    "category": "Sector",
+    "parent_id": "00236d1a-e272-4fe2-8f09-7770a87f36d8",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "0574762b-e855-42e7-9bf1-8e4f5140f109",
+    "name": "Executive Profiling",
+    "category": "Sector",
+    "parent_id": "3cd5ec50-1c11-4c9e-8667-0b49ab436938",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "e24c8294-57c5-4e6a-9e3e-fad3e86792c6",
+    "name": "Exhibition / Experience Design",
+    "category": "Sector",
+    "parent_id": "3f967eee-f887-4649-b136-626eb4b82f63",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "15b0974f-0c9b-4963-a706-293efc877271",
+    "name": "Experiential Campaigns",
+    "category": "Sector",
+    "parent_id": "5d4ea279-387a-4219-9699-9d37349481af",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "6236bef8-d6cb-40de-b809-72275e601988",
+    "name": "Facilities Management",
+    "category": "Sector",
+    "parent_id": "1ad67174-3e40-4a83-8736-d577e4232b76",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "a9521120-2e93-4e92-89cd-bb8ed8365509",
+    "name": "Fashion & Apparel",
+    "category": "Sector",
+    "parent_id": "ae3b14f1-2c36-4432-b38f-f132da9ab8b4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "42bd64b7-7223-475f-8080-3a613d0b440c",
+    "name": "Feasibility Studies",
+    "category": "Sector",
+    "parent_id": "96c8f60d-88b0-4a33-95fe-d2dda1bb11cb",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "0df39ce8-7602-4dcb-998f-d8b48bdc9324",
+    "name": "FinTech",
+    "category": "Sector",
+    "parent_id": "b808254a-6a0f-407c-b830-5ab0139f3e14",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "bacebf65-f28c-4eab-a6f7-e9338d18635a",
+    "name": "Financial Advisory",
+    "category": "Sector",
+    "parent_id": "7c05f027-7fe9-422a-82f3-6ec0913c63d9",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "2daf786f-0435-4f80-9616-ffce4dff0f1e",
+    "name": "Financial Modelling",
+    "category": "Sector",
+    "parent_id": "7c05f027-7fe9-422a-82f3-6ec0913c63d9",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "0b911edd-73fa-472e-85dd-294478a404dc",
+    "name": "Food & Beverage Manufacturing",
+    "category": "Sector",
+    "parent_id": "ae3b14f1-2c36-4432-b38f-f132da9ab8b4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "daecc95d-b321-43a2-8491-69c98548af41",
+    "name": "Gaming",
+    "category": "Sector",
+    "parent_id": "d3a7f0ac-65c3-4a5c-932f-3d2177c4fae1",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "2e889dbd-d224-499b-b3b1-64f36df75a08",
+    "name": "Governance & Compliance",
+    "category": "Sector",
+    "parent_id": "f4284b79-48ed-493c-b658-0f7924f7556e",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "87e300ef-2373-4431-b15e-6c50f0f831c0",
+    "name": "Graphic Design",
+    "category": "Sector",
+    "parent_id": "3f967eee-f887-4649-b136-626eb4b82f63",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "cdf4b498-c01d-4ffc-aa0c-5ad19a6785e3",
+    "name": "Grocery Retail",
+    "category": "Sector",
+    "parent_id": "ae3b14f1-2c36-4432-b38f-f132da9ab8b4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "8adc1940-c24d-418d-aabb-e1de83c875b9",
+    "name": "Growth Strategy",
+    "category": "Sector",
+    "parent_id": "96c8f60d-88b0-4a33-95fe-d2dda1bb11cb",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "de3a6d85-0ca7-4326-b84a-ede1561333b2",
+    "name": "HR & Recruitment Services",
+    "category": "Sector",
+    "parent_id": "2cff26cc-4cd3-487b-8445-28b43e83402f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "3a9c9d2d-2a8f-4a4d-92df-9743824ba4df",
+    "name": "HR Strategy",
+    "category": "Sector",
+    "parent_id": "aeee26dc-b0b8-4c67-859f-39ad96cde9e4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "4e33be4e-36ec-4ed6-8cd0-620a6ff881b3",
+    "name": "Health & Safety",
+    "category": "Sector",
+    "parent_id": "e19bc17c-dd96-4063-8cb6-5a508db3eeea",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "cffdf401-28a8-4cf7-b721-b4126f020dad",
+    "name": "Health Insurance / Payers",
+    "category": "Sector",
+    "parent_id": "1f15d289-7419-44a7-8835-0e17f43433c6",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "121c813d-0a84-4503-85d9-7ce4c6d4f937",
+    "name": "Higher Education",
+    "category": "Sector",
+    "parent_id": "2d27c708-b251-4cdc-80cb-6d7506cf0e90",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "93b0a0a5-b254-4ea9-a4bd-8f47a2c9ce5a",
+    "name": "Hospitals & Health Systems",
+    "category": "Sector",
+    "parent_id": "1f15d289-7419-44a7-8835-0e17f43433c6",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "63cac7f0-1314-4ffc-ac15-80c13c63b9cf",
+    "name": "Hotels & Resorts",
+    "category": "Sector",
+    "parent_id": "00236d1a-e272-4fe2-8f09-7770a87f36d8",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "bb8d9f22-e504-45a5-b8a9-3e1ac748b578",
+    "name": "Hybrid / Virtual Events",
+    "category": "Sector",
+    "parent_id": "5d4ea279-387a-4219-9699-9d37349481af",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "7beebcd0-4dee-4a07-ae32-11b1a4e04e7f",
+    "name": "IT Services",
+    "category": "Sector",
+    "parent_id": "d3a7f0ac-65c3-4a5c-932f-3d2177c4fae1",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "d625ae9a-a3c1-415b-9611-e2fddf791e03",
+    "name": "IT Strategy & Architecture",
+    "category": "Sector",
+    "parent_id": "2ee5a8f9-8e21-4d0b-af06-65aa1228eb54",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "aab806a8-4280-44fc-8f14-5a20274188a1",
+    "name": "Impact Measurement",
+    "category": "Sector",
+    "parent_id": "0cfa909b-d6f5-44e1-98f7-8bd397e8edbd",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "157ca2c9-38a8-456b-b38b-d13929ac698d",
+    "name": "Industrial Equipment & Machinery",
+    "category": "Sector",
+    "parent_id": "75646c7b-0a00-499f-ad05-b2728ba750e1",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "815eff1f-3197-4040-a372-33eeff86f731",
+    "name": "Influencer / Creator Partnerships",
+    "category": "Sector",
+    "parent_id": "60529506-0bcd-4d98-8208-ee07dfaff20c",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "dc2ba4b8-d010-48af-b091-a7479336fe1b",
+    "name": "Information Design / Infographics",
+    "category": "Sector",
+    "parent_id": "3f967eee-f887-4649-b136-626eb4b82f63",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "e2ef8091-d294-453e-b451-8bfb12aeac1b",
+    "name": "Infrastructure Delivery",
+    "category": "Sector",
+    "parent_id": "b556d284-3293-4a85-b01c-04c2c778742f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "447d5b3c-487f-48db-b841-be955ffee5ba",
+    "name": "Infrastructure Design",
+    "category": "Sector",
+    "parent_id": "e19bc17c-dd96-4063-8cb6-5a508db3eeea",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "ee09d91b-9915-4adc-8aa5-b77a61d162f6",
+    "name": "Infrastructure Development",
+    "category": "Sector",
+    "parent_id": "1ad67174-3e40-4a83-8736-d577e4232b76",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "3fdb9a3d-fb68-4507-a0ab-e4e3580b5086",
+    "name": "Insurance",
+    "category": "Sector",
+    "parent_id": "b808254a-6a0f-407c-b830-5ab0139f3e14",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "37f7d472-73c9-46ab-ac94-b3cbc548f762",
+    "name": "Integrated Campaigns",
+    "category": "Sector",
+    "parent_id": "05d0c49c-3a81-45b7-adda-b8280ca2abff",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "3d277bbe-7523-40be-baec-336c4c650e63",
+    "name": "Intellectual Property",
+    "category": "Sector",
+    "parent_id": "356e4c54-1e1d-473c-8f23-56318bff4042",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "c56e13c7-dc10-439f-8b98-66ad07986e3d",
+    "name": "Internal Communications",
+    "category": "Sector",
+    "parent_id": "fd02ea98-47b4-4dfb-b0d6-d1ca37d52315",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "3bed1a19-f4d0-4482-aae5-e41596862ab8",
+    "name": "International Development",
+    "category": "Sector",
+    "parent_id": "77671df7-8daa-4f02-a74f-3e7b66a980fd",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "b2def219-dd5c-466f-b8ec-5441a4a37716",
+    "name": "Investor / Stakeholder Communications",
+    "category": "Sector",
+    "parent_id": "fd02ea98-47b4-4dfb-b0d6-d1ca37d52315",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "2565d134-2f0e-4023-9fc0-9f82bea785b9",
+    "name": "Issues Management",
+    "category": "Sector",
+    "parent_id": "3cd5ec50-1c11-4c9e-8667-0b49ab436938",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "9d2e1dd2-c8f7-4876-9b95-88f3a804121c",
+    "name": "Justice & Public Safety",
+    "category": "Sector",
+    "parent_id": "77671df7-8daa-4f02-a74f-3e7b66a980fd",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "b7211c67-8d2a-43c7-be40-67ac1f28f779",
+    "name": "K-12 Education",
+    "category": "Sector",
+    "parent_id": "2d27c708-b251-4cdc-80cb-6d7506cf0e90",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "b71ddbe1-ec36-4eb2-9064-12ac73b27a18",
+    "name": "Launch Campaigns",
+    "category": "Sector",
+    "parent_id": "05d0c49c-3a81-45b7-adda-b8280ca2abff",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "4348b2a7-3427-4fd6-a286-41dbafc9a6e1",
+    "name": "Launch Events",
+    "category": "Sector",
+    "parent_id": "5d4ea279-387a-4219-9699-9d37349481af",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "734135a7-4e11-4fff-a485-3f802bddda99",
+    "name": "Leadership Coaching",
+    "category": "Sector",
+    "parent_id": "aeee26dc-b0b8-4c67-859f-39ad96cde9e4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "acd8759f-7b75-4547-bf59-8ee4265d2c28",
+    "name": "Leadership Communications",
+    "category": "Sector",
+    "parent_id": "fd02ea98-47b4-4dfb-b0d6-d1ca37d52315",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "d9d8b97a-813e-4414-8537-171d6e9ed126",
+    "name": "Learning & Development",
+    "category": "Sector",
+    "parent_id": "aeee26dc-b0b8-4c67-859f-39ad96cde9e4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "ff53e82e-f3b0-4ad5-84c8-7116b24b2a2c",
+    "name": "Legal Advisory",
+    "category": "Sector",
+    "parent_id": "356e4c54-1e1d-473c-8f23-56318bff4042",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "4e0a7a41-9403-411d-9fdc-ff4e428a7c53",
+    "name": "Legal Services",
+    "category": "Sector",
+    "parent_id": "2cff26cc-4cd3-487b-8445-28b43e83402f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "3d239f90-00ff-4cfc-b64b-6db4b49a9481",
+    "name": "Live Events",
+    "category": "Sector",
+    "parent_id": "5d4ea279-387a-4219-9699-9d37349481af",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "90294a61-e603-438c-9008-4de1ac3972b7",
+    "name": "Local / Municipal Government",
+    "category": "Sector",
+    "parent_id": "77671df7-8daa-4f02-a74f-3e7b66a980fd",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "5087214c-9b67-4863-91e2-c2358b96e784",
+    "name": "Logistics & Freight",
+    "category": "Sector",
+    "parent_id": "0baedb15-608c-44a2-a83a-77c83a67e0ca",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "c6524840-5e67-4074-86c7-5597d8ee247a",
+    "name": "Long-form Content",
+    "category": "Sector",
+    "parent_id": "e2bce58f-ccaf-4b20-9a01-59a41f86dc97",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "edd3e096-5a5a-46d4-9145-485cd46328c1",
+    "name": "Luxury Goods",
+    "category": "Sector",
+    "parent_id": "ae3b14f1-2c36-4432-b38f-f132da9ab8b4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "90827c4d-ef6f-43ce-b2e8-67974cbe23f2",
+    "name": "Maritime & Ports",
+    "category": "Sector",
+    "parent_id": "0baedb15-608c-44a2-a83a-77c83a67e0ca",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "e7896a91-bcff-4abb-918f-0eaeaeb59b2e",
+    "name": "Market Entry Strategy",
+    "category": "Sector",
+    "parent_id": "96c8f60d-88b0-4a33-95fe-d2dda1bb11cb",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "4eaf901c-2967-4a4c-9cf6-396c82258817",
+    "name": "Marketing & Advertising",
+    "category": "Sector",
+    "parent_id": "2cff26cc-4cd3-487b-8445-28b43e83402f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "a2e19979-7a25-4d0c-9e74-a65d3500811b",
+    "name": "Mechanical & Electrical Engineering",
+    "category": "Sector",
+    "parent_id": "e19bc17c-dd96-4063-8cb6-5a508db3eeea",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "464abdbc-c8a2-4889-8cb3-01e94bc47f95",
+    "name": "Media & Broadcasting",
+    "category": "Sector",
+    "parent_id": "d3a7f0ac-65c3-4a5c-932f-3d2177c4fae1",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "fc055601-40bc-4631-a694-eecb8a1fa654",
+    "name": "Media / Content Audit",
+    "category": "Sector",
+    "parent_id": "3e9dc5df-93e4-4149-8e33-134a999e6606",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "a374d6e6-f8d8-4b58-aeb6-c2e646d12c2d",
+    "name": "Media Relations",
+    "category": "Sector",
+    "parent_id": "3cd5ec50-1c11-4c9e-8667-0b49ab436938",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "ec4e8261-bacf-4992-92a0-b96bf11472f2",
+    "name": "Medical Devices",
+    "category": "Sector",
+    "parent_id": "1f15d289-7419-44a7-8835-0e17f43433c6",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "927a33e5-0dab-4299-ac65-a9e37face4e7",
+    "name": "Message Testing",
+    "category": "Sector",
+    "parent_id": "3e9dc5df-93e4-4149-8e33-134a999e6606",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "fc2f760e-6284-4fb7-85ba-ee9058030e72",
+    "name": "Mining & Metals",
+    "category": "Sector",
+    "parent_id": "0c1b7c46-bea5-4e10-b21b-6a6c331a8a4f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "9e79c8c1-d393-4e86-b404-1eb73d40696f",
+    "name": "Mobility Services",
+    "category": "Sector",
+    "parent_id": "0baedb15-608c-44a2-a83a-77c83a67e0ca",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "e1e3a53c-c18b-4316-bbba-e6cb712c1f3d",
+    "name": "Motion Design",
+    "category": "Sector",
+    "parent_id": "3f967eee-f887-4649-b136-626eb4b82f63",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "0296798c-bd4f-4c32-aaf7-3252348d4bfc",
+    "name": "Naming & Verbal Identity",
+    "category": "Sector",
+    "parent_id": "4bf4c207-fd0e-4d2c-b569-1350050f3690",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "0bf6d444-f915-4cf2-a9c4-7c54b933c5c3",
+    "name": "Net Zero Planning",
+    "category": "Sector",
+    "parent_id": "0cfa909b-d6f5-44e1-98f7-8bd397e8edbd",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "220dc69a-c068-4ae2-a470-d989ff6182fa",
+    "name": "Oil & Gas (Upstream / Midstream / Downstream)",
+    "category": "Sector",
+    "parent_id": "0c1b7c46-bea5-4e10-b21b-6a6c331a8a4f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "657da495-3dd3-400c-8950-bec24d205a5f",
+    "name": "Operating Model Design",
+    "category": "Sector",
+    "parent_id": "f4284b79-48ed-493c-b658-0f7924f7556e",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "412883f6-8e4e-4239-8ac7-1bdce3139d78",
+    "name": "Organic Social Content",
+    "category": "Sector",
+    "parent_id": "60529506-0bcd-4d98-8208-ee07dfaff20c",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "c92f93fe-4d54-4c16-9b88-20447671c7db",
+    "name": "Organisational Design",
+    "category": "Sector",
+    "parent_id": "f4284b79-48ed-493c-b658-0f7924f7556e",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "b7106ad6-e8cd-4454-b668-b25818e5ebfb",
+    "name": "Outsourcing / BPO / Shared Services",
+    "category": "Sector",
+    "parent_id": "2cff26cc-4cd3-487b-8445-28b43e83402f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "34739d58-c554-4d27-92f5-2de2dd98ea4d",
+    "name": "PMO Setup & Support",
+    "category": "Sector",
+    "parent_id": "b556d284-3293-4a85-b01c-04c2c778742f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "42558575-2fa8-4ddd-865a-ed950fef8bbb",
+    "name": "Paid Social Content",
+    "category": "Sector",
+    "parent_id": "60529506-0bcd-4d98-8208-ee07dfaff20c",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "daa5ef03-6647-4a73-a708-9b3698aa7f87",
+    "name": "Payments",
+    "category": "Sector",
+    "parent_id": "b808254a-6a0f-407c-b830-5ab0139f3e14",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "8f46002d-eae3-40d0-b448-add504ba7c73",
+    "name": "Performance Improvement",
+    "category": "Sector",
+    "parent_id": "f4284b79-48ed-493c-b658-0f7924f7556e",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "948d402c-9a5e-4334-95a0-5a2a358f84b6",
+    "name": "Pharmaceuticals",
+    "category": "Sector",
+    "parent_id": "1f15d289-7419-44a7-8835-0e17f43433c6",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "8e3208f3-6174-4314-a665-6741a8471509",
+    "name": "Podcast / Audio Content",
+    "category": "Sector",
+    "parent_id": "5b2443b9-0c2b-4275-8a9a-908e2245a883",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "5bbf266d-e202-4d13-a5a1-bed9ac1cbb64",
+    "name": "Policy & Public Affairs",
+    "category": "Sector",
+    "parent_id": "356e4c54-1e1d-473c-8f23-56318bff4042",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "afb5fb41-8a51-4a93-9648-32403d15fa2f",
+    "name": "Pop-Ups / Installations",
+    "category": "Sector",
+    "parent_id": "5d4ea279-387a-4219-9699-9d37349481af",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "8714a9e3-eb0f-4a5f-934c-af35e478d8de",
+    "name": "Post-Merger Integration",
+    "category": "Sector",
+    "parent_id": "f4284b79-48ed-493c-b658-0f7924f7556e",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "24b599d1-3b6a-4664-ad1e-bab45dac2cf2",
+    "name": "Postal Services",
+    "category": "Sector",
+    "parent_id": "0baedb15-608c-44a2-a83a-77c83a67e0ca",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "2b25f1f1-ad26-4211-a3cf-e43fd76221c1",
+    "name": "Power Generation",
+    "category": "Sector",
+    "parent_id": "0c1b7c46-bea5-4e10-b21b-6a6c331a8a4f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "b61be9c9-2fe7-4580-83a2-e6f6e85cc0fd",
+    "name": "Presentation / Deck Design",
+    "category": "Sector",
+    "parent_id": "3f967eee-f887-4649-b136-626eb4b82f63",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "0f1c09f4-beca-41f0-9c7b-87ac758aa1b9",
+    "name": "Press Office / Always-On PR",
+    "category": "Sector",
+    "parent_id": "3cd5ec50-1c11-4c9e-8667-0b49ab436938",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "85e0cbdb-1672-45ec-a983-947a1fbd5525",
+    "name": "Procurement & Contract Management",
+    "category": "Sector",
+    "parent_id": "b556d284-3293-4a85-b01c-04c2c778742f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "0edf7cd7-d225-4071-9357-0b6c439d1f8f",
+    "name": "Product / Service Campaigns",
+    "category": "Sector",
+    "parent_id": "05d0c49c-3a81-45b7-adda-b8280ca2abff",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "62ee608d-96e1-4bbe-8b20-612b1138cef8",
+    "name": "Product Development",
+    "category": "Sector",
+    "parent_id": "2ee5a8f9-8e21-4d0b-af06-65aa1228eb54",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "5390668e-2628-47e5-934b-50b6fa56c105",
+    "name": "Programme Management",
+    "category": "Sector",
+    "parent_id": "b556d284-3293-4a85-b01c-04c2c778742f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "daa35921-0d10-4bfd-8c60-6540d1ed44c5",
+    "name": "Project Management",
+    "category": "Sector",
+    "parent_id": "b556d284-3293-4a85-b01c-04c2c778742f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "a375356a-1eb4-47fa-be99-3b32b2bd8add",
+    "name": "Property Investment & REITs",
+    "category": "Sector",
+    "parent_id": "1ad67174-3e40-4a83-8736-d577e4232b76",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "99680a32-e65a-4ea7-98d7-e3c6fce2b1ba",
+    "name": "Public Finance & Treasury",
+    "category": "Sector",
+    "parent_id": "77671df7-8daa-4f02-a74f-3e7b66a980fd",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "b0da9157-dc54-4db3-81ca-8eadccb8426a",
+    "name": "Public Health & Policy",
+    "category": "Sector",
+    "parent_id": "1f15d289-7419-44a7-8835-0e17f43433c6",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "4d7e9cdb-b26e-4b1d-a319-481824878f33",
+    "name": "Rail",
+    "category": "Sector",
+    "parent_id": "0baedb15-608c-44a2-a83a-77c83a67e0ca",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "25ae1845-8a35-4ab9-ac05-54a46896a614",
+    "name": "Regulatory Compliance",
+    "category": "Sector",
+    "parent_id": "356e4c54-1e1d-473c-8f23-56318bff4042",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "5f1f0438-c2da-4037-8ee7-5d6a9b8d5aff",
+    "name": "Renewables (Solar, Wind, Hydrogen)",
+    "category": "Sector",
+    "parent_id": "0c1b7c46-bea5-4e10-b21b-6a6c331a8a4f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "e3d0552e-a267-4511-b38e-35d6f83cc917",
+    "name": "Reputation Management",
+    "category": "Sector",
+    "parent_id": "3cd5ec50-1c11-4c9e-8667-0b49ab436938",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "6ab9ce1a-193b-4a9e-a649-d6c4330f0d76",
+    "name": "Residential Real Estate",
+    "category": "Sector",
+    "parent_id": "1ad67174-3e40-4a83-8736-d577e4232b76",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "2cebc0d6-e6b5-4137-aacb-39df5e8e9a0a",
+    "name": "Responsible Procurement",
+    "category": "Sector",
+    "parent_id": "0cfa909b-d6f5-44e1-98f7-8bd397e8edbd",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "aeea8ef4-1aa6-4a37-84a1-b90526eaed54",
+    "name": "Retail / Shopper Campaigns",
+    "category": "Sector",
+    "parent_id": "05d0c49c-3a81-45b7-adda-b8280ca2abff",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "d8e3cea8-79a4-4f46-9f3b-c945a8ff517b",
+    "name": "Retail Banking",
+    "category": "Sector",
+    "parent_id": "b808254a-6a0f-407c-b830-5ab0139f3e14",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "0c058efb-caae-41d8-a98f-ff86dad10427",
+    "name": "Reward & Benefits",
+    "category": "Sector",
+    "parent_id": "aeee26dc-b0b8-4c67-859f-39ad96cde9e4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "c3a270fe-348e-4f52-8c7a-ef5698ca24e4",
+    "name": "Roadshows",
+    "category": "Sector",
+    "parent_id": "5d4ea279-387a-4219-9699-9d37349481af",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "dbcad25a-5400-4a5d-a965-fb098c0d24c4",
+    "name": "Scriptwriting",
+    "category": "Sector",
+    "parent_id": "e2bce58f-ccaf-4b20-9a01-59a41f86dc97",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "12ba5821-a7ad-47db-b8e8-3bcb6ad75622",
+    "name": "Smart Cities & Urban Development",
+    "category": "Sector",
+    "parent_id": "77671df7-8daa-4f02-a74f-3e7b66a980fd",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "e2c900e7-0920-45f8-adf1-fc403c30ded6",
+    "name": "Smart Infrastructure",
+    "category": "Sector",
+    "parent_id": "1ad67174-3e40-4a83-8736-d577e4232b76",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "027efb9b-0d50-45db-a76b-c2e6c2b9a3ae",
+    "name": "Social Media Strategy",
+    "category": "Sector",
+    "parent_id": "60529506-0bcd-4d98-8208-ee07dfaff20c",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "6c1c4b72-1893-4689-9440-8f4ad62eabab",
+    "name": "Social Value",
+    "category": "Sector",
+    "parent_id": "0cfa909b-d6f5-44e1-98f7-8bd397e8edbd",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "84a01188-fa08-4d8c-bec7-dfb7627db02e",
+    "name": "Social Video",
+    "category": "Sector",
+    "parent_id": "5b2443b9-0c2b-4275-8a9a-908e2245a883",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "45adfd16-0b63-4024-b5da-f5c71e00510e",
+    "name": "Software & SaaS",
+    "category": "Sector",
+    "parent_id": "d3a7f0ac-65c3-4a5c-932f-3d2177c4fae1",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "542f7391-6bc3-415d-a6bb-e552f81758b3",
+    "name": "Software Implementation",
+    "category": "Sector",
+    "parent_id": "2ee5a8f9-8e21-4d0b-af06-65aa1228eb54",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "356f00a6-8cf4-4e55-9f2d-4e93df82f8d0",
+    "name": "Specialty Retail",
+    "category": "Sector",
+    "parent_id": "ae3b14f1-2c36-4432-b38f-f132da9ab8b4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "f7409f61-ec48-4e79-b397-666c48f91024",
+    "name": "Speechwriting",
+    "category": "Sector",
+    "parent_id": "e2bce58f-ccaf-4b20-9a01-59a41f86dc97",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "b52cd1c2-ed3c-443f-8825-0c8b9f7e4587",
+    "name": "Stakeholder Mapping",
+    "category": "Sector",
+    "parent_id": "3e9dc5df-93e4-4149-8e33-134a999e6606",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "7e7b4934-23a8-4301-b843-e1a39838cdb2",
+    "name": "Strategic Planning",
+    "category": "Sector",
+    "parent_id": "96c8f60d-88b0-4a33-95fe-d2dda1bb11cb",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "c3aeb40b-5b6c-4abf-8484-5e031d895832",
+    "name": "Sustainability Reporting",
+    "category": "Sector",
+    "parent_id": "0cfa909b-d6f5-44e1-98f7-8bd397e8edbd",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "6ab45f8f-3743-41f2-b7c7-9cbe71d716c9",
+    "name": "Systems Integration",
+    "category": "Sector",
+    "parent_id": "2ee5a8f9-8e21-4d0b-af06-65aa1228eb54",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "d93ae049-0ee3-425e-b20a-2060365d3a7c",
+    "name": "TVC / Commercial",
+    "category": "Sector",
+    "parent_id": "5b2443b9-0c2b-4275-8a9a-908e2245a883",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "1988a267-19ed-43f7-a1c4-635867295b81",
+    "name": "Talent Management",
+    "category": "Sector",
+    "parent_id": "aeee26dc-b0b8-4c67-859f-39ad96cde9e4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "125d442b-80c8-4741-8136-85f59c9edacd",
+    "name": "Tax Advisory",
+    "category": "Sector",
+    "parent_id": "7c05f027-7fe9-422a-82f3-6ec0913c63d9",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "ebe29207-2aca-414a-9e00-fc57ddae033c",
+    "name": "Technical Assessment & Assurance",
+    "category": "Sector",
+    "parent_id": "e19bc17c-dd96-4063-8cb6-5a508db3eeea",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "e1b343d6-18a6-4a61-8bc8-7529fd971462",
+    "name": "Telecommunications",
+    "category": "Sector",
+    "parent_id": "d3a7f0ac-65c3-4a5c-932f-3d2177c4fae1",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "ebf668cc-b6da-480c-b88e-685d31deaf02",
+    "name": "Theme Parks & Attractions",
+    "category": "Sector",
+    "parent_id": "00236d1a-e272-4fe2-8f09-7770a87f36d8",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "e6d25d67-9ba0-47ce-bff4-7db6dd551505",
+    "name": "Thought Leadership",
+    "category": "Sector",
+    "parent_id": "3cd5ec50-1c11-4c9e-8667-0b49ab436938",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "4f351d5c-2d20-43b5-bb87-a57d2f154dcd",
+    "name": "Transformation Communications",
+    "category": "Sector",
+    "parent_id": "fd02ea98-47b4-4dfb-b0d6-d1ca37d52315",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "55d41b8a-b12d-4105-aa15-0125ed797f2d",
+    "name": "Transmission & Distribution",
+    "category": "Sector",
+    "parent_id": "0c1b7c46-bea5-4e10-b21b-6a6c331a8a4f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "cc9dc791-6019-4479-b9a1-5e1281ae1f0d",
+    "name": "Travel & Tourism Operators",
+    "category": "Sector",
+    "parent_id": "00236d1a-e272-4fe2-8f09-7770a87f36d8",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "a91cf656-a490-458f-92d1-1513cd9a807c",
+    "name": "Treasury & Risk Management",
+    "category": "Sector",
+    "parent_id": "7c05f027-7fe9-422a-82f3-6ec0913c63d9",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "4dce9f0b-bf2d-4f79-944e-5009b9d94fd4",
+    "name": "Trend / Cultural Insight",
+    "category": "Sector",
+    "parent_id": "3e9dc5df-93e4-4149-8e33-134a999e6606",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "004bf741-a9f7-48be-be8c-30f5a29bff99",
+    "name": "Turnaround & Restructuring",
+    "category": "Sector",
+    "parent_id": "f4284b79-48ed-493c-b658-0f7924f7556e",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "898a0d2b-4394-4ba5-bbe2-412dcda0d143",
+    "name": "UX / UI Design",
+    "category": "Sector",
+    "parent_id": "3f967eee-f887-4649-b136-626eb4b82f63",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "1e0afdbb-d9cb-46ab-9cc1-3ae35bf6a867",
+    "name": "Urban Regeneration",
+    "category": "Sector",
+    "parent_id": "1ad67174-3e40-4a83-8736-d577e4232b76",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "06a50eb1-6362-4273-a0ee-8673be672932",
+    "name": "Vocational & Technical Training",
+    "category": "Sector",
+    "parent_id": "2d27c708-b251-4cdc-80cb-6d7506cf0e90",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "fde41c92-705c-4388-84cf-ab3460d52357",
+    "name": "Warehousing & Distribution",
+    "category": "Sector",
+    "parent_id": "0baedb15-608c-44a2-a83a-77c83a67e0ca",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "13711a34-9723-43fb-b232-a031edec397a",
+    "name": "Water & Wastewater",
+    "category": "Sector",
+    "parent_id": "0c1b7c46-bea5-4e10-b21b-6a6c331a8a4f",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "7accca16-8f9a-44e0-81c6-9c8b288dcf32",
+    "name": "Web / Landing Page Content",
+    "category": "Sector",
+    "parent_id": "60529506-0bcd-4d98-8208-ee07dfaff20c",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "7b367af4-ebb1-4943-a92a-aed670a390dd",
+    "name": "Website / Microsite Design",
+    "category": "Sector",
+    "parent_id": "3f967eee-f887-4649-b136-626eb4b82f63",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "acf8027c-b7a3-4d10-ac12-9fa002322027",
+    "name": "White Papers / Reports",
+    "category": "Sector",
+    "parent_id": "e2bce58f-ccaf-4b20-9a01-59a41f86dc97",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:00:39",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "19ebe7d4-b360-4420-9997-a11d29bff351",
+    "name": "Workforce Planning",
+    "category": "Sector",
+    "parent_id": "aeee26dc-b0b8-4c67-859f-39ad96cde9e4",
+    "sort_order": 0,
+    "is_default": 1,
+    "created_at": "2026-04-08 13:50:38",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "11488d21-2f04-456f-b72e-89133f8729a2",
+    "name": "Software & SaaS",
+    "category": "Sector",
+    "parent_id": "70e26224-922b-4a6b-8e97-fe0dd1c18a0b",
+    "sort_order": 1,
+    "is_default": 1,
+    "created_at": "2026-04-09 09:57:43",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "bd96be40-c11e-4489-a543-00b8a4108e46",
+    "name": "IT Services",
+    "category": "Sector",
+    "parent_id": "70e26224-922b-4a6b-8e97-fe0dd1c18a0b",
+    "sort_order": 2,
+    "is_default": 1,
+    "created_at": "2026-04-09 09:57:43",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "c11ddfdf-3fe7-4b4b-b847-54bebdad4fe1",
+    "name": "Telecommunications",
+    "category": "Sector",
+    "parent_id": "70e26224-922b-4a6b-8e97-fe0dd1c18a0b",
+    "sort_order": 3,
+    "is_default": 1,
+    "created_at": "2026-04-09 09:57:43",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "68c9c6fa-2ef4-436f-bc43-da52755a3bc2",
+    "name": "Media & Broadcasting",
+    "category": "Sector",
+    "parent_id": "70e26224-922b-4a6b-8e97-fe0dd1c18a0b",
+    "sort_order": 4,
+    "is_default": 1,
+    "created_at": "2026-04-09 09:57:43",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "f24b5c78-7102-43d5-8951-ddef66ad0534",
+    "name": "Gaming",
+    "category": "Sector",
+    "parent_id": "70e26224-922b-4a6b-8e97-fe0dd1c18a0b",
+    "sort_order": 5,
+    "is_default": 1,
+    "created_at": "2026-04-09 09:57:43",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "c1a80c8d-97de-45ea-8372-520eb080b173",
+    "name": "Cloud & Infrastructure",
+    "category": "Sector",
+    "parent_id": "70e26224-922b-4a6b-8e97-fe0dd1c18a0b",
+    "sort_order": 6,
+    "is_default": 1,
+    "created_at": "2026-04-09 09:57:43",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "5c7b8630-ad56-4c09-8787-94e938340da4",
+    "name": "Data & AI Platforms",
+    "category": "Sector",
+    "parent_id": "70e26224-922b-4a6b-8e97-fe0dd1c18a0b",
+    "sort_order": 7,
+    "is_default": 1,
+    "created_at": "2026-04-09 09:57:43",
+    "taxonomy_type": "client"
+  },
+  {
+    "id": "eea5ea0d-b8b7-475d-9295-2824a7540860",
+    "name": "Government & Public Sector",
+    "category": "Sector",
+    "parent_id": null,
+    "sort_order": 16,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "8614787c-8ff4-46f1-a74b-e784efa1be25",
+    "name": "Healthcare & NHS",
+    "category": "Sector",
+    "parent_id": null,
+    "sort_order": 17,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "30101490-54de-4206-9dfd-189f610ea9a3",
+    "name": "Financial Services",
+    "category": "Sector",
+    "parent_id": null,
+    "sort_order": 18,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "23d38390-713b-4a18-9c7e-3f86e42c7bdc",
+    "name": "Aerospace & Defence",
+    "category": "Sector",
+    "parent_id": null,
+    "sort_order": 19,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "828b133d-1236-4fff-8e92-02c59387dbc2",
+    "name": "Technology & Software",
+    "category": "Sector",
+    "parent_id": null,
+    "sort_order": 20,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "88fe8db0-4de5-4811-ad95-499206b6c3e9",
+    "name": "Retail & Consumer",
+    "category": "Sector",
+    "parent_id": null,
+    "sort_order": 21,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "ccb6a7c6-f1b5-41d7-b3ea-bfffd5202cdd",
+    "name": "Energy & Utilities",
+    "category": "Sector",
+    "parent_id": null,
+    "sort_order": 22,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "5c8ec4aa-56e4-483f-ba38-5a8e05619949",
+    "name": "Transport & Logistics",
+    "category": "Sector",
+    "parent_id": null,
+    "sort_order": 23,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "ad598c00-bd31-4fcb-a53c-d953f18c251a",
+    "name": "Education & Skills",
+    "category": "Sector",
+    "parent_id": null,
+    "sort_order": 24,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "0e2826ee-4fa1-4416-9127-73d600b04345",
+    "name": "Film & Creative Industries",
+    "category": "Sector",
+    "parent_id": null,
+    "sort_order": 25,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "459f74ae-5c5a-4884-a6e4-c3395bf3778f",
+    "name": "Charity & Third Sector",
+    "category": "Sector",
+    "parent_id": null,
+    "sort_order": 26,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "558b688b-fc44-432c-bfdf-5eca7b6383a8",
+    "name": "Legal & Professional Services",
+    "category": "Sector",
+    "parent_id": null,
+    "sort_order": 27,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "bfbd2285-72ed-48c5-808c-8b0ff1c2e164",
+    "name": "Digital Transformation",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 1,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "ae2769a3-3b97-44ce-8989-05ffdb8abd7f",
+    "name": "Data & Analytics",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 2,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "a9322524-013f-4d29-9fa2-4df5fb4c5b58",
+    "name": "Cloud Migration",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 3,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "08aaa71b-4485-42ab-ae6b-ea12242a95e6",
+    "name": "Software Development",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 4,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "4d771d0b-3744-4555-a5cd-3e07035209d3",
+    "name": "Managed Services",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 5,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "737e3841-e962-4e21-a5d4-ebebf31f3c39",
+    "name": "Consultancy & Advisory",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 6,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "8563d657-8424-451d-a4de-b928c8a60572",
+    "name": "Change Management",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 7,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "45d5a05f-0fdf-4725-80ef-a7dcf81517f3",
+    "name": "Cybersecurity",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 8,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "632802a5-a8ef-4833-a67d-ee0980a33028",
+    "name": "ERP & Systems Integration",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 9,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "dcc81794-856f-41c7-b97e-34cdc28d6bc3",
+    "name": "Infrastructure & Networks",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 10,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "fcd2bccf-10c9-467c-8c84-1d2666016e2a",
+    "name": "Film & Media Production",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 11,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "00e88a5c-f6fe-4014-86b5-dde5c6614f09",
+    "name": "Creative & Brand Production",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 12,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "dbb0173a-3c45-4b1d-95b2-4d80288bcc32",
+    "name": "PR & Communications",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 13,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "50bce65c-8792-4d99-8c05-d30c608e2837",
+    "name": "Research & Insight",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 14,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  },
+  {
+    "id": "2980d82e-1129-4e65-98c0-29fcf1eadccd",
+    "name": "Recruitment & Staffing",
+    "category": "Service Offering",
+    "parent_id": null,
+    "sort_order": 15,
+    "is_default": 1,
+    "created_at": "2026-04-08 12:48:44",
+    "taxonomy_type": "service"
+  }
+]
