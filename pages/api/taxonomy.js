@@ -12,12 +12,30 @@ async function handler(req, res) {
 
   if (req.method === 'POST') {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const { name, category } = body;
+    const { name, category, id: providedId, parent_id, taxonomy_type, sort_order, is_default } = body;
     if (!name?.trim()) return res.status(400).json({ error: 'Name required' });
-    const maxOrder = db.prepare('SELECT MAX(sort_order) as m FROM taxonomy_items WHERE category = ?').get(category || 'Service Offering');
-    const id = uuid();
-    db.prepare('INSERT INTO taxonomy_items (id, name, category, sort_order) VALUES (?, ?, ?, ?)').run(
-      id, name.trim(), category || 'Service Offering', (maxOrder?.m || 0) + 1
+
+    // Idempotent when an id is provided — skip if the row already exists.
+    if (providedId) {
+      const existing = db.prepare('SELECT id FROM taxonomy_items WHERE id = ?').get(providedId);
+      if (existing) return res.status(200).json({ id: existing.id, existed: true });
+    }
+
+    const id = providedId || uuid();
+    const resolvedCategory = category || 'Service Offering';
+    const resolvedOrder = sort_order != null
+      ? sort_order
+      : ((db.prepare('SELECT MAX(sort_order) as m FROM taxonomy_items WHERE category = ?').get(resolvedCategory)?.m || 0) + 1);
+    db.prepare(
+      'INSERT INTO taxonomy_items (id, name, category, parent_id, sort_order, is_default, taxonomy_type) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).run(
+      id,
+      name.trim(),
+      resolvedCategory,
+      parent_id || null,
+      resolvedOrder,
+      is_default ? 1 : 0,
+      taxonomy_type || null
     );
     return res.status(201).json({ id });
   }
