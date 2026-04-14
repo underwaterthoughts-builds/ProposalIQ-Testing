@@ -6,7 +6,7 @@ import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { projectDir } from '../../../lib/storage';
 import { parseDocument } from '../../../lib/parser';
-import { embed, analyseProposal, extractPricingFromImages, setCostContext } from '../../../lib/gemini';
+import { embed, analyseProposal, extractPricingFromImages, setCostContext, hasOpenAI } from '../../../lib/gemini';
 
 export const config = { api: { bodyParser: false } };
 
@@ -192,10 +192,13 @@ async function handler(req, res) {
         : 0.50;
       const kqsComposite = (kqsRecency + kqsOutcome + kqsSpecificity) / 3;
 
+      const analysisModel = hasOpenAI() ? 'gpt' : 'gemini';
+
       db.prepare(`UPDATE projects SET
         ai_metadata = ?, embedding = ?,
         kqs_recency = ?, kqs_outcome_quality = ?, kqs_specificity = ?, kqs_composite = ?,
         service_industry = ?, service_sectors = ?, client_industry = ?, client_sectors = ?, taxonomy_source = 'ai',
+        analysis_model = ?,
         indexing_status = 'complete', indexed_at = CURRENT_TIMESTAMP
         WHERE id = ?`).run(
         JSON.stringify(metadata), JSON.stringify(vec),
@@ -204,6 +207,7 @@ async function handler(req, res) {
         JSON.stringify(metadata.service_sectors || []),
         metadata.client_industry || null,
         JSON.stringify(metadata.client_sectors || []),
+        analysisModel,
         projectId
       );
 

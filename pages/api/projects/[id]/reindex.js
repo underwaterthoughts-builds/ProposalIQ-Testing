@@ -3,7 +3,7 @@ import fs from 'fs';
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
 import { parseDocument } from '../../../../lib/parser';
-import { embed, analyseProposal, extractPricingFromImages } from '../../../../lib/gemini';
+import { embed, analyseProposal, extractPricingFromImages, hasOpenAI } from '../../../../lib/gemini';
 
 // Wrap any promise with a timeout
 function withTimeout(promise, ms, label) {
@@ -130,9 +130,14 @@ async function handler(req, res) {
         JSON.stringify(metadata.client_sectors || []),
       ];
 
+      // Record which model did the heavy lifting. OpenAI configured → 'gpt'
+      // (deep analysis ran). No OpenAI key → Gemini-only fast path → 'gemini'.
+      const analysisModel = hasOpenAI() ? 'gpt' : 'gemini';
+
       db.prepare(`UPDATE projects SET
         ai_metadata = ?, ${vec ? 'embedding = ?,' : ''}
-        kqs_recency = ?, kqs_outcome_quality = ?, kqs_specificity = ?, kqs_composite = ?
+        kqs_recency = ?, kqs_outcome_quality = ?, kqs_specificity = ?, kqs_composite = ?,
+        analysis_model = ?
         ${taxFields},
         indexing_status = 'complete', indexed_at = CURRENT_TIMESTAMP
         WHERE id = ?`).run(
@@ -140,6 +145,7 @@ async function handler(req, res) {
           JSON.stringify(metadata),
           ...(vec ? [JSON.stringify(vec)] : []),
           kqsRecency, kqsOutcome, kqsSpecificity, kqsComposite,
+          analysisModel,
           ...taxParams,
           id,
         ]
