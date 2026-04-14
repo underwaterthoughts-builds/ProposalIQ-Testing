@@ -527,12 +527,15 @@ export default function Team() {
                         </>
                       ) : (
                         <>
-                          <label className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12.5px] font-medium rounded-md border border-[#ddd5c4] hover:bg-cream cursor-pointer transition-all">
+                          <label className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-on-primary text-[11px] font-label font-bold uppercase tracking-widest cursor-pointer hover:brightness-110 transition-all">
                             <input type="file" ref={roleFileRef} accept=".xlsx,.xls,.csv" className="hidden" onChange={handleRoleFileSelect}/>
-                            {roleImportLoading?<><Spinner size={12}/> Reading…</>:'⊞ Import Ratecard'}
+                            <span className="material-symbols-outlined text-sm">upload</span>
+                            {roleImportLoading ? 'Reading…' : 'Import Ratecard'}
                           </label>
-                          {roles.length>0&&<button onClick={()=>setRoleSelectMode(true)}
-                            className="text-xs px-3 py-1.5 rounded-md border" style={{borderColor:'#ddd5c4',color:'#6b6456'}}>☐ Select</button>}
+                          {roles.length>0 && <button onClick={()=>setRoleSelectMode(true)}
+                            className="text-[11px] font-label uppercase tracking-widest px-3 py-2 border border-outline/30 text-on-surface-variant hover:text-on-surface transition-colors">
+                            Select
+                          </button>}
                         </>
                       )}
                     </div>
@@ -542,12 +545,10 @@ export default function Team() {
                     <div className="flex items-center gap-2 py-12 justify-center" style={{color:'#6b6456'}}><Spinner/> Loading…</div>
                   ) : roles.length === 0 ? (
                     <div className="text-center py-16">
-                      <div className="text-4xl mb-3 opacity-25">◈</div>
-                      <p className="text-sm mb-4" style={{color:'#6b6456'}}>No roles yet. Import a spreadsheet with columns for Role, Grade, Category, Client Rate, Cost Rate.</p>
-                      <label className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md cursor-pointer text-white" style={{background:'#1e4a52'}}>
-                        <input type="file" ref={roleFileRef} accept=".xlsx,.xls,.csv" className="hidden" onChange={handleRoleFileSelect}/>
-                        ⊞ Import Ratecard
-                      </label>
+                      <span className="material-symbols-outlined text-5xl text-outline opacity-40">price_change</span>
+                      <p className="text-sm mt-4 text-on-surface-variant max-w-md mx-auto">
+                        No roles yet. Use the Import Ratecard button above with a spreadsheet containing Role, Grade, Category, Client Rate, and Cost Rate columns.
+                      </p>
                     </div>
                   ) : (
                     <>

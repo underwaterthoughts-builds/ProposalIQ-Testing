@@ -791,6 +791,11 @@ export default function Repository() {
                     className="text-[10px] font-label uppercase tracking-widest px-3 py-2 border border-outline/30 text-on-surface-variant hover:text-on-surface transition-all">
                     Select
                   </button>
+                  <button onClick={()=>setShowBatch(true)}
+                    className="bg-primary text-on-primary px-6 py-2 text-[10px] font-label uppercase tracking-widest font-bold flex items-center gap-2 hover:brightness-110 transition-all">
+                    <span className="material-symbols-outlined text-sm">library_add</span>
+                    Batch Import
+                  </button>
                   <button onClick={()=>setShowUpload(true)}
                     className="bg-primary text-on-primary px-6 py-2 text-[10px] font-label uppercase tracking-widest font-bold flex items-center gap-2 hover:brightness-110 transition-all">
                     <span className="material-symbols-outlined text-sm">upload</span>
