@@ -195,64 +195,71 @@ export default function Settings() {
 
             {activeTab === 'general' && (
               <div className="max-w-2xl mx-auto space-y-5">
-                <Card className="p-5">
-                  <h2 className="font-serif text-base mb-4">Organisation</h2>
-                  <div className="space-y-4">
-                    <Input label="Organisation Name" value={form.org_name} onChange={e => f('org_name', e.target.value)} placeholder="Acme Consulting" />
+                <div className="bg-surface-container-low p-6">
+                  <h2 className="font-headline text-lg text-on-surface mb-4">Organisation</h2>
+                  <div className="space-y-5">
+                    <DarkField label="Organisation Name" value={form.org_name} onChange={v => f('org_name', v)} placeholder="Acme Consulting" />
                     <div className="grid grid-cols-2 gap-4">
-                      <Input label="Target Margin %" type="number" value={form.target_margin} onChange={e => f('target_margin', e.target.value)} placeholder="30" hint="Used in financial modelling on RFP scans" />
-                      <Select label="Default Currency" value={form.default_currency} onChange={e => f('default_currency', e.target.value)}>
-                        {['GBP','USD','EUR','AUD','CAD','CHF','AED'].map(c => <option key={c}>{c}</option>)}
-                      </Select>
+                      <DarkField label="Target Margin %" type="number" value={form.target_margin} onChange={v => f('target_margin', v)} placeholder="30" hint="Used in financial modelling on RFP scans" />
+                      <DarkSelect label="Default Currency" value={form.default_currency} onChange={v => f('default_currency', v)}>
+                        {['GBP','USD','EUR','AUD','CAD','CHF','AED'].map(c => <option key={c} className="bg-surface-container">{c}</option>)}
+                      </DarkSelect>
                     </div>
                   </div>
-                </Card>
-                <Card className="p-5" style={{ background: '#fbf9f4' }}>
+                </div>
+
+                <div className="bg-surface-container-lowest p-6 border-l-2 border-primary">
                   <div className="flex items-start gap-4">
                     <div className="flex-1">
-                      <h2 className="font-serif text-base mb-1">Organisation Profile</h2>
-                      <p className="text-xs mb-3" style={{ color: '#6b6456' }}>
+                      <h2 className="font-headline text-lg text-on-surface mb-2">Organisation Profile</h2>
+                      <p className="text-sm text-on-surface-variant mb-4 leading-relaxed">
                         Tell ProposalIQ what you actually do. The AI will scan your website and pull
                         out services, client types, and positioning — you confirm the list. Your confirmed
                         profile cascades into gap analysis, win strategy, executive brief, and section
                         drafts so recommendations are grounded in your real capabilities.
                       </p>
-                      <div className="flex gap-3 flex-wrap">
-                        <a href="/onboarding/profile" className="text-xs font-medium inline-flex items-center gap-1" style={{ color: '#1e4a52' }}>
+                      <div className="flex gap-4 flex-wrap">
+                        <a href="/onboarding/profile" className="text-xs font-label uppercase tracking-widest text-primary hover:brightness-110">
                           Set up or edit your profile →
                         </a>
-                        <a href="/onboarding/profile" className="text-xs inline-flex items-center gap-1" style={{ color: '#6b6456' }}>
+                        <a href="/onboarding/profile" className="text-xs font-label uppercase tracking-widest text-on-surface-variant hover:text-on-surface">
                           Change company details
                         </a>
                       </div>
                     </div>
-                    <div className="text-3xl opacity-30">★</div>
+                    <span className="material-symbols-outlined text-3xl text-primary/40">auto_awesome</span>
                   </div>
-                </Card>
-                <div className="flex justify-end">
-                  <Btn variant="teal" onClick={save} disabled={saving}>
-                    {saving ? <><Spinner size={12} /> Saving…</> : 'Save Settings'}
-                  </Btn>
                 </div>
 
-                {/* ── Clear organisation profile ─────────────────────── */}
-                <Card className="p-5 mt-8" style={{ borderColor: '#ddd5c4', background: '#fbf9f4' }}>
+                <div className="flex justify-end">
+                  <button
+                    onClick={save}
+                    disabled={saving}
+                    className="bg-primary text-on-primary px-6 py-3 text-xs font-label uppercase tracking-widest font-bold disabled:opacity-50"
+                  >
+                    {saving ? 'Saving…' : 'Save Settings'}
+                  </button>
+                </div>
+
+                {/* Clear organisation profile */}
+                <div className="bg-surface-container-lowest p-6 mt-8 border-l-2 border-error/40">
                   <div className="flex items-start gap-4">
                     <div className="flex-1">
-                      <h2 className="font-serif text-base mb-1">Switch to a different company</h2>
-                      <p className="text-xs mb-3" style={{ color: '#6b6456' }}>
+                      <h2 className="font-headline text-lg text-on-surface mb-2">Switch to a different company</h2>
+                      <p className="text-sm text-on-surface-variant mb-4 leading-relaxed">
                         Clears your organisation name, website URL, and confirmed offerings so you can
                         set up a different company's profile. Projects, RFP scans, team members,
                         drafts, and all other data are kept.
                       </p>
-                      <button onClick={() => setShowClearProfileModal(true)}
-                        className="text-xs px-3 py-2 rounded border font-medium"
-                        style={{ borderColor: '#ddd5c4', color: '#1e4a52', background: 'white' }}>
-                        ↺ Clear organisation profile
+                      <button
+                        onClick={() => setShowClearProfileModal(true)}
+                        className="text-xs font-label uppercase tracking-widest px-4 py-2 border border-outline/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors"
+                      >
+                        Clear organisation profile
                       </button>
                     </div>
                   </div>
-                </Card>
+                </div>
               </div>
             )}
 
@@ -260,99 +267,119 @@ export default function Settings() {
 
             {activeTab === 'ai' && (
               <div className="max-w-2xl mx-auto space-y-5">
-                <Card className="p-5">
-                  <h2 className="font-serif text-base mb-4">AI Configuration</h2>
-                  <div className="space-y-0">
-                    <div className="text-[10px] font-mono uppercase tracking-widest mb-2 mt-1" style={{ color:'#6b6456' }}>Gemini — Fast tasks &amp; embeddings</div>
-                    {[['API Key', info.has_api_key ? 'Configured' : 'Not set — required', info.has_api_key ? '#6ab187' : '#b04030'],
-                      ['Model', info.gemini_model || 'gemini-2.5-flash', null]].map(([l,v,dot]) => (
-                      <div key={l} className="flex items-center justify-between py-2.5 border-b text-sm" style={{ borderColor:'#f0ebe0' }}>
-                        <span style={{ color:'#6b6456' }}>{l}</span>
-                        <div className="flex items-center gap-2">
-                          {dot && <div className="w-2 h-2 rounded-full" style={{ background: dot }} />}
-                          <span className="font-mono text-xs">{v}</span>
-                        </div>
-                      </div>
-                    ))}
+                <div className="bg-surface-container-low p-6">
+                  <h2 className="font-headline text-lg text-on-surface mb-6">AI Configuration</h2>
 
-                    <div className="text-[10px] font-mono uppercase tracking-widest mb-2 mt-4" style={{ color:'#6b6456' }}>OpenAI — Deep analysis &amp; document scanning</div>
-                    {[['API Key', info.has_openai ? 'Configured' : 'Not set — falls back to Gemini', info.has_openai ? '#6ab187' : '#b8962e'],
-                      ['Model', info.openai_model || 'gpt-4.5-preview', null]].map(([l,v,dot]) => (
-                      <div key={l} className="flex items-center justify-between py-2.5 border-b text-sm" style={{ borderColor:'#f0ebe0' }}>
-                        <span style={{ color:'#6b6456' }}>{l}</span>
-                        <div className="flex items-center gap-2">
-                          {dot && <div className="w-2 h-2 rounded-full" style={{ background: dot }} />}
-                          <span className="font-mono text-xs">{v}</span>
-                        </div>
+                  <div className="font-label text-[10px] uppercase tracking-widest text-primary mb-3">Gemini — Fast tasks &amp; embeddings</div>
+                  {[
+                    ['API Key', info.has_api_key ? 'Configured' : 'Not set — required', info.has_api_key ? '#6ab187' : '#ffb4ab'],
+                    ['Model', info.gemini_model || 'gemini-2.5-flash', null],
+                  ].map(([l, v, dot]) => (
+                    <div key={l} className="flex items-center justify-between py-3 text-sm">
+                      <span className="text-on-surface-variant">{l}</span>
+                      <div className="flex items-center gap-2">
+                        {dot && <div className="w-2 h-2 rounded-full" style={{ background: dot }} />}
+                        <span className="font-label text-xs text-on-surface">{v}</span>
                       </div>
-                    ))}
-                    <p className="text-xs mt-3" style={{ color:'#6b6456' }}>
-                      Set API keys in Railway → Variables tab. Use OPENAI_MODEL and GEMINI_MODEL variables to override model names.
-                    </p>
-                  </div>
-                </Card>
+                    </div>
+                  ))}
+
+                  <div className="font-label text-[10px] uppercase tracking-widest text-primary mt-6 mb-3">OpenAI — Deep analysis &amp; document scanning</div>
+                  {[
+                    ['API Key', info.has_openai ? 'Configured' : 'Not set — falls back to Gemini', info.has_openai ? '#6ab187' : '#e4c366'],
+                    ['Model', info.openai_model || 'gpt-4.5-preview', null],
+                  ].map(([l, v, dot]) => (
+                    <div key={l} className="flex items-center justify-between py-3 text-sm">
+                      <span className="text-on-surface-variant">{l}</span>
+                      <div className="flex items-center gap-2">
+                        {dot && <div className="w-2 h-2 rounded-full" style={{ background: dot }} />}
+                        <span className="font-label text-xs text-on-surface">{v}</span>
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-xs mt-4 text-on-surface-variant/70 leading-relaxed">
+                    Set API keys in Railway → Variables tab. Use OPENAI_MODEL and GEMINI_MODEL variables to override model names.
+                  </p>
+                </div>
               </div>
             )}
 
             {activeTab === 'prompts' && (
               <div className="flex gap-5 h-full" style={{ maxHeight: 'calc(100vh - 160px)' }}>
                 {/* Prompt list */}
-                <div className="w-56 flex-shrink-0 space-y-1">
-                  <p className="text-xs mb-3" style={{ color:'#6b6456' }}>Select a prompt to view and edit. Modified prompts are marked with ✎.</p>
-                  {promptsLoading ? <Spinner /> : prompts.map(p => (
-                    <button key={p.prompt_key} onClick={() => selectPrompt(p)}
-                      className={`w-full text-left px-3 py-2.5 rounded-md transition-all text-sm ${selectedPrompt?.prompt_key === p.prompt_key ? 'bg-white shadow-sm font-medium' : 'hover:bg-white/60'}`}
-                      style={{ background: selectedPrompt?.prompt_key === p.prompt_key ? 'white' : 'transparent' }}>
-                      <div className="flex items-center justify-between">
-                        <span>{p.prompt_label}</span>
-                        {p.is_modified && <span className="text-[10px]" style={{ color:'#b8962e' }}>✎</span>}
-                      </div>
-                    </button>
-                  ))}
+                <div className="w-64 flex-shrink-0 space-y-1 bg-surface-container-low p-3">
+                  <p className="text-xs mb-3 px-2 text-on-surface-variant">Select a prompt. Modified prompts are marked with ✎.</p>
+                  {promptsLoading ? <Spinner /> : prompts.map(p => {
+                    const active = selectedPrompt?.prompt_key === p.prompt_key;
+                    return (
+                      <button
+                        key={p.prompt_key}
+                        onClick={() => selectPrompt(p)}
+                        className={`w-full text-left px-3 py-2.5 transition-all text-sm ${
+                          active
+                            ? 'bg-surface-container-high text-primary font-medium border-l-2 border-primary'
+                            : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="truncate">{p.prompt_label}</span>
+                          {p.is_modified && <span className="text-[10px] text-primary">✎</span>}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Prompt editor */}
                 <div className="flex-1 flex flex-col min-w-0">
                   {!selectedPrompt ? (
-                    <div className="text-center py-12"><p className="text-sm" style={{ color:'#6b6456' }}>Select a prompt to edit.</p></div>
+                    <div className="text-center py-12"><p className="text-sm text-on-surface-variant">Select a prompt to edit.</p></div>
                   ) : (
-                    <Card className="flex-1 flex flex-col p-5 overflow-hidden">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="font-serif text-base">{selectedPrompt.prompt_label}</h3>
-                          <p className="text-xs mt-0.5" style={{ color:'#6b6456' }}>{selectedPrompt.prompt_description}</p>
+                    <div className="bg-surface-container-low flex-1 flex flex-col p-6 overflow-hidden">
+                      <div className="flex items-start justify-between mb-4 gap-4">
+                        <div className="min-w-0">
+                          <h3 className="font-headline text-base text-on-surface">{selectedPrompt.prompt_label}</h3>
+                          <p className="text-xs mt-0.5 text-on-surface-variant">{selectedPrompt.prompt_description}</p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-shrink-0">
                           {selectedPrompt.is_modified && (
-                            <Btn variant="ghost" size="sm" onClick={resetPrompt} disabled={savingPrompt}>
-                              ↺ Reset to Template
-                            </Btn>
+                            <button
+                              onClick={resetPrompt}
+                              disabled={savingPrompt}
+                              className="px-3 py-2 text-[10px] font-label uppercase tracking-widest border border-outline/30 text-on-surface-variant hover:bg-surface-container-high transition-colors"
+                            >
+                              Reset to Template
+                            </button>
                           )}
-                          <Btn variant="teal" size="sm" onClick={savePrompt} disabled={savingPrompt || promptContent === selectedPrompt.content}>
-                            {savingPrompt ? <><Spinner size={12}/> Saving…</> : 'Save Prompt'}
-                          </Btn>
+                          <button
+                            onClick={savePrompt}
+                            disabled={savingPrompt || promptContent === selectedPrompt.content}
+                            className="px-4 py-2 text-[10px] font-label uppercase tracking-widest font-bold bg-primary text-on-primary disabled:opacity-50"
+                          >
+                            {savingPrompt ? 'Saving…' : 'Save Prompt'}
+                          </button>
                         </div>
                       </div>
 
                       {selectedPrompt.is_modified && (
-                        <div className="rounded-md px-3 py-2 mb-3 text-xs" style={{ background:'#faf4e2', color:'#8a6200' }}>
-                          ✎ This prompt has been modified from the default template. Click "Reset to Template" to restore the original.
+                        <div className="px-3 py-2 mb-3 text-xs bg-primary/10 text-primary border-l-2 border-primary">
+                          ✎ Modified from default. Click "Reset to Template" to restore.
                         </div>
                       )}
 
-                      <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color:'#6b6456' }}>
-                        System Instruction — this is prepended to every AI call for this function
+                      <div className="font-label text-[10px] uppercase tracking-widest mb-2 text-primary">
+                        System Instruction — prepended to every AI call for this function
                       </div>
                       <textarea
                         value={promptContent}
                         onChange={e => setPromptContent(e.target.value)}
-                        className="flex-1 w-full px-4 py-3 border rounded-md text-sm font-mono outline-none focus:border-[#1e4a52] leading-relaxed"
-                        style={{ borderColor:'#ddd5c4', resize:'none', minHeight: 300, background:'#faf7f2' }}
+                        className="flex-1 w-full px-4 py-3 text-sm font-mono outline-none leading-relaxed bg-surface-container-lowest text-on-surface border border-outline-variant/20 focus:border-primary transition-colors"
+                        style={{ resize: 'none', minHeight: 300 }}
                       />
-                      <p className="text-[10px] mt-2" style={{ color:'#9b8e80' }}>
-                        Changes apply to the next scan or analysis — existing results are not affected. The JSON schema and output format are controlled separately and cannot be modified here.
+                      <p className="text-[10px] mt-2 text-on-surface-variant/60">
+                        Changes apply to the next scan. The JSON schema and output format are controlled separately.
                       </p>
-                    </Card>
+                    </div>
                   )}
                 </div>
               </div>
@@ -360,24 +387,37 @@ export default function Settings() {
 
             {activeTab === 'taxonomy' && (
               <div className="max-w-2xl mx-auto space-y-5">
-                <Card className="p-5">
-                  <h2 className="font-serif text-base mb-1">Service Offering & Sector Taxonomy</h2>
-                  <p className="text-xs mb-5" style={{ color:'#6b6456' }}>
+                <div className="bg-surface-container-low p-6">
+                  <h2 className="font-headline text-lg text-on-surface mb-2">Service Offering &amp; Sector Taxonomy</h2>
+                  <p className="text-sm text-on-surface-variant mb-6 leading-relaxed">
                     Centrally managed tags used for proposal classification, directory browsing, and RFP matching. Add your own or edit the defaults.
                   </p>
 
                   {/* Add new item */}
-                  <div className="flex gap-2 mb-5">
-                    <select value={newItemCategory} onChange={e => setNewItemCategory(e.target.value)}
-                      className="px-3 py-2 border rounded-md text-sm outline-none" style={{ borderColor:'#ddd5c4', minWidth: 160 }}>
-                      <option>Service Offering</option>
-                      <option>Sector</option>
+                  <div className="flex gap-2 mb-6">
+                    <select
+                      value={newItemCategory}
+                      onChange={e => setNewItemCategory(e.target.value)}
+                      className="px-3 py-2 bg-surface-container-lowest border border-outline-variant/20 text-on-surface text-sm outline-none focus:border-primary"
+                      style={{ minWidth: 160 }}
+                    >
+                      <option className="bg-surface-container">Service Offering</option>
+                      <option className="bg-surface-container">Sector</option>
                     </select>
-                    <input value={newItemName} onChange={e => setNewItemName(e.target.value)}
+                    <input
+                      value={newItemName}
+                      onChange={e => setNewItemName(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && addTaxItem()}
                       placeholder="Add new item…"
-                      className="flex-1 px-3 py-2 border rounded-md text-sm outline-none focus:border-teal" style={{ borderColor:'#ddd5c4' }} />
-                    <Btn variant="teal" onClick={addTaxItem} disabled={!newItemName.trim()}>Add</Btn>
+                      className="flex-1 px-3 py-2 bg-surface-container-lowest border border-outline-variant/20 text-on-surface text-sm outline-none focus:border-primary placeholder:text-outline"
+                    />
+                    <button
+                      onClick={addTaxItem}
+                      disabled={!newItemName.trim()}
+                      className="px-4 py-2 bg-primary text-on-primary text-[10px] font-label uppercase tracking-widest font-bold disabled:opacity-50"
+                    >
+                      Add
+                    </button>
                   </div>
 
                   {taxonomyLoading ? <div className="flex justify-center py-6"><Spinner /></div> : (
@@ -385,28 +425,42 @@ export default function Settings() {
                       const items = taxonomy.filter(i => i.category === cat);
                       if (!items.length) return null;
                       return (
-                        <div key={cat} className="mb-5">
-                          <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color:'#6b6456' }}>{cat}</div>
+                        <div key={cat} className="mb-6">
+                          <div className="font-label text-[10px] uppercase tracking-widest mb-3 text-primary">{cat}</div>
                           <div className="space-y-1">
                             {items.map(item => (
-                              <div key={item.id} className="flex items-center gap-2 py-2 px-3 rounded-lg group" style={{ background:'#f8f6f2' }}>
+                              <div key={item.id} className="flex items-center gap-2 py-2 px-3 group bg-surface-container-lowest hover:bg-surface-container-high transition-colors">
                                 {editingTaxId === item.id ? (
                                   <>
-                                    <input autoFocus value={editingTaxName} onChange={e => setEditingTaxName(e.target.value)}
+                                    <input
+                                      autoFocus
+                                      value={editingTaxName}
+                                      onChange={e => setEditingTaxName(e.target.value)}
                                       onKeyDown={e => { if (e.key === 'Enter') renameTaxItem(item.id); if (e.key === 'Escape') setEditingTaxId(null); }}
-                                      className="flex-1 px-2 py-1 border rounded text-sm outline-none" style={{ borderColor:'#1e4a52' }} />
-                                    <button onClick={() => renameTaxItem(item.id)} className="text-xs px-2 py-1 rounded text-white no-min-h" style={{ background:'#1e4a52' }}>✓</button>
-                                    <button onClick={() => setEditingTaxId(null)} className="text-xs px-1.5 py-1 rounded no-min-h" style={{ color:'#6b6456' }}>✕</button>
+                                      className="flex-1 px-2 py-1 bg-surface text-on-surface border border-primary text-sm outline-none"
+                                    />
+                                    <button onClick={() => renameTaxItem(item.id)} className="text-xs px-2 py-1 bg-primary text-on-primary no-min-h">✓</button>
+                                    <button onClick={() => setEditingTaxId(null)} className="text-xs px-1.5 py-1 no-min-h text-on-surface-variant hover:text-on-surface">✕</button>
                                   </>
                                 ) : (
                                   <>
-                                    <span className="flex-1 text-sm">{item.name}</span>
-                                    {item.is_default ? <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background:'#f0ebe0', color:'#9b8e80' }}>default</span> : null}
+                                    <span className="flex-1 text-sm text-on-surface">{item.name}</span>
+                                    {item.is_default ? (
+                                      <span className="text-[10px] font-label uppercase tracking-widest px-1.5 py-0.5 text-on-surface-variant/60">default</span>
+                                    ) : null}
                                     <div className="hidden group-hover:flex gap-1">
-                                      <button onClick={() => { setEditingTaxId(item.id); setEditingTaxName(item.name); }}
-                                        className="text-xs px-2 py-1 rounded no-min-h hover:bg-black/5" style={{ color:'#6b6456' }}>✎</button>
-                                      <button onClick={() => deleteTaxItem(item.id)}
-                                        className="text-xs px-2 py-1 rounded no-min-h hover:bg-red-50" style={{ color:'#b04030' }}>✕</button>
+                                      <button
+                                        onClick={() => { setEditingTaxId(item.id); setEditingTaxName(item.name); }}
+                                        className="text-xs px-2 py-1 no-min-h text-on-surface-variant hover:text-primary"
+                                      >
+                                        ✎
+                                      </button>
+                                      <button
+                                        onClick={() => deleteTaxItem(item.id)}
+                                        className="text-xs px-2 py-1 no-min-h text-on-surface-variant hover:text-error"
+                                      >
+                                        ✕
+                                      </button>
                                     </div>
                                   </>
                                 )}
@@ -417,14 +471,14 @@ export default function Settings() {
                       );
                     })
                   )}
-                </Card>
+                </div>
               </div>
             )}
 
             {activeTab === 'storage' && (
               <div className="max-w-2xl mx-auto space-y-5">
-                <Card className="p-5">
-                  <h2 className="font-serif text-base mb-4">Data &amp; Storage</h2>
+                <div className="bg-surface-container-low p-6">
+                  <h2 className="font-headline text-lg text-on-surface mb-6">Data &amp; Storage</h2>
                   <div className="space-y-1 text-sm">
                     {[
                       ['Database', '/app/data/proposaliq.db'],
@@ -433,16 +487,17 @@ export default function Settings() {
                       ['Team CVs', '/app/data/uploads/team_cvs/'],
                       ['Win patterns cache', '/app/data/win_patterns_cache.json'],
                     ].map(([label, loc]) => (
-                      <div key={label} className="flex items-center justify-between py-2 border-b" style={{ borderColor:'#f0ebe0' }}>
-                        <span style={{ color:'#6b6456' }}>{label}</span>
-                        <code className="text-xs px-2 py-0.5 rounded" style={{ background:'#f0ebe0', color:'#1e4a52' }}>{loc}</code>
+                      <div key={label} className="flex items-center justify-between py-3 border-b border-outline-variant/10">
+                        <span className="text-on-surface-variant">{label}</span>
+                        <code className="text-xs font-label px-2 py-0.5 bg-surface-container-lowest text-primary">{loc}</code>
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs mt-3" style={{ color:'#6b6456' }}>
-                    All persistent data is stored in the Railway volume mounted at <code style={{ background:'#f0ebe0', padding:'0 4px', borderRadius:3 }}>/app/data</code>.
+                  <p className="text-xs mt-4 text-on-surface-variant/70 leading-relaxed">
+                    All persistent data is stored in the Railway volume mounted at{' '}
+                    <code className="font-label px-1 text-primary bg-surface-container-lowest">/app/data</code>.
                   </p>
-                </Card>
+                </div>
               </div>
             )}
 
@@ -453,40 +508,77 @@ export default function Settings() {
 
       {/* Clear organisation profile confirmation modal */}
       {showClearProfileModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(15,14,12,.55)' }}
-          onClick={(e) => { if (e.target === e.currentTarget && !clearingProfile) setShowClearProfileModal(false); }}>
-          <div className="rounded-xl bg-white w-full max-w-md shadow-2xl">
-            <div className="px-6 py-5 border-b" style={{ borderColor: '#ddd5c4' }}>
-              <h2 className="font-serif text-xl">Clear organisation profile?</h2>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,.65)' }}
+          onClick={(e) => { if (e.target === e.currentTarget && !clearingProfile) setShowClearProfileModal(false); }}
+        >
+          <div className="bg-surface-container-lowest w-full max-w-md shadow-2xl border border-outline-variant/10">
+            <div className="px-6 py-5 border-b border-outline-variant/10">
+              <h2 className="font-headline text-xl text-on-surface">Clear organisation profile?</h2>
             </div>
             <div className="px-6 py-5">
-              <p className="text-sm mb-3" style={{ color: '#1a1816' }}>
+              <p className="text-sm mb-3 text-on-surface leading-relaxed">
                 This will delete your organisation name, website URL, extracted website scan,
                 and confirmed offerings. You'll be taken back to onboarding to set up a different company.
               </p>
-              <p className="text-xs mb-4" style={{ color: '#6b6456' }}>
-                Your projects, RFP scans, team members, drafts, and all other data are <strong>kept</strong>.
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                Your projects, RFP scans, team members, drafts, and all other data are <strong className="text-on-surface">kept</strong>.
                 Only the organisation profile itself is cleared.
               </p>
             </div>
-            <div className="px-6 py-4 border-t flex items-center justify-end gap-2" style={{ borderColor: '#ddd5c4', background: '#faf7f2' }}>
-              <button onClick={() => setShowClearProfileModal(false)}
+            <div className="px-6 py-4 border-t border-outline-variant/10 flex items-center justify-end gap-2 bg-surface-container-low">
+              <button
+                onClick={() => setShowClearProfileModal(false)}
                 disabled={clearingProfile}
-                className="text-xs px-4 py-2 rounded-lg" style={{ color: '#6b6456' }}>
+                className="text-[10px] font-label uppercase tracking-widest px-4 py-2 text-on-surface-variant hover:text-on-surface transition-colors"
+              >
                 Cancel
               </button>
-              <button onClick={clearOrganisationProfile}
+              <button
+                onClick={clearOrganisationProfile}
                 disabled={clearingProfile}
-                className="text-xs px-4 py-2 rounded-lg font-medium disabled:opacity-50"
-                style={{ background: '#1e4a52', color: 'white' }}>
-                {clearingProfile ? <><Spinner size={12} /> Clearing…</> : 'Clear profile'}
+                className="text-[10px] font-label uppercase tracking-widest px-4 py-2 bg-primary text-on-primary font-bold disabled:opacity-50"
+              >
+                {clearingProfile ? 'Clearing…' : 'Clear profile'}
               </button>
             </div>
           </div>
         </div>
       )}
     </>
+  );
+}
+
+// ── Dark form helpers for Settings ──────────────────────────────────────
+function DarkField({ label, value, onChange, type = 'text', placeholder, hint }) {
+  return (
+    <div>
+      <label className="block font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-2">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full bg-transparent border-0 border-b border-outline-variant/30 focus:border-primary focus:ring-0 focus:outline-none py-2 text-on-surface transition-colors placeholder:text-outline"
+      />
+      {hint && <p className="text-[11px] mt-1 text-on-surface-variant/60">{hint}</p>}
+    </div>
+  );
+}
+
+function DarkSelect({ label, value, onChange, children }) {
+  return (
+    <div>
+      <label className="block font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-2">{label}</label>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="w-full bg-transparent border-0 border-b border-outline-variant/30 focus:border-primary focus:ring-0 focus:outline-none py-2 text-on-surface appearance-none"
+      >
+        {children}
+      </select>
+    </div>
   );
 }
 
@@ -499,8 +591,8 @@ function AiCostsTab() {
     fetch('/api/ai-costs').then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex items-center gap-2 py-12 justify-center" style={{color:'#6b6456'}}><Spinner/> Loading costs…</div>;
-  if (!data || !data.total) return <div className="text-center py-12 text-sm" style={{color:'#6b6456'}}>No cost data yet. Costs are tracked from the first AI call after this update deploys.</div>;
+  if (loading) return <div className="flex items-center gap-2 py-12 justify-center text-on-surface-variant"><Spinner/> Loading costs…</div>;
+  if (!data || !data.total) return <div className="text-center py-12 text-sm text-on-surface-variant">No cost data yet. Costs are tracked from the first AI call after this update deploys.</div>;
 
   const CATEGORY_LABELS = {
     rfp_scan: 'RFP Intelligence scans',
@@ -512,8 +604,8 @@ function AiCostsTab() {
   return (
     <div className="max-w-2xl mx-auto space-y-5">
       {/* Total spend */}
-      <Card className="p-5">
-        <h2 className="font-serif text-base mb-4">Total AI Spend</h2>
+      <div className="bg-surface-container-low p-6">
+        <h2 className="font-headline text-lg text-on-surface mb-6">Total AI Spend</h2>
         <div className="grid grid-cols-4 gap-4">
           {[
             ['Total cost', `$${data.total.cost.toFixed(2)}`],
@@ -522,94 +614,94 @@ function AiCostsTab() {
             ['Output tokens', `${(data.total.output_tokens / 1000).toFixed(0)}K`],
           ].map(([label, value]) => (
             <div key={label}>
-              <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#6b6456'}}>{label}</div>
-              <div className="font-serif text-xl">{value}</div>
+              <div className="font-label text-[10px] uppercase tracking-widest mb-1 text-on-surface-variant">{label}</div>
+              <div className="font-headline text-xl text-primary">{value}</div>
             </div>
           ))}
         </div>
-      </Card>
+      </div>
 
-      {/* By category — the main breakdown the user asked for */}
-      <Card className="p-5">
-        <h2 className="font-serif text-base mb-4">Spend by Feature</h2>
+      {/* By category */}
+      <div className="bg-surface-container-low p-6">
+        <h2 className="font-headline text-lg text-on-surface mb-6">Spend by Feature</h2>
         {data.by_category.length === 0 ? (
-          <p className="text-sm" style={{color:'#6b6456'}}>No data yet.</p>
+          <p className="text-sm text-on-surface-variant">No data yet.</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {data.by_category.map(c => {
               const pct = data.total.cost > 0 ? Math.round((c.cost / data.total.cost) * 100) : 0;
               return (
                 <div key={c.category}>
                   <div className="flex items-baseline justify-between mb-1">
-                    <span className="text-sm font-medium">{CATEGORY_LABELS[c.category] || c.category}</span>
-                    <span className="font-mono text-sm font-semibold" style={{color:'#1e4a52'}}>${c.cost.toFixed(2)}</span>
+                    <span className="text-sm text-on-surface">{CATEGORY_LABELS[c.category] || c.category}</span>
+                    <span className="font-label text-sm font-semibold text-primary">${c.cost.toFixed(2)}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{background:'#f0ebe0'}}>
-                      <div className="h-full rounded-full" style={{width:`${pct}%`, background:'#1e4a52'}} />
+                    <div className="flex-1 h-1 bg-surface-container-lowest overflow-hidden">
+                      <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
                     </div>
-                    <span className="text-[10px] font-mono" style={{color:'#9b8e80'}}>{pct}% · {c.calls} calls</span>
+                    <span className="text-[10px] font-label text-on-surface-variant/60">{pct}% · {c.calls} calls</span>
                   </div>
                 </div>
               );
             })}
           </div>
         )}
-      </Card>
+      </div>
 
       {/* By model */}
-      <Card className="p-5">
-        <h2 className="font-serif text-base mb-4">Spend by Model</h2>
-        <div className="rounded-lg border overflow-hidden" style={{borderColor:'#ddd5c4'}}>
-          <div className="grid text-[10px] font-mono uppercase tracking-widest px-4 py-2" style={{gridTemplateColumns:'1fr 80px 80px 80px', background:'#f0ebe0', color:'#6b6456'}}>
+      <div className="bg-surface-container-low p-6">
+        <h2 className="font-headline text-lg text-on-surface mb-4">Spend by Model</h2>
+        <div className="bg-surface-container-lowest overflow-hidden">
+          <div className="grid text-[10px] font-label uppercase tracking-widest px-4 py-3 text-on-surface-variant" style={{ gridTemplateColumns: '1fr 80px 80px 80px' }}>
             <span>Model</span><span className="text-right">Cost</span><span className="text-right">Calls</span><span className="text-right">Tokens</span>
           </div>
           {data.by_model.map(m => (
-            <div key={m.model} className="grid items-center px-4 py-2 border-t text-xs" style={{gridTemplateColumns:'1fr 80px 80px 80px', borderColor:'#f0ebe0'}}>
-              <span className="font-mono">{m.model}</span>
-              <span className="text-right font-mono font-semibold" style={{color:'#1e4a52'}}>${m.cost.toFixed(2)}</span>
-              <span className="text-right font-mono" style={{color:'#6b6456'}}>{m.calls}</span>
-              <span className="text-right font-mono" style={{color:'#6b6456'}}>{((m.input_tokens + m.output_tokens) / 1000).toFixed(0)}K</span>
+            <div key={m.model} className="grid items-center px-4 py-2 text-xs border-t border-outline-variant/10" style={{ gridTemplateColumns: '1fr 80px 80px 80px' }}>
+              <span className="font-label text-on-surface">{m.model}</span>
+              <span className="text-right font-label font-semibold text-primary">${m.cost.toFixed(2)}</span>
+              <span className="text-right font-label text-on-surface-variant">{m.calls}</span>
+              <span className="text-right font-label text-on-surface-variant">{((m.input_tokens + m.output_tokens) / 1000).toFixed(0)}K</span>
             </div>
           ))}
         </div>
-      </Card>
+      </div>
 
       {/* Most expensive functions */}
-      <Card className="p-5">
-        <h2 className="font-serif text-base mb-4">Most Expensive Functions</h2>
-        <div className="rounded-lg border overflow-hidden" style={{borderColor:'#ddd5c4'}}>
-          <div className="grid text-[10px] font-mono uppercase tracking-widest px-4 py-2" style={{gridTemplateColumns:'1fr 1fr 70px 50px 70px', background:'#f0ebe0', color:'#6b6456'}}>
+      <div className="bg-surface-container-low p-6">
+        <h2 className="font-headline text-lg text-on-surface mb-4">Most Expensive Functions</h2>
+        <div className="bg-surface-container-lowest overflow-hidden">
+          <div className="grid text-[10px] font-label uppercase tracking-widest px-4 py-3 text-on-surface-variant" style={{ gridTemplateColumns: '1fr 1fr 70px 50px 70px' }}>
             <span>Function</span><span>Category</span><span className="text-right">Total</span><span className="text-right">Calls</span><span className="text-right">Avg/call</span>
           </div>
           {data.by_function.slice(0, 10).map(f => (
-            <div key={f.function_name} className="grid items-center px-4 py-2 border-t text-xs" style={{gridTemplateColumns:'1fr 1fr 70px 50px 70px', borderColor:'#f0ebe0'}}>
-              <span className="font-mono truncate">{f.function_name}</span>
-              <span className="font-mono truncate" style={{color:'#6b6456'}}>{CATEGORY_LABELS[f.category] || f.category}</span>
-              <span className="text-right font-mono font-semibold" style={{color:'#1e4a52'}}>${f.cost.toFixed(2)}</span>
-              <span className="text-right font-mono" style={{color:'#6b6456'}}>{f.calls}</span>
-              <span className="text-right font-mono" style={{color:'#9b8e80'}}>${f.avg_cost_per_call.toFixed(4)}</span>
+            <div key={f.function_name} className="grid items-center px-4 py-2 text-xs border-t border-outline-variant/10" style={{ gridTemplateColumns: '1fr 1fr 70px 50px 70px' }}>
+              <span className="font-label text-on-surface truncate">{f.function_name}</span>
+              <span className="font-label text-on-surface-variant truncate">{CATEGORY_LABELS[f.category] || f.category}</span>
+              <span className="text-right font-label font-semibold text-primary">${f.cost.toFixed(2)}</span>
+              <span className="text-right font-label text-on-surface-variant">{f.calls}</span>
+              <span className="text-right font-label text-on-surface-variant/60">${f.avg_cost_per_call.toFixed(4)}</span>
             </div>
           ))}
         </div>
-      </Card>
+      </div>
 
       {/* Daily trend */}
       {data.daily.length > 0 && (
-        <Card className="p-5">
-          <h2 className="font-serif text-base mb-4">Last 7 Days</h2>
+        <div className="bg-surface-container-low p-6">
+          <h2 className="font-headline text-lg text-on-surface mb-4">Last 7 Days</h2>
           <div className="space-y-2">
             {data.daily.map(d => (
-              <div key={d.day} className="flex items-center justify-between text-xs">
-                <span className="font-mono" style={{color:'#6b6456'}}>{d.day}</span>
+              <div key={d.day} className="flex items-center justify-between text-xs py-1">
+                <span className="font-label text-on-surface-variant">{d.day}</span>
                 <div className="flex items-center gap-3">
-                  <span className="font-mono" style={{color:'#9b8e80'}}>{d.calls} calls</span>
-                  <span className="font-mono font-semibold" style={{color:'#1e4a52'}}>${(d.cost || 0).toFixed(2)}</span>
+                  <span className="font-label text-on-surface-variant/60">{d.calls} calls</span>
+                  <span className="font-label font-semibold text-primary">${(d.cost || 0).toFixed(2)}</span>
                 </div>
               </div>
             ))}
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );
