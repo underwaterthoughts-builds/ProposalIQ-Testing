@@ -394,47 +394,39 @@ function IntelligenceMode({ projects, scans, patterns, winRate, won, lost }) {
   return (
     <div className="space-y-10">
 
-      {/* AI Strategic Insight — live top_recommendation if the patterns API has one */}
-      {topRecommendation ? (
-        <section className="bg-[#1a2e2e] p-8 rounded-lg flex flex-col md:flex-row items-center gap-8 border-l-4 border-[#4fd1c5]">
+      {/* Overview & Insights — link to the full org-level analysis page */}
+      <Link href="/intelligence" className="block group">
+        <section className={`${topRecommendation ? 'bg-[#1a2e2e] border-[#4fd1c5]' : 'bg-surface-container-low border-outline-variant/30'} p-8 rounded-lg flex flex-col md:flex-row items-center gap-8 border-l-4 transition-transform group-hover:-translate-y-0.5`}>
           <div className="md:w-1/3">
-            <span className="font-label text-xs uppercase tracking-widest text-[#4fd1c5] mb-2 block">AI Strategic Insight</span>
-            <h3 className="font-headline text-3xl md:text-4xl text-white font-semibold leading-tight">
-              Top Recommendation
+            <span className={`font-label text-xs uppercase tracking-widest ${topRecommendation ? 'text-[#4fd1c5]' : 'text-on-surface-variant'} mb-2 block`}>
+              Overview & Insights
+            </span>
+            <h3 className="font-headline text-3xl md:text-4xl font-semibold leading-tight text-on-surface">
+              {topRecommendation ? 'Top recommendation' : 'Analyse your portfolio'}
             </h3>
           </div>
           <div className="md:w-1/2">
             <p className="text-on-surface font-body text-lg leading-relaxed mb-4">
-              {topRecommendation}
+              {topRecommendation ? topRecommendation : (
+                projects.length < 3
+                  ? 'Upload at least 3 proposals to unlock portfolio-level patterns and playbooks.'
+                  : 'Scan your workspace or full repository for strengths, weaknesses, concentration risks, and concrete plays — grounded in your own won proposals.'
+              )}
             </p>
-            <Link href="/rfp" className="text-[#4fd1c5] font-label text-sm uppercase tracking-widest flex items-center gap-2 hover:translate-x-1 transition-transform">
-              Act on this insight
+            <span className={`${topRecommendation ? 'text-[#4fd1c5]' : 'text-primary'} font-label text-sm uppercase tracking-widest inline-flex items-center gap-2 group-hover:translate-x-1 transition-transform`}>
+              {topRecommendation ? 'Open full analysis' : 'Run an analysis'}
               <span className="material-symbols-outlined text-base">trending_up</span>
-            </Link>
+            </span>
           </div>
           <div className="md:w-1/6 hidden md:block">
-            <div className="w-24 h-24 bg-[#4fd1c5]/10 rounded-full flex items-center justify-center border border-[#4fd1c5]/20">
-              <span className="material-symbols-outlined text-4xl text-[#4fd1c5]">lightbulb</span>
+            <div className={`w-24 h-24 ${topRecommendation ? 'bg-[#4fd1c5]/10 border-[#4fd1c5]/20' : 'bg-primary/10 border-primary/20'} rounded-full flex items-center justify-center border`}>
+              <span className={`material-symbols-outlined text-4xl ${topRecommendation ? 'text-[#4fd1c5]' : 'text-primary'}`}>
+                {topRecommendation ? 'lightbulb' : 'insights'}
+              </span>
             </div>
           </div>
         </section>
-      ) : (
-        <section className="bg-surface-container-low p-8 rounded-lg flex items-center gap-4 border-l-4 border-outline-variant/30">
-          <span className="material-symbols-outlined text-3xl text-on-surface-variant">insights</span>
-          <div>
-            <span className="font-label text-xs uppercase tracking-widest text-on-surface-variant block mb-1">
-              AI Strategic Insight
-            </span>
-            <p className="text-on-surface-variant font-body">
-              {patterns === null
-                ? 'Analysing your repository…'
-                : projects.length < 3
-                ? 'Upload at least 3 proposals for ProposalIQ to surface strategic recommendations.'
-                : 'No strategic recommendation yet — try refreshing after your next scan.'}
-            </p>
-          </div>
-        </section>
-      )}
+      </Link>
 
       {/* 4-Metric Row */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
