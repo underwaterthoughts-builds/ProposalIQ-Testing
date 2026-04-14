@@ -109,16 +109,16 @@ const RfpTaxonomyBar = memo(function RfpTaxonomyBar({ scan, rfpData, scanId }) {
 
 const CheckpointBanner = memo(function CheckpointBanner({ label, approved, onApprove, saving, children }) {
   if (approved) return (
-    <div className="flex items-center gap-2 px-4 py-2.5 mb-4 rounded-xl text-sm" style={{ background:'#edf3ec', border:'1px solid rgba(61,92,58,.2)' }}>
-      <span style={{ color:'#3d5c3a' }}>✓</span>
-      <span className="font-medium" style={{ color:'#3d5c3a' }}>{label} reviewed and approved</span>
+    <div className="flex items-center gap-2 px-4 py-2.5 mb-4 rounded-xl text-sm" style={{ background:'rgba(61,92,58,.15)', border:'1px solid rgba(61,92,58,.2)' }}>
+      <span style={{ color:'#7bd07a' }}>✓</span>
+      <span className="font-medium" style={{ color:'#7bd07a' }}>{label} reviewed and approved</span>
     </div>
   );
   return (
-    <div className="rounded-xl mb-4 overflow-hidden" style={{ border:'1.5px solid rgba(184,150,46,.4)', background:'#faf4e2' }}>
+    <div className="rounded-xl mb-4 overflow-hidden" style={{ border:'1.5px solid rgba(184,150,46,.4)', background:'rgba(232,195,87,.08)' }}>
       <div className="flex items-center justify-between px-4 py-3">
         <div>
-          <div className="text-sm font-semibold" style={{ color:'#7a5800' }}>⚑ Review checkpoint: {label}</div>
+          <div className="text-sm font-semibold" style={{ color:'#e8c357' }}>⚑ Review checkpoint: {label}</div>
           <div className="text-xs mt-0.5" style={{ color:'#9a7820' }}>Review this output before proceeding. Approve to continue, or edit first.</div>
         </div>
         <div className="flex gap-2 flex-shrink-0">
@@ -451,8 +451,8 @@ ${sectionHtml('Winning Language', languageHtml)}
   if (!user) return null;
 
   if (loading) return (
-    <div className="flex items-center justify-center h-screen" style={{ background: '#faf7f2' }}>
-      <div className="text-center"><Spinner size={32} /><p className="text-sm mt-3" style={{ color: '#6b6456' }}>Loading…</p></div>
+    <div className="flex items-center justify-center h-screen" style={{ background: '#1d1b19' }}>
+      <div className="text-center"><Spinner size={32} /><p className="text-sm mt-3" style={{ color: '#d0c5b0' }}>Loading…</p></div>
     </div>
   );
   if (!scan) return <div className="p-8 text-center">Scan not found. <Link href="/rfp" className="underline">Back</Link></div>;
@@ -546,14 +546,14 @@ ${sectionHtml('Winning Language', languageHtml)}
         actions={
           <div className="hidden md:flex gap-2">
             <a href={`/api/rfp/${id}/download`} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12.5px] font-medium rounded-md border border-[#ddd5c4] hover:bg-cream transition-all"
-              style={{ color: '#6b6456' }}>
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12.5px] font-medium rounded-md border border-outline-variant hover:bg-surface-container-high transition-all"
+              style={{ color: '#d0c5b0' }}>
               View RFP ↗
             </a>
             <Btn variant="ghost" onClick={exportBriefing} disabled={exporting}>
               {exporting ? <><Spinner size={12}/> Exporting…</> : '↓ Export Briefing'}
             </Btn>
-            <div className="flex rounded-lg overflow-hidden border border-teal" style={{ borderColor:'#1e4a52' }}>
+            <div className="flex rounded-lg overflow-hidden border border-teal" style={{ borderColor:'#7fb4bc' }}>
               <Btn variant="teal" onClick={() => { setTemplateDraftMode(false); generateTemplate(); }} disabled={generatingTemplate}
                 className="rounded-none border-0 no-min-h px-3 py-1.5">
                 {generatingTemplate && !templateDraftMode ? <><Spinner size={12}/> Building…</> : '📄 Template'}
@@ -565,7 +565,7 @@ ${sectionHtml('Winning Language', languageHtml)}
               </Btn>
             </div>
             <Btn variant="ghost" onClick={deleteScan} disabled={deleting}
-              style={{ color:'#b04030', borderColor:'#f5c6c0' }}>
+              style={{ color:'#ffb4ab', borderColor:'#f5c6c0' }}>
               {deleting ? <><Spinner size={12}/> Deleting…</> : '✕ Delete Scan'}
             </Btn>
           </div>
@@ -576,7 +576,7 @@ ${sectionHtml('Winning Language', languageHtml)}
             {(scan.status === 'processing' || scan.status === 'fast_ready') && (
               <div className="flex items-center gap-3 px-5 py-3 text-sm border-b"
                 style={{
-                  background: scan.status === 'fast_ready' ? '#e8f2f4' : '#faf4e2',
+                  background: scan.status === 'fast_ready' ? 'rgba(30,107,120,.15)' : 'rgba(232,195,87,.08)',
                   borderColor: scan.status === 'fast_ready' ? 'rgba(30,74,82,.25)' : 'rgba(184,150,46,.3)',
                   color: scan.status === 'fast_ready' ? '#1e4a52' : '#7a5800',
                 }}>
@@ -595,7 +595,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                 if no outcome has been captured yet, OR shows a small badge
                 with the captured outcome if it exists. */}
             {scan.status === 'complete' && !outcome && (
-              <div className="flex items-center gap-3 px-5 py-3 text-sm border-b" style={{ background:'#fbf9f4', borderColor:'#ddd5c4', color:'#5a4810' }}>
+              <div className="flex items-center gap-3 px-5 py-3 text-sm border-b" style={{ background:'#1d1b19', borderColor:'#4d4636', color:'#e4c366' }}>
                 <span style={{ fontSize: 16 }}>✦</span>
                 <span className="flex-1">
                   How did this bid go? Capturing the outcome trains future ranking — won proposals get boosted in similar future scans.
@@ -609,8 +609,8 @@ ${sectionHtml('Winning Language', languageHtml)}
             )}
             {scan.status === 'complete' && outcome && (
               <div className="flex items-center gap-3 px-5 py-3 text-xs border-b" style={{
-                background: outcome.outcome === 'won' ? '#edf3ec' : outcome.outcome === 'lost' ? '#faeeeb' : '#f8f6f2',
-                borderColor: outcome.outcome === 'won' ? 'rgba(61,92,58,.25)' : outcome.outcome === 'lost' ? 'rgba(176,64,48,.25)' : '#ddd5c4',
+                background: outcome.outcome === 'won' ? 'rgba(61,92,58,.15)' : outcome.outcome === 'lost' ? 'rgba(176,64,48,.12)' : '#211f1d',
+                borderColor: outcome.outcome === 'won' ? 'rgba(61,92,58,.25)' : outcome.outcome === 'lost' ? 'rgba(176,64,48,.25)' : '#4d4636',
                 color: outcome.outcome === 'won' ? '#3d5c3a' : outcome.outcome === 'lost' ? '#b04030' : '#6b6456',
               }}>
                 <span style={{ fontSize: 14 }}>
@@ -627,7 +627,7 @@ ${sectionHtml('Winning Language', languageHtml)}
               </div>
             )}
             {scan.status === 'deep_failed' && (
-              <div className="flex items-center gap-3 px-5 py-3 text-sm border-b" style={{ background:'#faeeeb', borderColor:'rgba(176,64,48,.25)', color:'#b04030' }}>
+              <div className="flex items-center gap-3 px-5 py-3 text-sm border-b" style={{ background:'rgba(176,64,48,.12)', borderColor:'rgba(176,64,48,.25)', color:'#ffb4ab' }}>
                 <span style={{ fontSize: 16 }}>⚠</span>
                 <span className="flex-1">
                   {scan.status_detail || 'Deep analysis failed after retries.'}{' '}
@@ -636,7 +636,7 @@ ${sectionHtml('Winning Language', languageHtml)}
               </div>
             )}
             {scan.status === 'error' && (
-              <div className="px-5 py-3 text-sm border-b" style={{ background:'#faeeeb', borderColor:'rgba(176,64,48,.2)', color:'#b04030' }}>
+              <div className="px-5 py-3 text-sm border-b" style={{ background:'rgba(176,64,48,.12)', borderColor:'rgba(176,64,48,.2)', color:'#ffb4ab' }}>
                 <div className="font-semibold mb-1">⚠ Scan error</div>
                 {scan.narrative_advice?.startsWith?.('Error:') && <div className="text-xs font-mono mb-1">{scan.narrative_advice}</div>}
                 <div className="text-xs">Check terminal for details. Try setting <code>GEMINI_MODEL=gemini-2.0-flash</code> in .env.local and restarting.</div>
@@ -781,9 +781,9 @@ ${sectionHtml('Winning Language', languageHtml)}
             </nav>
 
             {/* Mobile action strip */}
-            <div className="md:hidden flex gap-2 px-3 py-2 border-b bg-white flex-shrink-0" style={{ borderColor:'#f0ebe0' }}>
+            <div className="md:hidden flex gap-2 px-3 py-2 border-b bg-surface-container flex-shrink-0" style={{ borderColor:'#2b2a27' }}>
               <button onClick={exportBriefing} disabled={exporting}
-                className="flex-1 py-2 text-xs font-medium rounded-lg border" style={{ borderColor:'#ddd5c4', color:'#6b6456' }}>
+                className="flex-1 py-2 text-xs font-medium rounded-lg border" style={{ borderColor:'#4d4636', color:'#d0c5b0' }}>
                 {exporting ? 'Exporting…' : '↓ Export'}
               </button>
               <button onClick={generateTemplate} disabled={generatingTemplate}
@@ -791,18 +791,18 @@ ${sectionHtml('Winning Language', languageHtml)}
                 {generatingTemplate ? 'Building…' : '📄 Template'}
               </button>
               <button onClick={rescan} disabled={rescanning || scan?.status === 'processing'}
-                className="px-3 py-2 text-xs font-medium rounded-lg border" style={{ borderColor:'#ddd5c4', color:'#1e4a52' }}
+                className="px-3 py-2 text-xs font-medium rounded-lg border" style={{ borderColor:'#4d4636', color:'#7fb4bc' }}
                 title="Re-analyse">
                 {rescanning || scan?.status === 'processing' ? '…' : '⟳'}
               </button>
               <button onClick={deleteScan} disabled={deleting}
-                className="px-3 py-2 text-xs font-medium rounded-lg border" style={{ borderColor:'#f5c6c0', color:'#b04030' }}>
+                className="px-3 py-2 text-xs font-medium rounded-lg border" style={{ borderColor:'#f5c6c0', color:'#ffb4ab' }}>
                 ✕
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-surface-container-lowest">
               {scan.status === 'processing' ? (
-                <div className="py-16 text-center"><Spinner size={32}/><p className="text-sm mt-4" style={{ color:'#6b6456' }}>Running intelligence pipeline — fast brief in ~30s…</p></div>
+                <div className="py-16 text-center"><Spinner size={32}/><p className="text-sm mt-4" style={{ color:'#d0c5b0' }}>Running intelligence pipeline — fast brief in ~30s…</p></div>
               ) : activeTab === 'brief' ? (
                 <ExecutiveBrief brief={executiveBrief} bidScore={bidScore} matches={matches} onJumpTab={setActiveTab} scanName={scan.name} scanId={id} />
               ) : activeTab === 'matches' ? (
@@ -815,13 +815,13 @@ ${sectionHtml('Winning Language', languageHtml)}
                       saving={savingCheckpoint === 'rfp'}
                     />
                   )}
-                  <p className="text-sm mb-4" style={{ color:'#6b6456' }}>
+                  <p className="text-sm mb-4" style={{ color:'#d0c5b0' }}>
                     {scan.status_detail === 'awaiting_rfp_review' && isPro
                       ? '⚑ Approve the RFP extraction above before gap analysis runs.'
                       : 'Grouped by industry fit. Direct matches are at the top; cross-sector references are hidden by default — click to reveal.'}
                   </p>
                   {matches.length === 0 ? (
-                    <div className="text-center py-12"><p className="text-sm" style={{ color:'#6b6456' }}>No matches found. Add more proposals to your repository.</p></div>
+                    <div className="text-center py-12"><p className="text-sm" style={{ color:'#d0c5b0' }}>No matches found. Add more proposals to your repository.</p></div>
                   ) : (
                     <TieredMatches
                       matches={matches}
@@ -849,14 +849,14 @@ ${sectionHtml('Winning Language', languageHtml)}
                     <div className="mb-6">
                       <div className="flex items-baseline justify-between mb-3">
                         <div>
-                          <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#1e4a52' }}>Requirements coverage</div>
-                          <p className="text-xs mt-0.5" style={{ color: '#6b6456' }}>For each requirement, do we have evidence from our matched proposals?</p>
+                          <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#7fb4bc' }}>Requirements coverage</div>
+                          <p className="text-xs mt-0.5" style={{ color: '#d0c5b0' }}>For each requirement, do we have evidence from our matched proposals?</p>
                         </div>
                         {coverageSummary && (
                           <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-full"
                             style={{
-                              background: (coverageSummary.coverage_percentage || 0) >= 80 ? '#edf3ec' :
-                                (coverageSummary.coverage_percentage || 0) >= 60 ? '#faf4e2' : '#faeeeb',
+                              background: (coverageSummary.coverage_percentage || 0) >= 80 ? 'rgba(61,92,58,.15)' :
+                                (coverageSummary.coverage_percentage || 0) >= 60 ? 'rgba(232,195,87,.08)' : 'rgba(176,64,48,.12)',
                               color: (coverageSummary.coverage_percentage || 0) >= 80 ? '#3d5c3a' :
                                 (coverageSummary.coverage_percentage || 0) >= 60 ? '#8a6200' : '#b04030',
                             }}>
@@ -864,12 +864,12 @@ ${sectionHtml('Winning Language', languageHtml)}
                           </span>
                         )}
                       </div>
-                      <div className="rounded-lg border overflow-hidden" style={{ borderColor: '#ddd5c4', background: 'white' }}>
+                      <div className="rounded-lg border overflow-hidden" style={{ borderColor: '#4d4636', background: '#211f1d' }}>
                         {coverageMapItems.map((item, i) => {
                           const icon = item.status === 'covered' ? '✓' : item.status === 'partial' ? '◐' : '✕';
                           const color = item.status === 'covered' ? '#3d5c3a' : item.status === 'partial' ? '#b8962e' : '#b04030';
                           return (
-                            <div key={i} className="flex items-start gap-2.5 px-4 py-2.5 border-b last:border-0 text-xs" style={{ borderColor: '#f0ebe0' }}>
+                            <div key={i} className="flex items-start gap-2.5 px-4 py-2.5 border-b last:border-0 text-xs" style={{ borderColor: '#2b2a27' }}>
                               <span className="flex-shrink-0 font-bold mt-0.5" style={{ color }}>{icon}</span>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">
@@ -877,12 +877,12 @@ ${sectionHtml('Winning Language', languageHtml)}
                                     style={{ color: item.priority === 'must' ? '#b04030' : '#6b6456' }}>
                                     [{item.priority}]
                                   </span>
-                                  <span style={{ color: '#1a1816' }}>{item.requirement}</span>
+                                  <span style={{ color: '#e6e2de' }}>{item.requirement}</span>
                                 </div>
-                                <div className="text-[11px]" style={{ color: '#6b6456' }}>
+                                <div className="text-[11px]" style={{ color: '#d0c5b0' }}>
                                   {item.evidence_summary}
                                   {item.evidence_from && (
-                                    <span className="font-mono ml-1" style={{ color: '#1e4a52' }}>
+                                    <span className="font-mono ml-1" style={{ color: '#7fb4bc' }}>
                                       — {item.evidence_from}
                                     </span>
                                   )}
@@ -893,7 +893,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                         })}
                       </div>
                       {coverageSummary && (
-                        <div className="flex gap-4 mt-2 text-[10px] font-mono" style={{ color: '#9b8e80' }}>
+                        <div className="flex gap-4 mt-2 text-[10px] font-mono" style={{ color: '#99907d' }}>
                           <span>{coverageSummary.covered || 0} covered</span>
                           <span>{coverageSummary.partial || 0} partial</span>
                           <span>{coverageSummary.not_covered || 0} not covered</span>
@@ -905,28 +905,28 @@ ${sectionHtml('Winning Language', languageHtml)}
                   {/* GAPS — derived from the coverage map's not_covered + partial items */}
                   <div className="flex items-baseline justify-between mb-3">
                     <div>
-                      <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#b04030' }}>Opportunity gaps</div>
-                      <p className="text-xs mt-0.5" style={{ color: '#6b6456' }}>Material gaps that would affect win probability, with suggested actions.</p>
+                      <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#ffb4ab' }}>Opportunity gaps</div>
+                      <p className="text-xs mt-0.5" style={{ color: '#d0c5b0' }}>Material gaps that would affect win probability, with suggested actions.</p>
                     </div>
                   </div>
-                  {gaps.length === 0 ? <div className="text-center py-8"><p className="text-sm" style={{ color:'#6b6456' }}>No material gaps identified.</p></div>
+                  {gaps.length === 0 ? <div className="text-center py-8"><p className="text-sm" style={{ color:'#d0c5b0' }}>No material gaps identified.</p></div>
                   : <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {gaps.map((g, i) => <GapCard key={i} gap={g} />)}
                     </div>}
                 </div>
               ) : activeTab === 'writing' ? (
                 <div>
-                  <p className="text-sm mb-4" style={{ color:'#6b6456' }}>Writing quality analysis across your top matched proposals. Cross-sector matches are included when their writing approach is transferable — the content differs but the technique may be useful.</p>
+                  <p className="text-sm mb-4" style={{ color:'#d0c5b0' }}>Writing quality analysis across your top matched proposals. Cross-sector matches are included when their writing approach is transferable — the content differs but the technique may be useful.</p>
                   {writingInsights.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="text-3xl mb-3 opacity-25">✍</div>
-                      <p className="text-sm" style={{ color:'#6b6456' }}>No writing analysis available. This appears for proposals indexed with writing quality scanning enabled.</p>
+                      <p className="text-sm" style={{ color:'#d0c5b0' }}>No writing analysis available. This appears for proposals indexed with writing quality scanning enabled.</p>
                     </div>
                   ) : (
                     <>
                       {/* Summary table */}
-                      <div className="bg-white rounded-lg border overflow-hidden mb-4" style={{ borderColor:'#ddd5c4' }}>
-                        <div className="grid text-[10px] font-mono uppercase tracking-widest px-4 py-2" style={{ gridTemplateColumns:'1fr 80px 80px 80px 100px', background:'#f0ebe0', color:'#6b6456' }}>
+                      <div className="bg-surface-container rounded-lg border overflow-hidden mb-4" style={{ borderColor:'#4d4636' }}>
+                        <div className="grid text-[10px] font-mono uppercase tracking-widest px-4 py-2" style={{ gridTemplateColumns:'1fr 80px 80px 80px 100px', background:'#2b2a27', color:'#d0c5b0' }}>
                           <span>Proposal</span><span className="text-center">Writing</span><span className="text-center">Approach</span><span className="text-center">Credibility</span><span className="text-center">Outcome</span>
                         </div>
                         {writingInsights.map(w => {
@@ -935,9 +935,9 @@ ${sectionHtml('Winning Language', languageHtml)}
                             ? (w.match_explanation?.recommended_use || 'Different sector — included for writing technique, not content relevance')
                             : null;
                           return (
-                            <div key={w.project_id} className="border-t" style={{ borderColor:'#f0ebe0' }}>
+                            <div key={w.project_id} className="border-t" style={{ borderColor:'#2b2a27' }}>
                               <Link href={`/repository/${w.project_id}`}
-                                className="grid items-center px-4 py-3 hover:bg-[#faf7f2] transition-colors text-sm"
+                                className="grid items-center px-4 py-3 hover:bg-surface-container-high transition-colors text-sm"
                                 style={{ gridTemplateColumns:'1fr 80px 80px 80px 100px' }}>
                                 <span className="font-medium truncate">{w.project_name}</span>
                                 <span className="text-center font-mono" style={{ color:w.writing_score>=75?'#3d5c3a':w.writing_score>=55?'#b8962e':'#b04030' }}>{w.writing_score||'—'}</span>
@@ -946,7 +946,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                                 <span className="text-center"><OutcomeLabel outcome={w.outcome}/></span>
                               </Link>
                               {relevanceHint && (
-                                <div className="px-4 pb-2 text-[11px] italic flex items-start gap-1.5" style={{ color: '#9b8e80' }}>
+                                <div className="px-4 pb-2 text-[11px] italic flex items-start gap-1.5" style={{ color: '#99907d' }}>
                                   <span className="flex-shrink-0">◌</span>
                                   <span>Different industry — shown because the <strong>writing approach</strong> is transferable: {relevanceHint}</span>
                                 </div>
@@ -959,27 +959,27 @@ ${sectionHtml('Winning Language', languageHtml)}
                       {writingInsights.filter(w=>w.evidence_density).slice(0,2).map(w => {
                         const isCross = w.taxonomy_tier >= 4 || w.taxonomy_match === 'cross';
                         return (
-                        <div key={w.project_id + '_ev'} className="rounded-lg p-4 mb-3 border" style={{ borderColor:'#ddd5c4' }}>
+                        <div key={w.project_id + '_ev'} className="rounded-lg p-4 mb-3 border" style={{ borderColor:'#4d4636' }}>
                           {isCross && (
-                            <div className="text-[10px] italic mb-2 px-2 py-1 rounded" style={{ background: '#f8f6f2', color: '#9b8e80' }}>
+                            <div className="text-[10px] italic mb-2 px-2 py-1 rounded" style={{ background: '#211f1d', color: '#99907d' }}>
                               ◌ Different industry — analyse the writing technique, not the subject matter
                             </div>
                           )}
                           <div className="flex items-center justify-between mb-2">
                             <div className="text-xs font-medium">{w.project_name}</div>
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:'#e8f2f4', color:'#1e4a52' }}>
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:'rgba(30,107,120,.15)', color:'#7fb4bc' }}>
                                 Evidence score: {w.evidence_density.evidence_score}/100
                               </span>
                               {w.style_classification && (
-                                <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:'#f0ebe0', color:'#6b6456' }}>
+                                <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:'#2b2a27', color:'#d0c5b0' }}>
                                   {w.style_classification.primary_style}
                                 </span>
                               )}
                             </div>
                           </div>
                           {w.evidence_density.strongest_evidence && (
-                            <p className="text-xs mb-1" style={{ color:'#3d5c3a' }}>✓ {w.evidence_density.strongest_evidence}</p>
+                            <p className="text-xs mb-1" style={{ color:'#7bd07a' }}>✓ {w.evidence_density.strongest_evidence}</p>
                           )}
                           {w.evidence_density.improvement_priority && (
                             <p className="text-xs" style={{ color:'#b8962e' }}>△ {w.evidence_density.improvement_priority}</p>
@@ -992,15 +992,15 @@ ${sectionHtml('Winning Language', languageHtml)}
                       {writingInsights.filter(w=>w.outcome==='won'&&w.win_indicators?.length>0).slice(0,2).map(w => {
                         const isCross = w.taxonomy_tier >= 4 || w.taxonomy_match === 'cross';
                         return (
-                        <Card key={w.project_id} className="p-4 mb-3" style={{ background:'#edf3ec', border:'1px solid rgba(61,92,58,.2)' }}>
+                        <Card key={w.project_id} className="p-4 mb-3" style={{ background:'rgba(61,92,58,.15)', border:'1px solid rgba(61,92,58,.2)' }}>
                           {isCross && (
                             <div className="text-[10px] italic mb-2 px-2 py-1 rounded" style={{ background: 'rgba(61,92,58,.08)', color: '#6b8a64' }}>
                               ◌ Different industry — these win indicators reflect writing technique and positioning approach, not sector-specific content
                             </div>
                           )}
-                          <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color:'#3d5c3a' }}>Win Indicators — {w.project_name}</div>
-                          {w.win_indicators.map((ind, i) => <div key={i} className="text-xs mb-1 flex gap-2"><span style={{ color:'#3d5c3a' }}>↑</span>{ind}</div>)}
-                          {w.standout_sentences?.slice(0,1).map((s, i) => <blockquote key={i} className="text-xs italic border-l-2 pl-3 mt-2" style={{ borderColor:'#3d5c3a', color:'#2a4a28' }}>"{s}"</blockquote>)}
+                          <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color:'#7bd07a' }}>Win Indicators — {w.project_name}</div>
+                          {w.win_indicators.map((ind, i) => <div key={i} className="text-xs mb-1 flex gap-2"><span style={{ color:'#7bd07a' }}>↑</span>{ind}</div>)}
+                          {w.standout_sentences?.slice(0,1).map((s, i) => <blockquote key={i} className="text-xs italic border-l-2 pl-3 mt-2" style={{ borderColor:'#7bd07a', color:'#7bd07a' }}>"{s}"</blockquote>)}
                         </Card>
                         );
                       })}
@@ -1011,12 +1011,12 @@ ${sectionHtml('Winning Language', languageHtml)}
                 <MarketContext news={news} />
               ) : activeTab === 'approach' ? (
                 <div className="space-y-4">
-                  <p className="text-sm" style={{ color:'#6b6456' }}>A suggested delivery approach and indicative budget grounded in your matched won proposals and rate card.</p>
+                  <p className="text-sm" style={{ color:'#d0c5b0' }}>A suggested delivery approach and indicative budget grounded in your matched won proposals and rate card.</p>
                   {!suggestedApproach ? (
                     <div className="text-center py-12">
                       <div className="text-3xl mb-3 opacity-25">◈</div>
-                      <p className="text-sm mb-1" style={{ color:'#6b6456' }}>No suggested approach available for this scan.</p>
-                      <p className="text-xs" style={{ color:'#9b8e80' }}>This requires at least one matched proposal in your repository. Add proposals and re-run the scan.</p>
+                      <p className="text-sm mb-1" style={{ color:'#d0c5b0' }}>No suggested approach available for this scan.</p>
+                      <p className="text-xs" style={{ color:'#99907d' }}>This requires at least one matched proposal in your repository. Add proposals and re-run the scan.</p>
                     </div>
                   ) : (
                     <>
@@ -1033,22 +1033,22 @@ ${sectionHtml('Winning Language', languageHtml)}
                             <Card key={i} className="p-4">
                               <div className="flex items-start justify-between gap-2 mb-2">
                                 <div>
-                                  <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color:'#6b6456' }}>{ph.phase}</div>
+                                  <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color:'#d0c5b0' }}>{ph.phase}</div>
                                   <div className="font-semibold text-sm mt-0.5">{ph.name}</div>
                                 </div>
-                                <span className="text-[11px] font-mono px-2 py-0.5 rounded flex-shrink-0" style={{ background:'#e8f2f4', color:'#1e4a52' }}>{ph.duration}</span>
+                                <span className="text-[11px] font-mono px-2 py-0.5 rounded flex-shrink-0" style={{ background:'rgba(30,107,120,.15)', color:'#7fb4bc' }}>{ph.duration}</span>
                               </div>
-                              {ph.rationale && <p className="text-xs mb-3 italic leading-relaxed" style={{ color:'#6b6456' }}>{ph.rationale}</p>}
+                              {ph.rationale && <p className="text-xs mb-3 italic leading-relaxed" style={{ color:'#d0c5b0' }}>{ph.rationale}</p>}
                               {(ph.key_activities||[]).length > 0 && (
                                 <div className="space-y-1">
                                   {ph.key_activities.map((a, j) => (
-                                    <div key={j} className="flex gap-2 text-xs"><span style={{ color:'#1e4a52' }}>→</span><span>{a}</span></div>
+                                    <div key={j} className="flex gap-2 text-xs"><span style={{ color:'#7fb4bc' }}>→</span><span>{a}</span></div>
                                   ))}
                                 </div>
                               )}
                               {(ph.team_roles||[]).length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-2">
-                                  {ph.team_roles.map((r, j) => <span key={j} className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background:'#f0ebe0', color:'#6b6456' }}>{r}</span>)}
+                                  {ph.team_roles.map((r, j) => <span key={j} className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background:'#2b2a27', color:'#d0c5b0' }}>{r}</span>)}
                                 </div>
                               )}
                             </Card>
@@ -1058,22 +1058,22 @@ ${sectionHtml('Winning Language', languageHtml)}
 
                       {suggestedApproach.indicative_budget && (
                         <Card className="p-5">
-                          <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#6b6456' }}>Indicative Budget</div>
+                          <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#d0c5b0' }}>Indicative Budget</div>
                           <div className="grid grid-cols-3 gap-4 mb-3">
                             {[['Low', suggestedApproach.indicative_budget.low], ['Mid', suggestedApproach.indicative_budget.mid], ['High', suggestedApproach.indicative_budget.high]].map(([label, val]) => (
-                              <div key={label} className="text-center rounded-lg p-3" style={{ background:'#f8f6f2' }}>
-                                <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color:'#6b6456' }}>{label}</div>
-                                <div className="font-mono font-bold text-lg" style={{ color:'#1e4a52' }}>
+                              <div key={label} className="text-center rounded-lg p-3" style={{ background:'#211f1d' }}>
+                                <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color:'#d0c5b0' }}>{label}</div>
+                                <div className="font-mono font-bold text-lg" style={{ color:'#7fb4bc' }}>
                                   {currencySymbol(suggestedApproach.indicative_budget.currency)}{((val||0)/1000).toFixed(0)}K
                                 </div>
                               </div>
                             ))}
                           </div>
                           {suggestedApproach.indicative_budget.basis && (
-                            <p className="text-xs leading-relaxed" style={{ color:'#6b6456' }}>{suggestedApproach.indicative_budget.basis}</p>
+                            <p className="text-xs leading-relaxed" style={{ color:'#d0c5b0' }}>{suggestedApproach.indicative_budget.basis}</p>
                           )}
                           <div className="flex items-center justify-between mt-2">
-                            <span className="text-[10px] font-mono" style={{ color:'#9b8e80' }}>
+                            <span className="text-[10px] font-mono" style={{ color:'#99907d' }}>
                               Confidence: {suggestedApproach.indicative_budget.confidence || 'medium'}
                             </span>
                           </div>
@@ -1082,10 +1082,10 @@ ${sectionHtml('Winning Language', languageHtml)}
 
                       {(suggestedApproach.key_risks||[]).length > 0 && (
                         <Card className="p-4">
-                          <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color:'#6b6456' }}>Key Risks</div>
+                          <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color:'#d0c5b0' }}>Key Risks</div>
                           <div className="space-y-1">
                             {suggestedApproach.key_risks.map((r, i) => (
-                              <div key={i} className="flex gap-2 text-xs"><span style={{ color:'#b04030' }}>△</span><span>{r}</span></div>
+                              <div key={i} className="flex gap-2 text-xs"><span style={{ color:'#ffb4ab' }}>△</span><span>{r}</span></div>
                             ))}
                           </div>
                         </Card>
@@ -1093,10 +1093,10 @@ ${sectionHtml('Winning Language', languageHtml)}
 
                       {(suggestedApproach.differentiators_to_emphasise||[]).length > 0 && (
                         <Card className="p-4">
-                          <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color:'#6b6456' }}>Differentiators to Emphasise</div>
+                          <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color:'#d0c5b0' }}>Differentiators to Emphasise</div>
                           <div className="space-y-1">
                             {suggestedApproach.differentiators_to_emphasise.map((d, i) => (
-                              <div key={i} className="flex gap-2 text-xs"><span style={{ color:'#3d5c3a' }}>✓</span><span>{d}</span></div>
+                              <div key={i} className="flex gap-2 text-xs"><span style={{ color:'#7bd07a' }}>✓</span><span>{d}</span></div>
                             ))}
                           </div>
                         </Card>
@@ -1114,9 +1114,9 @@ ${sectionHtml('Winning Language', languageHtml)}
                       saving={savingCheckpoint === 'strategy'}
                     />
                   )}
-                  <p className="text-sm" style={{ color:'#6b6456' }}>Based on your matched won proposals and identified gaps — specific actions to improve your chances of winning this bid.</p>
+                  <p className="text-sm" style={{ color:'#d0c5b0' }}>Based on your matched won proposals and identified gaps — specific actions to improve your chances of winning this bid.</p>
                   {!winStrategy ? (
-                    <div className="text-center py-12"><div className="text-3xl mb-3 opacity-25">⚡</div><p className="text-sm" style={{ color:'#6b6456' }}>Win strategy not available for this scan. Re-run the scan to generate one.</p></div>
+                    <div className="text-center py-12"><div className="text-3xl mb-3 opacity-25">⚡</div><p className="text-sm" style={{ color:'#d0c5b0' }}>Win strategy not available for this scan. Re-run the scan to generate one.</p></div>
                   ) : (
                     <>
                       {/* Opening narrative */}
@@ -1129,24 +1129,24 @@ ${sectionHtml('Winning Language', languageHtml)}
 
                       {/* Differentiator angle */}
                       {winStrategy.differentiator_angle && (
-                        <div className="rounded-lg p-4 border" style={{ background:'#faf4e2', borderColor:'rgba(184,150,46,.3)' }}>
-                          <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color:'#8a6200' }}>Differentiator Angle</div>
-                          <p className="text-sm" style={{ color:'#5a4810' }}>{winStrategy.differentiator_angle}</p>
+                        <div className="rounded-lg p-4 border" style={{ background:'rgba(232,195,87,.08)', borderColor:'rgba(184,150,46,.3)' }}>
+                          <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color:'#e8c357' }}>Differentiator Angle</div>
+                          <p className="text-sm" style={{ color:'#e4c366' }}>{winStrategy.differentiator_angle}</p>
                         </div>
                       )}
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Top priorities */}
                         {(winStrategy.priorities||[]).length > 0 && (
-                          <div className="rounded-lg p-4 border" style={{ background:'#edf3ec', borderColor:'rgba(61,92,58,.2)' }}>
-                            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#3d5c3a' }}>Top Priorities</div>
+                          <div className="rounded-lg p-4 border" style={{ background:'rgba(61,92,58,.15)', borderColor:'rgba(61,92,58,.2)' }}>
+                            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#7bd07a' }}>Top Priorities</div>
                             {winStrategy.priorities.map((p, i) => (
                               <div key={i} className="mb-3 last:mb-0">
                                 <div className="flex gap-2 text-xs mb-1">
-                                  <span className="font-bold flex-shrink-0" style={{ color:'#3d5c3a' }}>+</span>
+                                  <span className="font-bold flex-shrink-0" style={{ color:'#7bd07a' }}>+</span>
                                   <span className="font-semibold">{p.priority || p}</span>
                                 </div>
-                                {p.rationale && <p className="text-xs pl-4" style={{ color:'#3d5c3a' }}>{p.rationale}</p>}
+                                {p.rationale && <p className="text-xs pl-4" style={{ color:'#7bd07a' }}>{p.rationale}</p>}
                                 {p.evidence && <p className="text-[10px] pl-4 italic mt-0.5" style={{ color:'#6b8a68' }}>Evidence: {p.evidence}</p>}
                               </div>
                             ))}
@@ -1155,15 +1155,15 @@ ${sectionHtml('Winning Language', languageHtml)}
 
                         {/* Risks */}
                         {(winStrategy.risks||[]).length > 0 && (
-                          <div className="rounded-lg p-4 border" style={{ background:'#faeeeb', borderColor:'rgba(176,64,48,.2)' }}>
-                            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#b04030' }}>Risks to Mitigate</div>
+                          <div className="rounded-lg p-4 border" style={{ background:'rgba(176,64,48,.12)', borderColor:'rgba(176,64,48,.2)' }}>
+                            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#ffb4ab' }}>Risks to Mitigate</div>
                             {winStrategy.risks.map((r, i) => (
                               <div key={i} className="mb-3 last:mb-0">
                                 <div className="flex gap-2 text-xs mb-1">
-                                  <span className="font-bold flex-shrink-0" style={{ color:'#b04030' }}>−</span>
+                                  <span className="font-bold flex-shrink-0" style={{ color:'#ffb4ab' }}>−</span>
                                   <span className="font-semibold">{r.risk || r}</span>
                                 </div>
-                                {r.mitigation && <p className="text-xs pl-4" style={{ color:'#b04030' }}>{r.mitigation}</p>}
+                                {r.mitigation && <p className="text-xs pl-4" style={{ color:'#ffb4ab' }}>{r.mitigation}</p>}
                               </div>
                             ))}
                           </div>
@@ -1173,20 +1173,20 @@ ${sectionHtml('Winning Language', languageHtml)}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Focus */}
                         {(winStrategy.focus||[]).length > 0 && (
-                          <div className="rounded-lg p-4 border" style={{ background:'#e8f2f4', borderColor:'rgba(30,74,82,.2)' }}>
-                            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#1e4a52' }}>Emphasise These</div>
+                          <div className="rounded-lg p-4 border" style={{ background:'rgba(30,107,120,.15)', borderColor:'rgba(30,74,82,.2)' }}>
+                            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#7fb4bc' }}>Emphasise These</div>
                             {winStrategy.focus.map((f, i) => (
-                              <div key={i} className="flex gap-2 text-xs mb-1.5"><span style={{ color:'#1e4a52' }}>→</span><span>{f}</span></div>
+                              <div key={i} className="flex gap-2 text-xs mb-1.5"><span style={{ color:'#7fb4bc' }}>→</span><span>{f}</span></div>
                             ))}
                           </div>
                         )}
 
                         {/* Avoid */}
                         {(winStrategy.avoid||[]).length > 0 && (
-                          <div className="rounded-lg p-4 border" style={{ background:'#f8f6f2', borderColor:'#ddd5c4' }}>
-                            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#6b6456' }}>Avoid These</div>
+                          <div className="rounded-lg p-4 border" style={{ background:'#211f1d', borderColor:'#4d4636' }}>
+                            <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#d0c5b0' }}>Avoid These</div>
                             {winStrategy.avoid.map((a, i) => (
-                              <div key={i} className="flex gap-2 text-xs mb-1.5"><span style={{ color:'#b04030' }}>✕</span><span>{a}</span></div>
+                              <div key={i} className="flex gap-2 text-xs mb-1.5"><span style={{ color:'#ffb4ab' }}>✕</span><span>{a}</span></div>
                             ))}
                           </div>
                         )}
@@ -1196,36 +1196,36 @@ ${sectionHtml('Winning Language', languageHtml)}
                 </div>
               ) : activeTab === 'language' ? (
                 <div className="space-y-4">
-                  <p className="text-sm" style={{ color:'#6b6456' }}>High-performing language extracted from your won proposals. Specific, evidence-based sentences that can be adapted for this bid.</p>
+                  <p className="text-sm" style={{ color:'#d0c5b0' }}>High-performing language extracted from your won proposals. Specific, evidence-based sentences that can be adapted for this bid.</p>
                   {winningLanguage.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="text-3xl mb-3 opacity-25">✍</div>
-                      <p className="text-sm mb-1" style={{ color:'#6b6456' }}>No winning language available.</p>
-                      <p className="text-xs" style={{ color:'#9b8e80' }}>This requires won proposals rated 4+ stars with writing analysis completed. Run Re-analyse on your best proposals first.</p>
+                      <p className="text-sm mb-1" style={{ color:'#d0c5b0' }}>No winning language available.</p>
+                      <p className="text-xs" style={{ color:'#99907d' }}>This requires won proposals rated 4+ stars with writing analysis completed. Run Re-analyse on your best proposals first.</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {winningLanguage.map((s, i) => (
-                        <div key={i} className="rounded-lg border overflow-hidden" style={{ background:'white', borderColor:'#ddd5c4' }}>
+                        <div key={i} className="rounded-lg border overflow-hidden" style={{ background:'#211f1d', borderColor:'#4d4636' }}>
                           <div className="p-4">
-                          <blockquote className="text-sm italic leading-relaxed border-l-3 pl-3 mb-3" style={{ borderLeft:'3px solid #b8962e', color:'#1a1a1a' }}>
+                          <blockquote className="text-sm italic leading-relaxed border-l-3 pl-3 mb-3" style={{ borderLeft:'3px solid #e8c357', color:'#e6e2de' }}>
                             "{s.text}"
                           </blockquote>
                           <div className="flex items-start gap-3">
                             <div className="flex-1">
-                              <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color:'#6b6456' }}>Why it works</div>
-                              <p className="text-xs" style={{ color:'#6b6456' }}>{s.why_it_works}</p>
+                              <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color:'#d0c5b0' }}>Why it works</div>
+                              <p className="text-xs" style={{ color:'#d0c5b0' }}>{s.why_it_works}</p>
                             </div>
                             <div className="flex-shrink-0 text-right">
-                              <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color:'#6b6456' }}>Use in</div>
-                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background:'#e8f2f4', color:'#1e4a52' }}>{s.use_case}</span>
+                              <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color:'#d0c5b0' }}>Use in</div>
+                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background:'rgba(30,107,120,.15)', color:'#7fb4bc' }}>{s.use_case}</span>
                             </div>
                           </div>
-                          {s.source_proposal && <div className="text-[10px] font-mono mt-2 pt-2 border-t" style={{ color:'#9b8e80', borderColor:'#f0ebe0' }}>From: {s.source_proposal}</div>}
+                          {s.source_proposal && <div className="text-[10px] font-mono mt-2 pt-2 border-t" style={{ color:'#99907d', borderColor:'#2b2a27' }}>From: {s.source_proposal}</div>}
                           {s.adaptation_note && (
-                            <div className="mt-2 pt-2 border-t" style={{ borderColor:'#f0ebe0' }}>
+                            <div className="mt-2 pt-2 border-t" style={{ borderColor:'#2b2a27' }}>
                               <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color:'#b8962e' }}>How to adapt</div>
-                              <p className="text-xs" style={{ color:'#8a6200' }}>{s.adaptation_note}</p>
+                              <p className="text-xs" style={{ color:'#e8c357' }}>{s.adaptation_note}</p>
                             </div>
                           )}
                         </div>
@@ -1236,13 +1236,13 @@ ${sectionHtml('Winning Language', languageHtml)}
                 </div>
               ) : activeTab === 'narrative' ? (
                 <div className="space-y-4">
-                  <p className="text-sm" style={{ color:'#6b6456' }}>
+                  <p className="text-sm" style={{ color:'#d0c5b0' }}>
                     Specific narrative structure advice for this bid — grounded in your best matched proposals.
                   </p>
                   {!scan.narrative_advice || scan.narrative_advice.startsWith('Error:') ? (
                     <div className="text-center py-12">
                       <div className="text-3xl mb-3 opacity-25">✎</div>
-                      <p className="text-sm" style={{ color:'#6b6456' }}>No narrative advice available for this scan.</p>
+                      <p className="text-sm" style={{ color:'#d0c5b0' }}>No narrative advice available for this scan.</p>
                     </div>
                   ) : (
                     <>
@@ -1252,19 +1252,19 @@ ${sectionHtml('Winning Language', languageHtml)}
                       </div>
 
                       {proposalStructure && (
-                        <div className="rounded-xl p-5 border" style={{ background:'#faf7f2', borderColor:'#ddd5c4' }}>
-                          <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#6b6456' }}>
+                        <div className="rounded-xl p-5 border" style={{ background:'#1d1b19', borderColor:'#4d4636' }}>
+                          <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#d0c5b0' }}>
                             Recommended Proposal Structure — from {goodMatchCount || 'your'} won proposals
                           </div>
                           {proposalStructure.narrative_arc && (
-                            <p className="text-sm mb-4 italic" style={{ color:'#6b6456' }}>{proposalStructure.narrative_arc}</p>
+                            <p className="text-sm mb-4 italic" style={{ color:'#d0c5b0' }}>{proposalStructure.narrative_arc}</p>
                           )}
                           {proposalStructure.recommended_section_order?.length > 0 && (
                             <div className="mb-4">
-                              <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color:'#9b8e80' }}>Section Order</div>
+                              <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color:'#99907d' }}>Section Order</div>
                               <div className="flex flex-wrap gap-2">
                                 {proposalStructure.recommended_section_order.map((s, i) => (
-                                  <span key={i} className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full" style={{ background:'#e8f2f4', color:'#1e4a52' }}>
+                                  <span key={i} className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full" style={{ background:'rgba(30,107,120,.15)', color:'#7fb4bc' }}>
                                     <span className="font-mono text-[10px] opacity-60">{i+1}</span> {s}
                                   </span>
                                 ))}
@@ -1272,7 +1272,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                             </div>
                           )}
                           {proposalStructure.apply_to_this_bid && (
-                            <div className="rounded-lg p-3 text-xs" style={{ background:'#faf4e2', color:'#8a6200' }}>
+                            <div className="rounded-lg p-3 text-xs" style={{ background:'rgba(232,195,87,.08)', color:'#e8c357' }}>
                               <span className="font-semibold">For this bid: </span>{proposalStructure.apply_to_this_bid}
                             </div>
                           )}
@@ -1282,13 +1282,13 @@ ${sectionHtml('Winning Language', languageHtml)}
                       {/* Writing insights from matched proposals */}
                       {writingInsights.length > 0 && (
                         <div>
-                          <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#6b6456' }}>
+                          <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{ color:'#d0c5b0' }}>
                             Writing Quality — Top Matched Proposals
                           </div>
                           <div className="space-y-2">
                             {writingInsights.map((w, i) => (
                               <div key={i} className="rounded-lg p-3 border flex items-center gap-4"
-                                style={{ background:'white', borderColor:'#ddd5c4' }}>
+                                style={{ background:'#211f1d', borderColor:'#4d4636' }}>
                                 <div className="flex-1 min-w-0">
                                   <div className="text-sm font-medium truncate">{w.project_name}</div>
                                   <div className="text-xs mt-0.5" style={{ color: w.outcome==='won'?'#3d5c3a':'#b04030' }}>
@@ -1299,12 +1299,12 @@ ${sectionHtml('Winning Language', languageHtml)}
                                   {[['Writing', w.writing_score], ['Approach', w.approach_score], ['Credibility', w.credibility_score]].map(([lbl, score]) => (
                                     <div key={lbl} className="text-center">
                                       <div className="font-bold" style={{ color: score>=75?'#3d5c3a':score>=55?'#b8962e':'#b04030' }}>{score||'—'}</div>
-                                      <div style={{ color:'#9b8e80' }}>{lbl}</div>
+                                      <div style={{ color:'#99907d' }}>{lbl}</div>
                                     </div>
                                   ))}
                                 </div>
                                 {w.standout_sentences?.length > 0 && (
-                                  <div className="text-xs italic max-w-xs truncate" style={{ color:'#6b6456' }}>
+                                  <div className="text-xs italic max-w-xs truncate" style={{ color:'#d0c5b0' }}>
                                     "{w.standout_sentences[0]}"
                                   </div>
                                 )}
@@ -1322,7 +1322,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                   generatingTemplate={generatingTemplate} templateDraftMode={templateDraftMode}
                   setTemplateDraftMode={setTemplateDraftMode} exporting={exporting} />
               ) : (
-                <div className="text-center py-12"><p className="text-sm" style={{ color:'#6b6456' }}>Select a tab above.</p></div>
+                <div className="text-center py-12"><p className="text-sm" style={{ color:'#d0c5b0' }}>Select a tab above.</p></div>
               )}
             </div>
           </div>
@@ -1397,21 +1397,21 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
     const parts = t.split(/(\[#\d+\]|\[EVIDENCE NEEDED[^\]]*\])/g);
     return parts.map((part, i) => {
       if (/^\[#\d+\]$/.test(part)) {
-        return <span key={i} className="font-mono text-[11px] px-1 rounded" style={{ background: 'rgba(30,74,82,.12)', color: '#1e4a52' }}>{part}</span>;
+        return <span key={i} className="font-mono text-[11px] px-1 rounded" style={{ background: 'rgba(30,74,82,.12)', color: '#7fb4bc' }}>{part}</span>;
       }
       if (/^\[EVIDENCE NEEDED/.test(part)) {
-        return <span key={i} className="font-mono text-[11px] px-1 rounded" style={{ background: 'rgba(184,150,46,.18)', color: '#8a6200' }}>{part}</span>;
+        return <span key={i} className="font-mono text-[11px] px-1 rounded" style={{ background: 'rgba(184,150,46,.18)', color: '#e8c357' }}>{part}</span>;
       }
       return <span key={i}>{part}</span>;
     });
   }
 
   return (
-    <div className="border-t" style={{ borderColor: '#f0ebe0', background: '#faf7f2' }}>
+    <div className="border-t" style={{ borderColor: '#2b2a27', background: '#1d1b19' }}>
       <div className="px-4 py-3">
         <div className="flex items-baseline justify-between mb-3">
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#6b6456' }}>AI Draft</span>
+            <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#d0c5b0' }}>AI Draft</span>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full" style={{ background: confColor + '14', color: confColor, border: `1px solid ${confColor}40` }}>
               {draft.confidence} confidence
             </span>
@@ -1421,22 +1421,22 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
               </span>
             )}
           </div>
-          <button onClick={onClose} className="text-[11px]" style={{ color: '#9b8e80' }}>hide</button>
+          <button onClick={onClose} className="text-[11px]" style={{ color: '#99907d' }}>hide</button>
         </div>
 
         {draft.confidence_reason && (
-          <p className="text-[11px] italic mb-3" style={{ color: '#6b6456' }}>{draft.confidence_reason}</p>
+          <p className="text-[11px] italic mb-3" style={{ color: '#d0c5b0' }}>{draft.confidence_reason}</p>
         )}
 
         {/* Draft body */}
-        <div className="rounded-lg p-4 mb-3" style={{ background: 'white', border: '1px solid #ddd5c4' }}>
+        <div className="rounded-lg p-4 mb-3" style={{ background: '#211f1d', border: '1px solid #4d4636' }}>
           {editing ? (
             <DebouncedTextarea value={text} onCommit={setText} delay={400}
               rows={Math.max(8, text.split('\n').length + 2)}
               className="w-full text-sm leading-relaxed outline-none resize-y font-serif"
-              style={{ color: '#1a1816' }} />
+              style={{ color: '#e6e2de' }} />
           ) : (
-            <p className="text-sm leading-relaxed font-serif whitespace-pre-wrap" style={{ color: '#1a1816' }}>
+            <p className="text-sm leading-relaxed font-serif whitespace-pre-wrap" style={{ color: '#e6e2de' }}>
               {renderHighlighted(text)}
             </p>
           )}
@@ -1446,7 +1446,7 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
         <div className="flex items-center gap-2 mb-3 flex-wrap">
           {!editing && !isAccepted && (
             <button onClick={() => setEditing(true)}
-              className="text-[11px] px-2.5 py-1.5 rounded border" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+              className="text-[11px] px-2.5 py-1.5 rounded border" style={{ borderColor: '#4d4636', color: '#d0c5b0' }}>
               ✎ Edit
             </button>
           )}
@@ -1457,7 +1457,7 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
                 {saving ? 'Saving…' : 'Save edits'}
               </button>
               <button onClick={() => { setText(draft.draft_text || ''); setEditing(false); }}
-                className="text-[11px] px-2.5 py-1.5 rounded" style={{ color: '#6b6456' }}>
+                className="text-[11px] px-2.5 py-1.5 rounded" style={{ color: '#d0c5b0' }}>
                 Cancel
               </button>
             </>
@@ -1465,11 +1465,11 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
           {!editing && (
             <>
               <button onClick={() => navigator.clipboard.writeText(text)}
-                className="text-[11px] px-2.5 py-1.5 rounded border" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+                className="text-[11px] px-2.5 py-1.5 rounded border" style={{ borderColor: '#4d4636', color: '#d0c5b0' }}>
                 ⎘ Copy
               </button>
               <button onClick={onRegenerate} disabled={regenerating}
-                className="text-[11px] px-2.5 py-1.5 rounded border" style={{ borderColor: '#ddd5c4', color: '#1e4a52' }}>
+                className="text-[11px] px-2.5 py-1.5 rounded border" style={{ borderColor: '#4d4636', color: '#7fb4bc' }}>
                 {regenerating ? 'Regenerating…' : '⟳ Regenerate'}
               </button>
               {!isAccepted && (
@@ -1479,7 +1479,7 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
                 </button>
               )}
               <button onClick={onDiscard}
-                className="text-[11px] px-2.5 py-1.5 rounded border ml-auto" style={{ borderColor: '#f5c6c0', color: '#b04030' }}>
+                className="text-[11px] px-2.5 py-1.5 rounded border ml-auto" style={{ borderColor: '#f5c6c0', color: '#ffb4ab' }}>
                 ✕ Discard
               </button>
             </>
@@ -1491,11 +1491,11 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px]">
             {citedMatches.length > 0 && (
               <div className="rounded p-3" style={{ background: 'rgba(30,74,82,.06)', border: '1px solid rgba(30,74,82,.15)' }}>
-                <div className="font-mono uppercase tracking-widest mb-1.5" style={{ color: '#1e4a52' }}>Matches cited</div>
+                <div className="font-mono uppercase tracking-widest mb-1.5" style={{ color: '#7fb4bc' }}>Matches cited</div>
                 <ul className="space-y-1">
                   {citedMatches.map((m, i) => (
                     <li key={m.id}>
-                      <Link href={`/repository/${m.id}`} className="hover:underline" style={{ color: '#1e4a52' }}>
+                      <Link href={`/repository/${m.id}`} className="hover:underline" style={{ color: '#7fb4bc' }}>
                         [#{i + 1}] {m.name}
                       </Link>
                       <span className="ml-1 opacity-60">({m.outcome})</span>
@@ -1506,10 +1506,10 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
             )}
             {citedLanguage.length > 0 && (
               <div className="rounded p-3" style={{ background: 'rgba(184,150,46,.08)', border: '1px solid rgba(184,150,46,.2)' }}>
-                <div className="font-mono uppercase tracking-widest mb-1.5" style={{ color: '#8a6200' }}>Language patterns</div>
+                <div className="font-mono uppercase tracking-widest mb-1.5" style={{ color: '#e8c357' }}>Language patterns</div>
                 <ul className="space-y-1">
                   {citedLanguage.map((s, i) => (
-                    <li key={i} className="italic" style={{ color: '#5a4810' }}>
+                    <li key={i} className="italic" style={{ color: '#e4c366' }}>
                       "{(s.adapted || s.text || '').slice(0, 100)}{(s.adapted || s.text || '').length > 100 ? '…' : ''}"
                     </li>
                   ))}
@@ -1518,7 +1518,7 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
             )}
             {(draft.evidence_needed || []).length > 0 && (
               <div className="rounded p-3" style={{ background: 'rgba(176,64,48,.05)', border: '1px solid rgba(176,64,48,.15)' }}>
-                <div className="font-mono uppercase tracking-widest mb-1.5" style={{ color: '#b04030' }}>Writer must fill in</div>
+                <div className="font-mono uppercase tracking-widest mb-1.5" style={{ color: '#ffb4ab' }}>Writer must fill in</div>
                 <ul className="space-y-1" style={{ color: '#7a3023' }}>
                   {(draft.evidence_needed || []).slice(0, 6).map((e, i) => (
                     <li key={i}>· {e}</li>
@@ -1574,36 +1574,36 @@ const OutcomeCaptureModal = memo(function OutcomeCaptureModal({ existing, usageS
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(15,14,12,.55)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="rounded-xl bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="px-6 py-5 border-b flex items-baseline justify-between" style={{ borderColor: '#ddd5c4' }}>
+      <div className="rounded-xl bg-surface-container w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="px-6 py-5 border-b flex items-baseline justify-between" style={{ borderColor: '#4d4636' }}>
           <div>
-            <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#6b6456' }}>Bid outcome</div>
+            <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#d0c5b0' }}>Bid outcome</div>
             <h2 className="font-serif text-xl mt-0.5">{scanName}</h2>
           </div>
-          <button onClick={onClose} className="text-2xl leading-none" style={{ color: '#9b8e80' }}>×</button>
+          <button onClick={onClose} className="text-2xl leading-none" style={{ color: '#99907d' }}>×</button>
         </div>
 
         <div className="px-6 py-5 space-y-5">
           {usageHint && (
-            <div className="rounded-lg p-3 text-xs" style={{ background: '#fbf9f4', color: '#6b6456' }}>
-              <span className="font-semibold" style={{ color: '#1a1816' }}>You used this scan to: </span>{usageHint}
+            <div className="rounded-lg p-3 text-xs" style={{ background: '#1d1b19', color: '#d0c5b0' }}>
+              <span className="font-semibold" style={{ color: '#e6e2de' }}>You used this scan to: </span>{usageHint}
             </div>
           )}
 
           {/* Outcome */}
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wide block mb-2" style={{ color: '#6b6456' }}>Outcome</label>
+            <label className="text-xs font-semibold uppercase tracking-wide block mb-2" style={{ color: '#d0c5b0' }}>Outcome</label>
             <div className="grid grid-cols-4 gap-2">
               {[
-                { val: 'won',     label: '★ Won',         color: '#3d5c3a' },
-                { val: 'lost',    label: '✕ Lost',        color: '#b04030' },
+                { val: 'won',     label: '★ Won',         color: '#7bd07a' },
+                { val: 'lost',    label: '✕ Lost',        color: '#ffb4ab' },
                 { val: 'pending', label: '◷ Pending',     color: '#b8962e' },
-                { val: 'no_bid',  label: '✕ Did not bid', color: '#6b6456' },
+                { val: 'no_bid',  label: '✕ Did not bid', color: '#d0c5b0' },
               ].map(opt => (
                 <button key={opt.val} onClick={() => setOutcomeVal(opt.val)}
                   className="text-xs py-2 rounded-lg border-2 transition-all"
                   style={{
-                    borderColor: outcome === opt.val ? opt.color : '#ddd5c4',
+                    borderColor: outcome === opt.val ? opt.color : '#4d4636',
                     background: outcome === opt.val ? opt.color + '14' : 'white',
                     color: outcome === opt.val ? opt.color : '#6b6456',
                     fontWeight: outcome === opt.val ? 600 : 400,
@@ -1616,48 +1616,48 @@ const OutcomeCaptureModal = memo(function OutcomeCaptureModal({ existing, usageS
 
           {/* Submitted + PIQ used checkboxes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <label className="flex items-start gap-2 text-xs cursor-pointer p-3 rounded-lg border" style={{ borderColor: '#ddd5c4' }}>
+            <label className="flex items-start gap-2 text-xs cursor-pointer p-3 rounded-lg border" style={{ borderColor: '#4d4636' }}>
               <input type="checkbox" checked={submitted} onChange={e => setSubmitted(e.target.checked)} className="mt-0.5" />
               <div>
-                <div className="font-medium" style={{ color: '#1a1816' }}>Submitted to client</div>
-                <div className="text-[11px] mt-0.5" style={{ color: '#6b6456' }}>Tick if the bid was actually submitted (not just drafted).</div>
+                <div className="font-medium" style={{ color: '#e6e2de' }}>Submitted to client</div>
+                <div className="text-[11px] mt-0.5" style={{ color: '#d0c5b0' }}>Tick if the bid was actually submitted (not just drafted).</div>
               </div>
             </label>
-            <label className="flex items-start gap-2 text-xs cursor-pointer p-3 rounded-lg border" style={{ borderColor: '#ddd5c4' }}>
+            <label className="flex items-start gap-2 text-xs cursor-pointer p-3 rounded-lg border" style={{ borderColor: '#4d4636' }}>
               <input type="checkbox" checked={piqUsed} onChange={e => setPiqUsed(e.target.checked)} className="mt-0.5" />
               <div>
-                <div className="font-medium" style={{ color: '#1a1816' }}>ProposalIQ contributed materially</div>
-                <div className="text-[11px] mt-0.5" style={{ color: '#6b6456' }}>Used the verdict, copied snippets, applied recommendations, etc.</div>
+                <div className="font-medium" style={{ color: '#e6e2de' }}>ProposalIQ contributed materially</div>
+                <div className="text-[11px] mt-0.5" style={{ color: '#d0c5b0' }}>Used the verdict, copied snippets, applied recommendations, etc.</div>
               </div>
             </label>
           </div>
 
           {/* Free text */}
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>What was most useful?</label>
+            <label className="text-xs font-semibold uppercase tracking-wide block mb-1" style={{ color: '#d0c5b0' }}>What was most useful?</label>
             <DebouncedTextarea value={mostUseful} onCommit={setMostUseful} delay={300}
               rows={2} placeholder="e.g. The matched proposals from the HMRC contract, the gap analysis flagging DSPT compliance, the win strategy opening narrative…"
               className="w-full text-sm px-3 py-2 rounded-lg border outline-none resize-y"
-              style={{ borderColor: '#ddd5c4' }} />
+              style={{ borderColor: '#4d4636' }} />
           </div>
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>What was missing or wrong?</label>
+            <label className="text-xs font-semibold uppercase tracking-wide block mb-1" style={{ color: '#d0c5b0' }}>What was missing or wrong?</label>
             <DebouncedTextarea value={whatMissing} onCommit={setWhatMissing} delay={300}
               rows={2} placeholder="e.g. Should have flagged the social value requirement, off-sector matches in cross-sector list, win strategy too generic…"
               className="w-full text-sm px-3 py-2 rounded-lg border outline-none resize-y"
-              style={{ borderColor: '#ddd5c4' }} />
+              style={{ borderColor: '#4d4636' }} />
           </div>
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wide block mb-1" style={{ color: '#6b6456' }}>Client feedback (optional)</label>
+            <label className="text-xs font-semibold uppercase tracking-wide block mb-1" style={{ color: '#d0c5b0' }}>Client feedback (optional)</label>
             <DebouncedTextarea value={clientFeedback} onCommit={setClientFeedback} delay={300}
               rows={2} placeholder="e.g. Strong on technical, weak on commercials. They noted the 47-trust scale claim specifically."
               className="w-full text-sm px-3 py-2 rounded-lg border outline-none resize-y"
-              style={{ borderColor: '#ddd5c4' }} />
+              style={{ borderColor: '#4d4636' }} />
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t flex items-center justify-end gap-2" style={{ borderColor: '#ddd5c4', background: '#faf7f2' }}>
-          <button onClick={onClose} className="text-xs px-3 py-2 rounded-lg" style={{ color: '#6b6456' }}>Cancel</button>
+        <div className="px-6 py-4 border-t flex items-center justify-end gap-2" style={{ borderColor: '#4d4636', background: '#1d1b19' }}>
+          <button onClick={onClose} className="text-xs px-3 py-2 rounded-lg" style={{ color: '#d0c5b0' }}>Cancel</button>
           <button onClick={handleSave} disabled={saving}
             className="text-xs px-4 py-2 rounded-lg font-medium disabled:opacity-50"
             style={{ background: '#1e4a52', color: 'white' }}>
@@ -1671,7 +1671,7 @@ const OutcomeCaptureModal = memo(function OutcomeCaptureModal({ existing, usageS
 
 // ── PROPOSAL ASSEMBLY TAB ─────────────────────────────────────────────────────
 const SECTION_STATUSES = ['not started', 'in progress', 'draft ready', 'complete'];
-const STATUS_COLORS = { 'not started':'#ddd5c4', 'in progress':'#b8962e', 'draft ready':'#1e4a52', 'complete':'#3d5c3a' };
+const STATUS_COLORS = { 'not started':'#4d4636', 'in progress':'#b8962e', 'draft ready':'#1e4a52', 'complete':'#3d5c3a' };
 
 function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
   onGenerateTemplate, onExportBriefing, generatingTemplate, templateDraftMode, setTemplateDraftMode, exporting }) {
@@ -1865,7 +1865,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
                     className="text-xs px-3 py-1.5 text-white/80 hover:text-white">
                     {generatingTemplate && !templateDraftMode ? 'Building…' : '📄 Template'}
                   </button>
-                  <div className="w-px bg-white/20" />
+                  <div className="w-px bg-surface-container/20" />
                   <button onClick={() => { setTemplateDraftMode(true); onGenerateTemplate(); }} disabled={generatingTemplate}
                     className="text-xs px-3 py-1.5 text-white/80 hover:text-white">
                     {generatingTemplate && templateDraftMode ? 'Writing…' : '✍ Draft'}
@@ -1888,7 +1888,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
 
         {/* Guidance */}
         <div className="rounded-lg p-3 text-xs flex items-start gap-2"
-          style={{ background: '#faf4e2', border: '1px solid rgba(184,150,46,.3)', color: '#7a5800' }}>
+          style={{ background: 'rgba(232,195,87,.08)', border: '1px solid rgba(184,150,46,.3)', color: '#e8c357' }}>
           <span className="flex-shrink-0">✦</span>
           <span>
             This is a first draft grounded in your intelligence. <strong>(Proposal: "Name")</strong> citations
@@ -1900,14 +1900,14 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
         {/* Action bar */}
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => setEditingFull(!editingFull)}
-            className="text-xs px-3 py-1.5 rounded border" style={{ borderColor: '#ddd5c4', color: '#1e4a52' }}>
+            className="text-xs px-3 py-1.5 rounded border" style={{ borderColor: '#4d4636', color: '#7fb4bc' }}>
             {editingFull ? '◉ Preview' : '✎ Edit'}
           </button>
           <button onClick={() => {
             navigator.clipboard.writeText(fullProposalText);
             onToast('Proposal copied to clipboard');
           }}
-            className="text-xs px-3 py-1.5 rounded border" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+            className="text-xs px-3 py-1.5 rounded border" style={{ borderColor: '#4d4636', color: '#d0c5b0' }}>
             ⎘ Copy to clipboard
           </button>
           <button onClick={() => {
@@ -1920,27 +1920,27 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
             URL.revokeObjectURL(url);
             onToast('Draft downloaded');
           }}
-            className="text-xs px-3 py-1.5 rounded border" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+            className="text-xs px-3 py-1.5 rounded border" style={{ borderColor: '#4d4636', color: '#d0c5b0' }}>
             ↓ Download .txt
           </button>
           <button onClick={generateFullProposalDoc} disabled={generatingFull}
-            className="text-xs px-3 py-1.5 rounded border" style={{ borderColor: '#ddd5c4', color: '#1e4a52' }}>
+            className="text-xs px-3 py-1.5 rounded border" style={{ borderColor: '#4d4636', color: '#7fb4bc' }}>
             {generatingFull ? 'Regenerating…' : '⟳ Regenerate'}
           </button>
-          <span className="text-[10px] font-mono ml-auto" style={{ color: '#9b8e80' }}>
+          <span className="text-[10px] font-mono ml-auto" style={{ color: '#99907d' }}>
             {fullProposalText.split(/\s+/).length.toLocaleString()} words
           </span>
         </div>
 
         {/* Document body */}
-        <div className="rounded-xl border overflow-hidden" style={{ background: 'white', borderColor: '#ddd5c4' }}>
+        <div className="rounded-xl border overflow-hidden" style={{ background: '#211f1d', borderColor: '#4d4636' }}>
           {editingFull ? (
             <DebouncedTextarea value={fullProposalText} onCommit={setFullProposalText} delay={500}
               rows={Math.max(30, (fullProposalText || '').split('\n').length + 5)}
               className="w-full text-sm leading-relaxed p-8 outline-none resize-y font-serif"
-              style={{ color: '#1a1816', minHeight: '80vh' }} />
+              style={{ color: '#e6e2de', minHeight: '80vh' }} />
           ) : (
-            <div className="p-8 max-w-none font-serif" style={{ color: '#1a1816' }}>
+            <div className="p-8 max-w-none font-serif" style={{ color: '#e6e2de' }}>
               {fullProposalText.split('\n').map((line, i, arr) => {
                 if (!line.trim()) return <br key={i} />;
 
@@ -1961,8 +1961,8 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
 
                 if (looksLikeTitle && cleanLine.length < 80) {
                   return (
-                    <div key={i} className="mt-8 mb-3 pb-2 border-b" style={{ borderColor: '#f0ebe0' }}>
-                      <h2 className="text-base font-serif font-bold" style={{ color: '#1e4a52' }}>{cleanLine}</h2>
+                    <div key={i} className="mt-8 mb-3 pb-2 border-b" style={{ borderColor: '#2b2a27' }}>
+                      <h2 className="text-base font-serif font-bold" style={{ color: '#7fb4bc' }}>{cleanLine}</h2>
                     </div>
                   );
                 }
@@ -1973,13 +1973,13 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
                   <p key={i} className="text-sm leading-relaxed mb-3">
                     {parts.map((part, j) => {
                       if (/^\(Proposal: "/.test(part)) {
-                        return <span key={j} className="text-[11px] italic" style={{ color: '#1e4a52' }}>{part}</span>;
+                        return <span key={j} className="text-[11px] italic" style={{ color: '#7fb4bc' }}>{part}</span>;
                       }
                       if (/^\[#\d+\]$/.test(part)) {
-                        return <span key={j} className="text-[11px] italic" style={{ color: '#1e4a52' }}>{part}</span>;
+                        return <span key={j} className="text-[11px] italic" style={{ color: '#7fb4bc' }}>{part}</span>;
                       }
                       if (/^\[EVIDENCE NEEDED/.test(part)) {
-                        return <span key={j} className="text-[11px] px-1 rounded" style={{ background: 'rgba(184,150,46,.18)', color: '#8a6200' }}>{part}</span>;
+                        return <span key={j} className="text-[11px] px-1 rounded" style={{ background: 'rgba(184,150,46,.18)', color: '#e8c357' }}>{part}</span>;
                       }
                       return <span key={j}>{part}</span>;
                     })}
@@ -1992,15 +1992,15 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
 
         {/* Requirements coverage report */}
         {coverageReport && (
-          <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#ddd5c4' }}>
-            <div className="px-5 py-3 flex items-center justify-between" style={{ background: '#fbf9f4' }}>
+          <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#4d4636' }}>
+            <div className="px-5 py-3 flex items-center justify-between" style={{ background: '#1d1b19' }}>
               <div className="flex items-center gap-3">
-                <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#6b6456' }}>Requirements coverage check</div>
+                <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#d0c5b0' }}>Requirements coverage check</div>
                 {coverageReport.coverage_summary && (
                   <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full"
                     style={{
-                      background: coverageReport.coverage_summary.coverage_percentage >= 80 ? '#edf3ec' :
-                        coverageReport.coverage_summary.coverage_percentage >= 60 ? '#faf4e2' : '#faeeeb',
+                      background: coverageReport.coverage_summary.coverage_percentage >= 80 ? 'rgba(61,92,58,.15)' :
+                        coverageReport.coverage_summary.coverage_percentage >= 60 ? 'rgba(232,195,87,.08)' : 'rgba(176,64,48,.12)',
                       color: coverageReport.coverage_summary.coverage_percentage >= 80 ? '#3d5c3a' :
                         coverageReport.coverage_summary.coverage_percentage >= 60 ? '#8a6200' : '#b04030',
                     }}>
@@ -2009,7 +2009,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
                 )}
               </div>
               {coverageReport.coverage_summary && (
-                <div className="text-[11px] font-mono" style={{ color: '#9b8e80' }}>
+                <div className="text-[11px] font-mono" style={{ color: '#99907d' }}>
                   {coverageReport.coverage_summary.fully_addressed} addressed · {coverageReport.coverage_summary.partially_addressed} partial · {coverageReport.coverage_summary.missed} missed
                 </div>
               )}
@@ -2017,8 +2017,8 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
 
             {/* Critical gaps warning */}
             {coverageReport.critical_gaps?.length > 0 && (
-              <div className="px-5 py-3 border-t" style={{ borderColor: '#f0ebe0', background: '#faeeeb' }}>
-                <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#b04030' }}>Critical — MUST requirements not addressed</div>
+              <div className="px-5 py-3 border-t" style={{ borderColor: '#2b2a27', background: 'rgba(176,64,48,.12)' }}>
+                <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#ffb4ab' }}>Critical — MUST requirements not addressed</div>
                 <ul className="space-y-1">
                   {coverageReport.critical_gaps.map((g, i) => (
                     <li key={i} className="text-xs flex gap-2" style={{ color: '#7a3023' }}>
@@ -2030,24 +2030,24 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
             )}
 
             {/* Per-requirement checklist */}
-            <div className="px-5 py-3 border-t max-h-80 overflow-y-auto" style={{ borderColor: '#f0ebe0' }}>
+            <div className="px-5 py-3 border-t max-h-80 overflow-y-auto" style={{ borderColor: '#2b2a27' }}>
               {(coverageReport.requirements || []).map((r, i) => {
                 const statusIcon = r.status === 'addressed' ? '✓' : r.status === 'partial' ? '◐' : '✕';
                 const statusColor = r.status === 'addressed' ? '#3d5c3a' : r.status === 'partial' ? '#b8962e' : '#b04030';
                 return (
-                  <div key={i} className="flex items-start gap-2 py-1.5 border-b last:border-0 text-xs" style={{ borderColor: '#f8f6f2' }}>
+                  <div key={i} className="flex items-start gap-2 py-1.5 border-b last:border-0 text-xs" style={{ borderColor: '#211f1d' }}>
                     <span className="flex-shrink-0 font-bold mt-0.5" style={{ color: statusColor }}>{statusIcon}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-[10px] flex-shrink-0" style={{ color: r.priority === 'must' ? '#b04030' : '#6b6456' }}>
                           [{r.priority?.toUpperCase()}]
                         </span>
-                        <span className="truncate" style={{ color: '#1a1816' }}>{r.text}</span>
+                        <span className="truncate" style={{ color: '#e6e2de' }}>{r.text}</span>
                       </div>
-                      {r.note && <div className="text-[11px] mt-0.5" style={{ color: '#6b6456' }}>{r.note}</div>}
+                      {r.note && <div className="text-[11px] mt-0.5" style={{ color: '#d0c5b0' }}>{r.note}</div>}
                     </div>
                     {r.where_addressed && (
-                      <span className="text-[10px] font-mono flex-shrink-0" style={{ color: '#9b8e80' }}>
+                      <span className="text-[10px] font-mono flex-shrink-0" style={{ color: '#99907d' }}>
                         {r.where_addressed}
                       </span>
                     )}
@@ -2058,11 +2058,11 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
 
             {/* Improvement suggestions */}
             {coverageReport.improvement_suggestions?.length > 0 && (
-              <div className="px-5 py-3 border-t" style={{ borderColor: '#f0ebe0', background: '#fbf9f4' }}>
-                <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#1e4a52' }}>Suggestions to improve coverage</div>
+              <div className="px-5 py-3 border-t" style={{ borderColor: '#2b2a27', background: '#1d1b19' }}>
+                <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#7fb4bc' }}>Suggestions to improve coverage</div>
                 <ul className="space-y-1">
                   {coverageReport.improvement_suggestions.map((s, i) => (
-                    <li key={i} className="text-xs flex gap-2" style={{ color: '#1e4a52' }}>
+                    <li key={i} className="text-xs flex gap-2" style={{ color: '#7fb4bc' }}>
                       <span className="flex-shrink-0">→</span><span>{s}</span>
                     </li>
                   ))}
@@ -2095,7 +2095,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
             </button>
           </div>
           {generatingFull && (
-            <div className="px-5 py-3 text-xs flex items-center gap-2" style={{ background: '#faf4e2', color: '#7a5800' }}>
+            <div className="px-5 py-3 text-xs flex items-center gap-2" style={{ background: 'rgba(232,195,87,.08)', color: '#e8c357' }}>
               <Spinner size={12} />
               <span>Writing 8 sections in your winning style — this takes 30–60 seconds…</span>
             </div>
@@ -2106,20 +2106,20 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
       {/* Quick actions — Template / Draft / Export inline */}
       {onGenerateTemplate && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-mono uppercase tracking-widest" style={{ color: '#9b8e80' }}>Export:</span>
-          <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: '#1e4a52' }}>
+          <span className="text-[11px] font-mono uppercase tracking-widest" style={{ color: '#99907d' }}>Export:</span>
+          <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: '#7fb4bc' }}>
             <button onClick={() => { setTemplateDraftMode(false); onGenerateTemplate(); }} disabled={generatingTemplate}
-              className="text-xs px-3 py-1.5 transition-colors hover:bg-teal-50" style={{ color: '#1e4a52' }}>
+              className="text-xs px-3 py-1.5 transition-colors hover:bg-teal-50" style={{ color: '#7fb4bc' }}>
               {generatingTemplate && !templateDraftMode ? <><Spinner size={10} /> Building…</> : '📄 Template (.docx)'}
             </button>
             <div className="w-px" style={{ background: '#1e4a52' }} />
             <button onClick={() => { setTemplateDraftMode(true); onGenerateTemplate(); }} disabled={generatingTemplate}
-              className="text-xs px-3 py-1.5 transition-colors hover:bg-teal-50" style={{ color: '#1e4a52' }}>
+              className="text-xs px-3 py-1.5 transition-colors hover:bg-teal-50" style={{ color: '#7fb4bc' }}>
               {generatingTemplate && templateDraftMode ? <><Spinner size={10} /> Writing…</> : '✍ AI Draft (.docx)'}
             </button>
           </div>
           <button onClick={onExportBriefing} disabled={exporting}
-            className="text-xs px-3 py-1.5 rounded border transition-colors hover:bg-gray-50" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+            className="text-xs px-3 py-1.5 rounded border transition-colors hover:bg-gray-50" style={{ borderColor: '#4d4636', color: '#d0c5b0' }}>
             {exporting ? 'Exporting…' : '↓ Export briefing (.html)'}
           </button>
         </div>
@@ -2140,7 +2140,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
       {/* Section status legend */}
       <div className="flex flex-wrap gap-2">
         {SECTION_STATUSES.map(s => (
-          <div key={s} className="flex items-center gap-1.5 text-[11px]" style={{ color:'#6b6456' }}>
+          <div key={s} className="flex items-center gap-1.5 text-[11px]" style={{ color:'#d0c5b0' }}>
             <div className="w-2.5 h-2.5 rounded-full" style={{ background:STATUS_COLORS[s] }}/>
             {s}
           </div>
@@ -2155,7 +2155,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
           s.id === 'commercial' && suggestedApproach?.indicative_budget ? null : null;
 
         return (
-          <div key={s.id} className="rounded-xl border overflow-hidden" style={{ background:'white', borderColor:'#ddd5c4' }}>
+          <div key={s.id} className="rounded-xl border overflow-hidden" style={{ background:'#211f1d', borderColor:'#4d4636' }}>
             <div className="flex items-center gap-3 px-4 py-3">
               {/* Status indicator + controls */}
               <div className="flex flex-col gap-1 flex-shrink-0">
@@ -2167,21 +2167,21 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
               <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background:STATUS_COLORS[s.status] }}/>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold">{s.title}</div>
-                <div className="text-xs mt-0.5" style={{ color:'#9b8e80' }}>{s.description}</div>
+                <div className="text-xs mt-0.5" style={{ color:'#99907d' }}>{s.description}</div>
               </div>
               {/* Status selector */}
               <select value={s.status} onChange={e => updateSection(s.id, { status: e.target.value })}
                 className="text-xs border rounded-lg px-2 py-1.5 outline-none no-min-h flex-shrink-0"
-                style={{ borderColor:'#ddd5c4', color:STATUS_COLORS[s.status], minWidth:120 }}>
+                style={{ borderColor:'#4d4636', color:STATUS_COLORS[s.status], minWidth:120 }}>
                 {SECTION_STATUSES.map(st => <option key={st} value={st}>{st}</option>)}
               </select>
             </div>
 
             {/* Source traceability + notes */}
-            <div className="px-4 pb-3 flex items-start gap-3 border-t" style={{ borderColor:'#f8f6f2' }}>
+            <div className="px-4 pb-3 flex items-start gap-3 border-t" style={{ borderColor:'#211f1d' }}>
               <div className="flex-1 pt-2">
                 {relevantMatch && (
-                  <div className="text-[10px] font-mono mb-1.5" style={{ color:'#1e4a52' }}>
+                  <div className="text-[10px] font-mono mb-1.5" style={{ color:'#7fb4bc' }}>
                     ◈ Source: "{relevantMatch.name}" ({relevantMatch.date_submitted?.slice(0,4) || 'date unknown'}, {relevantMatch.outcome})
                   </div>
                 )}
@@ -2195,7 +2195,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
                   onChange={e => updateSection(s.id, { notes: e.target.value })}
                   placeholder="Add notes, owner, or deadline…"
                   className="w-full text-xs px-2 py-1.5 border rounded-lg outline-none"
-                  style={{ borderColor:'#ddd5c4', color:'#3a3530' }}
+                  style={{ borderColor:'#4d4636', color:'#3a3530' }}
                 />
               </div>
               {/* Wave 4 — Draft section button */}
@@ -2213,7 +2213,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
                 ) : (
                   <button onClick={() => generateDraft(s)} disabled={generating === s.id || scan.status !== 'complete'}
                     className="text-[11px] px-2.5 py-1.5 rounded border transition-colors flex items-center gap-1.5 disabled:opacity-40"
-                    style={{ borderColor: '#1e4a52', color: '#1e4a52' }}
+                    style={{ borderColor: '#7fb4bc', color: '#7fb4bc' }}
                     title={scan.status !== 'complete' ? 'Wait for full scan to complete' : 'AI-draft this section'}>
                     {generating === s.id ? <><Spinner size={10} /> Drafting…</> : '✍ Draft section'}
                   </button>
@@ -2245,8 +2245,8 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
         navigator.clipboard.writeText(`PROPOSAL ASSEMBLY PLAN — ${rfpData.client || ''}\n${'='.repeat(40)}\n\n${plan}`);
         onToast('Assembly plan copied to clipboard');
       }}
-        className="w-full py-3 rounded-xl border text-sm font-medium transition-all hover:bg-cream no-min-h"
-        style={{ borderColor:'#ddd5c4', color:'#1e4a52' }}>
+        className="w-full py-3 rounded-xl border text-sm font-medium transition-all hover:bg-surface-container-high no-min-h"
+        style={{ borderColor:'#4d4636', color:'#7fb4bc' }}>
         ⊡ Copy Assembly Plan to Clipboard
       </button>
     </div>
@@ -2947,35 +2947,35 @@ const GapCard = memo(function GapCard({ gap: g }) {
   return (
     <Card className="mb-3 overflow-hidden">
       <div className="flex items-start gap-3 p-4">
-        <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ background:PRIORITY_COLOR[g.priority]||'#ddd5c4' }} />
+        <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ background:PRIORITY_COLOR[g.priority]||'#4d4636' }} />
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="text-sm font-semibold">{g.title}</div>
             <div className="flex gap-1.5 flex-shrink-0">
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:(PRIORITY_COLOR[g.priority]||'#ddd5c4')+'18', color:PRIORITY_COLOR[g.priority]||'#6b6456' }}>{g.type}</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:(PRIORITY_COLOR[g.priority]||'#ddd5c4')+'18', color:PRIORITY_COLOR[g.priority]||'#6b6456' }}>{g.priority}</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:(PRIORITY_COLOR[g.priority]||'#4d4636')+'18', color:PRIORITY_COLOR[g.priority]||'#6b6456' }}>{g.type}</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:(PRIORITY_COLOR[g.priority]||'#4d4636')+'18', color:PRIORITY_COLOR[g.priority]||'#6b6456' }}>{g.priority}</span>
             </div>
           </div>
-          <p className="text-xs leading-relaxed mb-1" style={{ color:'#6b6456' }}>{g.description}</p>
-          {g.source_hint && <p className="text-xs italic" style={{ color:'#1e4a52' }}>Partial coverage in: {g.source_hint}</p>}
+          <p className="text-xs leading-relaxed mb-1" style={{ color:'#d0c5b0' }}>{g.description}</p>
+          {g.source_hint && <p className="text-xs italic" style={{ color:'#7fb4bc' }}>Partial coverage in: {g.source_hint}</p>}
           {g.suggested_person && (
-            <div className="mt-2 rounded-lg px-3 py-2.5 text-xs" style={{ background:'#faf4e2', border:'1px solid rgba(184,150,46,.2)' }}>
+            <div className="mt-2 rounded-lg px-3 py-2.5 text-xs" style={{ background:'rgba(232,195,87,.08)', border:'1px solid rgba(184,150,46,.2)' }}>
               <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color:'#b8962e' }}>Suggested team lead</div>
-              <div className="font-semibold mb-0.5" style={{ color:'#7a5800' }}>{g.suggested_person}</div>
+              <div className="font-semibold mb-0.5" style={{ color:'#e8c357' }}>{g.suggested_person}</div>
               {g.suggested_person_reason && <div style={{ color:'#9a7820' }}>{g.suggested_person_reason}</div>}
               {g.suggested_person_cv && <div className="mt-1 pt-1 border-t" style={{ borderColor:'rgba(184,150,46,.2)', color:'#9a7820' }}>CV: {g.suggested_person_cv}</div>}
             </div>
           )}
           {g.source_proposals?.length > 0 && (
-            <div className="mt-2 text-[10px] font-mono" style={{ color:'#9b8e80' }}>
+            <div className="mt-2 text-[10px] font-mono" style={{ color:'#99907d' }}>
               Partial coverage in: {g.source_proposals.join(' · ')}
             </div>
           )}
         </div>
       </div>
-      <div className="flex items-center gap-2 px-4 py-2 border-t" style={{ borderColor:'#f0ebe0', background:'#faf7f2' }}>
-        <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:'#f0ebe0', color:'#6b6456' }}>Impact: {g.impact}</span>
-        <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:'#f0ebe0', color:'#6b6456' }}>{g.suggested_action}</span>
+      <div className="flex items-center gap-2 px-4 py-2 border-t" style={{ borderColor:'#2b2a27', background:'#1d1b19' }}>
+        <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:'#2b2a27', color:'#d0c5b0' }}>Impact: {g.impact}</span>
+        <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:'#2b2a27', color:'#d0c5b0' }}>{g.suggested_action}</span>
       </div>
     </Card>
   );
@@ -2987,10 +2987,10 @@ const GapCard = memo(function GapCard({ gap: g }) {
 // type, not just by date. Anything below 50% relevance has been filtered out
 // upstream — the UI never shows junk results.
 const CATEGORY_META = {
-  programme: { label: 'Programme & Procurement', icon: '◆', color: '#3d5c3a', desc: 'News directly about the named programme, framework, or contract vehicle' },
-  buyer:     { label: 'Buyer & Issuing Body',    icon: '◈', color: '#1e4a52', desc: 'News about the issuing organisation — leadership, budget, restructure' },
-  tech_reg:  { label: 'Technology & Regulation', icon: '◇', color: '#8a6200', desc: 'New standards, regulations, or capability announcements' },
-  competitive: { label: 'Competitive Landscape', icon: '◉', color: '#b04030', desc: 'Competitor wins, M&A, market shifts in the supplier base' },
+  programme: { label: 'Programme & Procurement', icon: '◆', color: '#7bd07a', desc: 'News directly about the named programme, framework, or contract vehicle' },
+  buyer:     { label: 'Buyer & Issuing Body',    icon: '◈', color: '#7fb4bc', desc: 'News about the issuing organisation — leadership, budget, restructure' },
+  tech_reg:  { label: 'Technology & Regulation', icon: '◇', color: '#e8c357', desc: 'New standards, regulations, or capability announcements' },
+  competitive: { label: 'Competitive Landscape', icon: '◉', color: '#ffb4ab', desc: 'Competitor wins, M&A, market shifts in the supplier base' },
 };
 
 const MarketContext = memo(function MarketContext({ news }) {
@@ -2998,8 +2998,8 @@ const MarketContext = memo(function MarketContext({ news }) {
     return (
       <div className="text-center py-12">
         <div className="text-3xl mb-3 opacity-25">◆</div>
-        <p className="text-sm" style={{ color: '#6b6456' }}>No relevant market context found.</p>
-        <p className="text-xs mt-2 max-w-md mx-auto" style={{ color: '#9b8e80' }}>
+        <p className="text-sm" style={{ color: '#d0c5b0' }}>No relevant market context found.</p>
+        <p className="text-xs mt-2 max-w-md mx-auto" style={{ color: '#99907d' }}>
           We searched for news tied to specific programmes, frameworks, regulators and competitors — none scored above the relevance threshold. Better empty than misleading.
         </p>
       </div>
@@ -3016,7 +3016,7 @@ const MarketContext = memo(function MarketContext({ news }) {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm" style={{ color: '#6b6456' }}>
+      <p className="text-sm" style={{ color: '#d0c5b0' }}>
         News scored against this RFP's specific entities. Each item is tagged with where to use it in the bid and what argument it strengthens.
       </p>
 
@@ -3031,9 +3031,9 @@ const MarketContext = memo(function MarketContext({ news }) {
                 <div className="text-[11px] font-mono uppercase tracking-widest" style={{ color: meta.color }}>
                   {meta.icon} {meta.label}
                 </div>
-                <div className="text-xs mt-0.5" style={{ color: '#6b6456' }}>{meta.desc}</div>
+                <div className="text-xs mt-0.5" style={{ color: '#d0c5b0' }}>{meta.desc}</div>
               </div>
-              <div className="text-[11px] font-mono" style={{ color: '#9b8e80' }}>
+              <div className="text-[11px] font-mono" style={{ color: '#99907d' }}>
                 {items.length} {items.length === 1 ? 'item' : 'items'}
               </div>
             </div>
@@ -3053,16 +3053,16 @@ const MarketContextCard = memo(function MarketContextCard({ item: n, accent }) {
       <div className="p-4 flex-1">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
           <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background: accent + '14', color: accent }}>{n.source}</span>
-          <span className="text-[10px] font-mono" style={{ color: '#6b6456' }}>{n.date}</span>
+          <span className="text-[10px] font-mono" style={{ color: '#d0c5b0' }}>{n.date}</span>
           <span className="ml-auto text-[10px] font-mono font-semibold" style={{ color: accent }}>{n.relevance_score}/100</span>
         </div>
         <h3 className="text-sm font-semibold mb-1.5 leading-snug">{n.title}</h3>
-        <p className="text-xs leading-relaxed mb-3" style={{ color: '#6b6456' }}>{n.snippet}</p>
+        <p className="text-xs leading-relaxed mb-3" style={{ color: '#d0c5b0' }}>{n.snippet}</p>
 
         {n.why_it_matters && (
-          <div className="rounded-md p-3 text-xs leading-relaxed mb-2" style={{ background: '#faf4e2' }}>
-            <span className="font-semibold" style={{ color: '#8a6200' }}>Why this matters: </span>
-            <span style={{ color: '#5a4810' }}>{n.why_it_matters}</span>
+          <div className="rounded-md p-3 text-xs leading-relaxed mb-2" style={{ background: 'rgba(232,195,87,.08)' }}>
+            <span className="font-semibold" style={{ color: '#e8c357' }}>Why this matters: </span>
+            <span style={{ color: '#e4c366' }}>{n.why_it_matters}</span>
           </div>
         )}
 
@@ -3070,13 +3070,13 @@ const MarketContextCard = memo(function MarketContextCard({ item: n, accent }) {
           <div className="flex flex-wrap gap-1.5 mt-2">
             {n.where_to_use_in_bid && (
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border"
-                style={{ borderColor: 'rgba(30,74,82,.3)', color: '#1e4a52' }}>
+                style={{ borderColor: 'rgba(30,74,82,.3)', color: '#7fb4bc' }}>
                 Use in: {n.where_to_use_in_bid}
               </span>
             )}
             {n.tone_supported && (
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border"
-                style={{ borderColor: 'rgba(184,150,46,.3)', color: '#8a6200' }}>
+                style={{ borderColor: 'rgba(184,150,46,.3)', color: '#e8c357' }}>
                 Supports: {n.tone_supported}
               </span>
             )}
@@ -3086,7 +3086,7 @@ const MarketContextCard = memo(function MarketContextCard({ item: n, accent }) {
       {n.url && (
         <a href={n.url} target="_blank" rel="noopener noreferrer"
           className="flex items-center gap-2 px-4 py-2.5 border-t text-xs transition-colors hover:bg-[#f0f8ff]"
-          style={{ borderColor: '#f0ebe0', color: '#1e4a52' }}>
+          style={{ borderColor: '#2b2a27', color: '#7fb4bc' }}>
           <span className="flex-1 truncate">{n.url.replace(/^https?:\/\/(www\.)?/, '')}</span>
           <span className="flex-shrink-0">↗</span>
         </a>
@@ -3100,20 +3100,20 @@ const NewsCard = memo(function NewsCard({ item: n }) {
     <Card className="overflow-hidden flex flex-col">
       <div className="p-4 flex-1">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:'#e8f2f4', color:'#1e4a52' }}>{n.source}</span>
-          <span className="text-[10px] font-mono" style={{ color:'#6b6456' }}>{n.date}</span>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:'rgba(30,107,120,.15)', color:'#7fb4bc' }}>{n.source}</span>
+          <span className="text-[10px] font-mono" style={{ color:'#d0c5b0' }}>{n.date}</span>
           <span className="ml-auto text-[10px] font-mono" style={{ color:'#b8962e' }}>⟡ {n.relevance_score}% relevant</span>
         </div>
         <h3 className="text-sm font-semibold mb-1.5 leading-snug">{n.title}</h3>
-        <p className="text-xs leading-relaxed mb-3" style={{ color:'#6b6456' }}>{n.snippet}</p>
-        <div className="rounded-md p-3 text-xs leading-relaxed" style={{ background:'#faf4e2' }}>
+        <p className="text-xs leading-relaxed mb-3" style={{ color:'#d0c5b0' }}>{n.snippet}</p>
+        <div className="rounded-md p-3 text-xs leading-relaxed" style={{ background:'rgba(232,195,87,.08)' }}>
           <span className="font-semibold" style={{ color:'#b8962e' }}>⟡ Why this matters: </span>{n.why_it_matters}
         </div>
       </div>
       {n.url && (
         <a href={n.url} target="_blank" rel="noopener noreferrer"
           className="flex items-center gap-2 px-4 py-2.5 border-t text-xs transition-colors hover:bg-[#f0f8ff]"
-          style={{ borderColor:'#f0ebe0', color:'#1e4a52' }}>
+          style={{ borderColor:'#2b2a27', color:'#7fb4bc' }}>
           <span className="flex-1 truncate">{n.url.replace(/^https?:\/\/(www\.)?/,'')}</span>
           <span className="flex-shrink-0">↗</span>
         </a>
