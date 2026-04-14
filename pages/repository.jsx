@@ -613,6 +613,9 @@ export default function Repository() {
     const d=await r.json();
     setProjects(d.projects||[]);
     setLoading(false);
+    // Refresh analysis health alongside the project list so the banner's
+    // counts stay current as analyses complete / fail in the background.
+    checkAnalysisHealth();
   }
 
   function toggle(fid){ setExpandedFolders(e=>({...e,[fid]:!e[fid]})); }
@@ -978,6 +981,27 @@ export default function Repository() {
                   <span className="text-xs">
                     No workspace set — RFP scans will match against all projects. Click "+ Workspace" on any project to curate your scanning set.
                   </span>
+                </div>
+              )}
+              {analysisHealth && analysisHealth.unanalysed > 0 && !loading && (
+                <div className="flex items-center gap-3 mb-4 px-4 py-3 rounded-lg border border-error/30 bg-error/10">
+                  <span className="material-symbols-outlined text-error text-lg">warning</span>
+                  <div className="flex-1 text-sm text-on-surface">
+                    <div className="font-semibold text-error">
+                      {analysisHealth.unanalysed} project{analysisHealth.unanalysed === 1 ? '' : 's'} need{analysisHealth.unanalysed === 1 ? 's' : ''} re-analysis
+                    </div>
+                    <div className="text-xs text-on-surface-variant mt-0.5">
+                      {[
+                        analysisHealth.errored && `${analysisHealth.errored} errored`,
+                        analysisHealth.stuck_indexing && `${analysisHealth.stuck_indexing} stuck`,
+                        analysisHealth.silently_empty && `${analysisHealth.silently_empty} empty result`,
+                        analysisHealth.unindexed && `${analysisHealth.unindexed} never indexed`,
+                      ].filter(Boolean).join(' · ')}
+                    </div>
+                  </div>
+                  <Btn variant="gold" onClick={runMissingAnalysis} disabled={runningAnalysis}>
+                    {runningAnalysis ? <><Spinner size={12}/> Queuing…</> : '⟳ Re-analyse all'}
+                  </Btn>
                 </div>
               )}
               {loading?(
