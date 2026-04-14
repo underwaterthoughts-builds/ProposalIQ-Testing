@@ -132,18 +132,35 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
   useEffect(() => {
     if (!isIndexing) { setLiveStage(null); return; }
     let active = true;
-    async function pollLog() {
+    // Two things happen on each tick while indexing:
+    //  · progress stage for the spinner copy (cheap log table read)
+    //  · status check on the project itself — when it flips back to
+    //    'complete' we pull the full row and push it up via onUpdated so
+    //    the card's stars/AI/System ratings refresh without a full reload.
+    async function tick() {
       try {
-        const r = await fetch(`/api/projects/indexing-log?project_id=${p.id}&limit=1`);
-        const d = await r.json();
-        const latest = d.logs?.[0];
+        const logR = await fetch(`/api/projects/indexing-log?project_id=${p.id}&limit=1`);
+        const logD = await logR.json();
+        const latest = logD.logs?.[0];
         if (latest && active) setLiveStage(latest);
       } catch {}
-      if (active && isIndexing) setTimeout(pollLog, 3000);
+      try {
+        const r = await fetch(`/api/projects/${p.id}`);
+        if (r.ok) {
+          const d = await r.json();
+          const fresh = d.project;
+          if (fresh && active && fresh.indexing_status !== 'indexing') {
+            onUpdated?.(p.id, fresh);
+            // onUpdated triggers a re-render with fresh.indexing_status
+            // which will break this poll on the next pass.
+          }
+        }
+      } catch {}
+      if (active && isIndexing) setTimeout(tick, 3000);
     }
-    pollLog();
+    tick();
     return () => { active = false; };
-  }, [isIndexing, p.id]);
+  }, [isIndexing, p.id, onUpdated]);
 
   async function handleDelete(e) {
     e.stopPropagation();
@@ -157,8 +174,17 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
     e.stopPropagation();
     setReanalysing(true);
     const r = await fetch(`/api/projects/${p.id}/reindex`, { method:'POST' });
-    if (r.ok) onToast(`Re-analysis started for "${p.name}" — refresh in 60 seconds`);
-    else onToast('Re-analysis failed — check API keys in Settings');
+    if (r.ok) {
+      // Flip local state into 'indexing' so the useEffect polls both the
+      // indexing-log (progress) and /api/projects/[id] (status + fresh
+      // ai_metadata). onUpdated will push the fresh row back into the list
+      // when the background job completes, so User/AI/System refresh
+      // automatically — no page reload required.
+      onUpdated?.(p.id, { indexing_status: 'indexing' });
+      onToast(`Re-analysing "${p.name}" — ratings will refresh when done`);
+    } else {
+      onToast('Re-analysis failed — check API keys in Settings');
+    }
     setReanalysing(false);
   }
 
