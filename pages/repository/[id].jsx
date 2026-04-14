@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import Layout from '../../components/Layout';
-import { Btn, Card, Stars, OutcomeLabel, FileChip, Spinner, Toast } from '../../components/ui';
+import { Btn, Card, Stars, StarsPct, OutcomeLabel, FileChip, Spinner, Toast } from '../../components/ui';
 import { useUser } from '../../lib/useUser';
 import { formatMoney, currencySymbol } from '../../lib/format';
 import { DebouncedInput, DebouncedTextarea } from '../../lib/useDebounce';
@@ -240,26 +240,30 @@ const ProjectDetailsEditor = memo(function ProjectDetailsEditor({ project, onSav
 });
 
 // ── System-rating breakdown ───────────────────────────────────────────────
-// Shows AI% and the blended System% beneath the user stars on the detail
-// header. Quiet when neither value exists.
+// Three labelled rows — User / AI / System — rendered as 5 stars each
+// (fractional fill based on the underlying percentage) plus the raw
+// percentage. Quiet when no numbers exist at all.
 const DetailRatingBreakdown = memo(function DetailRatingBreakdown({ project }) {
   const sr = computeSystemRating(project);
   if (sr.system_pct === null) return null;
-  const label = sr.source === 'user-only' ? 'System (user only)'
-    : sr.source === 'ai-only' ? 'System (AI only)'
-    : 'System (60/40)';
+  const rows = [
+    { label: 'User',   pct: sr.user_pct },
+    { label: 'AI',     pct: sr.ai_pct },
+    { label: 'System', pct: sr.system_pct },
+  ];
   return (
-    <div className="text-right space-y-0.5">
-      {sr.ai_pct !== null && (
-        <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
-          AI <span className="text-on-surface font-bold ml-1">{sr.ai_pct}%</span>
+    <div className="space-y-1">
+      {rows.map(r => (
+        <div key={r.label} className="flex items-center justify-end gap-3">
+          <span className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant w-14 text-left">{r.label}</span>
+          <StarsPct pct={r.pct ?? 0} size="base" />
+          <span className={`font-label text-[11px] tabular-nums w-10 text-right ${r.pct === null ? 'text-outline/40' : r.label === 'System' ? 'text-primary font-bold' : 'text-on-surface'}`}>
+            {r.pct === null ? '—' : `${r.pct}%`}
+          </span>
         </div>
-      )}
-      <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
-        {label} <span className={`font-bold ml-1 ${sr.system_pct >= 70 ? 'text-primary' : sr.system_pct >= 45 ? 'text-on-surface' : 'text-outline'}`}>{sr.system_pct}%</span>
-      </div>
+      ))}
       {sr.disagreement && (
-        <div className="text-[9px] text-outline" title={`User rated ${sr.disagreement.user_higher ? 'higher than' : 'lower than'} the AI by ${sr.disagreement.gap} points`}>
+        <div className="text-[9px] text-outline text-right" title={`User rated ${sr.disagreement.user_higher ? 'higher than' : 'lower than'} the AI by ${sr.disagreement.gap} points`}>
           ⚠ {sr.disagreement.gap}pt user/AI gap
         </div>
       )}
@@ -744,12 +748,6 @@ export default function ProjectDetail() {
                       <p className="text-xl font-headline italic">{project.client || '—'}</p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      {project.user_rating > 0 && (
-                        <div className="flex items-center gap-2">
-                          <Stars rating={project.user_rating} />
-                          <span className="font-label text-lg">{project.user_rating.toFixed(1)}</span>
-                        </div>
-                      )}
                       <DetailRatingBreakdown project={project} />
                     </div>
                     <div className="text-right">

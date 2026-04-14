@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback, memo } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Layout from '../components/Layout';
-import { Btn, Card, Stars, OutcomeLabel, FileChip, Spinner, Toast } from '../components/ui';
+import { Btn, Card, Stars, StarsPct, OutcomeLabel, FileChip, Spinner, Toast } from '../components/ui';
 import { useUser } from '../lib/useUser';
 import { formatMoney } from '../lib/format';
 import { DebouncedSearch } from '../lib/useDebounce';
@@ -86,30 +86,34 @@ const AddNewInline = memo(function AddNewInline({ field, label, placeholder, sho
 
 // ─── PROJECT CARD ─────────────────────────────────────────────────────────────
 
-// Tiny stack of AI% + System% shown beneath the user stars on cards and the
-// detail page. Quiet when neither number exists, so unindexed projects don't
-// read as errors.
+// Three labelled rows — User / AI / System — each shown as 5 stars with
+// fractional fill (derived from the underlying percentage) plus the raw
+// percentage on the right. Quiet when no numbers exist at all.
 const RatingBreakdown = memo(function RatingBreakdown({ project }) {
   const sr = computeSystemRating(project);
   if (sr.system_pct === null) return null;
-  const label = sr.source === 'user-only' ? 'user-only'
-    : sr.source === 'ai-only' ? 'ai-only'
-    : 'system';
+  const rows = [
+    { label: 'User',   pct: sr.user_pct },
+    { label: 'AI',     pct: sr.ai_pct },
+    { label: 'System', pct: sr.system_pct },
+  ];
   return (
-    <div className="mt-1 flex flex-col items-end gap-0.5 text-[10px] font-label text-on-surface-variant">
-      {sr.ai_pct !== null && (
-        <span className="text-outline">AI <span className="text-on-surface-variant">{sr.ai_pct}%</span></span>
-      )}
-      <span className="text-outline">
-        {label === 'system' ? 'System' : label === 'ai-only' ? 'System (AI)' : 'System (user)'}{' '}
-        <span className={`font-bold ${sr.system_pct >= 70 ? 'text-primary' : sr.system_pct >= 45 ? 'text-on-surface-variant' : 'text-outline'}`}>
-          {sr.system_pct}%
-        </span>
-      </span>
+    <div className="mt-1.5 space-y-0.5 text-[10px] font-label">
+      {rows.map(r => (
+        <div key={r.label} className="flex items-center justify-end gap-2">
+          <span className="text-outline uppercase tracking-wider w-12 text-left">{r.label}</span>
+          <span className="flex items-center gap-2">
+            <StarsPct pct={r.pct ?? 0} />
+            <span className={`text-[10px] tabular-nums w-8 text-right ${r.pct === null ? 'text-outline/40' : r.label === 'System' ? 'text-primary font-bold' : 'text-on-surface-variant'}`}>
+              {r.pct === null ? '—' : `${r.pct}%`}
+            </span>
+          </span>
+        </div>
+      ))}
       {sr.disagreement && (
-        <span className="text-[9px] text-outline" title={`${sr.disagreement.gap}pt gap — user rated ${sr.disagreement.user_higher ? 'higher' : 'lower'} than AI`}>
-          ⚠ {sr.disagreement.gap}pt gap
-        </span>
+        <div className="flex justify-end text-[9px] text-outline" title={`${sr.disagreement.gap}pt gap — user rated ${sr.disagreement.user_higher ? 'higher' : 'lower'} than AI`}>
+          ⚠ {sr.disagreement.gap}pt user/AI gap
+        </div>
       )}
     </div>
   );
@@ -277,7 +281,6 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
           </div>
           <div className="text-right">
             <span className="font-label text-[10px] text-outline block mb-1 uppercase">Rating</span>
-            <Stars rating={p.user_rating} />
             <RatingBreakdown project={p} />
           </div>
         </div>

@@ -44,6 +44,28 @@ export function Stars({ rating, size = 'sm' }) {
   );
 }
 
+// Renders a 0–100 percentage as 5 stars with fractional fill. Overlays a
+// width-clipped row of filled stars on top of an identical row of outline
+// stars so the alignment is pixel-stable regardless of font metrics.
+export function StarsPct({ pct, size = 'sm' }) {
+  const sz = size === 'sm' ? 'text-sm' : 'text-base';
+  const clamped = Math.max(0, Math.min(100, Number(pct) || 0));
+  return (
+    <span className={`relative inline-block whitespace-nowrap ${sz}`} style={{ lineHeight: 1 }}>
+      <span className="inline-flex gap-0.5 text-outline-variant/40">
+        {[1, 2, 3, 4, 5].map(i => <span key={i}>★</span>)}
+      </span>
+      <span
+        className="inline-flex gap-0.5 text-primary absolute top-0 left-0 overflow-hidden whitespace-nowrap"
+        style={{ width: `${clamped}%` }}
+        aria-hidden="true"
+      >
+        {[1, 2, 3, 4, 5].map(i => <span key={i}>★</span>)}
+      </span>
+    </span>
+  );
+}
+
 export function ScoreRing({ score, size = 44 }) {
   const r = 16;
   const circ = 2 * Math.PI * r;
