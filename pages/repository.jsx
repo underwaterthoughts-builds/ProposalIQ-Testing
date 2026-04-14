@@ -406,6 +406,7 @@ export default function Repository() {
   const [newFolderName, setNewFolderName] = useState('');
   const [editingFolderId, setEditingFolderId] = useState(null);
   const [editingFolderName, setEditingFolderName] = useState('');
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   // Session-scoped retry counter for auto-retrying failed analyses.
   // In-memory only — reloads reset the count, so a persistently broken
@@ -648,11 +649,23 @@ export default function Repository() {
     <>
       <Head><title>Repository — ProposalIQ</title></Head>
       <Layout title="Repository" subtitle={`${projects.length} projects`} user={user}
-        actions={<div className="flex gap-2"><Btn variant="ghost" onClick={()=>setShowBatch(true)}>⊞ Batch Import</Btn><Btn variant="gold" onClick={()=>setShowUpload(true)}>⊕ Upload Project</Btn></div>}>
-        <div className="flex h-full overflow-hidden bg-surface">
-          <aside className="w-60 flex-shrink-0 flex flex-col border-r border-outline-variant/10 overflow-y-auto bg-surface-container-lowest/50">
+        actions={<div className="flex gap-2">
+          <button onClick={()=>setMobileFiltersOpen(true)} className="md:hidden p-2 text-on-surface-variant hover:bg-surface-container-high rounded-sm transition-all" aria-label="Open filters">
+            <span className="material-symbols-outlined text-xl">tune</span>
+          </button>
+          <Btn variant="ghost" onClick={()=>setShowBatch(true)}>⊞ Batch Import</Btn>
+          <Btn variant="gold" onClick={()=>setShowUpload(true)}>⊕ Upload Project</Btn>
+        </div>}>
+        <div className="flex h-full overflow-hidden bg-surface relative">
+          {mobileFiltersOpen && (
+            <div className="md:hidden fixed inset-0 z-[55] bg-black/50 backdrop-blur-sm" onClick={()=>setMobileFiltersOpen(false)} />
+          )}
+          <aside className={`${mobileFiltersOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed top-0 bottom-0 left-0 z-[56] w-72 md:static md:z-auto md:w-60 flex-shrink-0 flex flex-col border-r border-outline-variant/10 overflow-y-auto bg-surface-container-lowest transition-transform duration-200`}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-outline-variant/10">
-              <span className="font-label text-[10px] uppercase tracking-widest text-outline">Status</span>
+              <span className="font-label text-[10px] uppercase tracking-widest text-outline">Filters</span>
+              <button onClick={()=>setMobileFiltersOpen(false)} className="md:hidden p-1 text-on-surface-variant hover:text-on-surface" aria-label="Close filters">
+                <span className="material-symbols-outlined text-lg">close</span>
+              </button>
             </div>
             <div className="p-3">
               {folderItems.map(fi=>(
@@ -787,11 +800,11 @@ export default function Repository() {
             </div>
           </aside>
 
-          <div className="flex-1 flex flex-col overflow-hidden md:flex bg-surface">
-            <header className="px-8 py-8">
-              <div className="flex items-baseline justify-between mb-8 gap-6 flex-wrap">
-                <h1 className="font-headline text-4xl md:text-5xl font-light tracking-tight">Repository</h1>
-                <p className="text-on-surface-variant text-sm max-w-xs text-right">
+          <div className="flex-1 flex flex-col overflow-hidden bg-surface min-w-0">
+            <header className="px-4 md:px-8 py-4 md:py-8">
+              <div className="flex items-baseline justify-between mb-4 md:mb-8 gap-4 md:gap-6 flex-wrap">
+                <h1 className="font-headline text-3xl md:text-5xl font-light tracking-tight">Repository</h1>
+                <p className="hidden md:block text-on-surface-variant text-sm max-w-xs text-right">
                   Access curated intelligence from {projects.length} historical proposal{projects.length === 1 ? '' : 's'} and strategic assets.
                 </p>
               </div>
@@ -861,7 +874,7 @@ export default function Repository() {
                 </div>
               )}
             </header>
-            <div className="flex-1 overflow-y-auto px-8 pb-8">
+            <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-8">
               {/* Workspace bar — shown when user has workspace selections */}
               {workspaceLoaded && workspaceIds.size > 0 && !loading && (
                 <div className="flex items-center gap-3 mb-6 px-4 py-3 rounded-lg bg-tertiary-container/20 border border-tertiary-container/20">

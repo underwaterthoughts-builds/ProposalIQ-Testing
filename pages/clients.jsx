@@ -20,6 +20,7 @@ export default function Clients() {
   const [editForm, setEditForm] = useState({});
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
+  const [mobileListOpen, setMobileListOpen] = useState(false);
 
   useEffect(() => { if (user) load(); }, [user]);
 
@@ -66,16 +67,29 @@ export default function Clients() {
     <>
       <Head><title>Client Intelligence — ProposalIQ</title></Head>
       <Layout title="Client Intelligence" subtitle="Relationship history and account context" user={user}
-        actions={<Btn variant="teal" onClick={() => { setSelected(null); setEditForm({ name:'', notes:'', sector:'', relationship_status:'prospect' }); setShowAdd(true); }}>⊕ Add Client</Btn>}>
-        <div className="flex h-full overflow-hidden bg-surface">
+        actions={<div className="flex gap-2">
+          <button onClick={()=>setMobileListOpen(true)} className="md:hidden p-2 text-on-surface-variant hover:bg-surface-container-high rounded-sm transition-all" aria-label="Open client list">
+            <span className="material-symbols-outlined text-xl">menu_open</span>
+          </button>
+          <Btn variant="teal" onClick={() => { setSelected(null); setEditForm({ name:'', notes:'', sector:'', relationship_status:'prospect' }); setShowAdd(true); }}>⊕ Add Client</Btn>
+        </div>}>
+        <div className="flex h-full overflow-hidden bg-surface relative">
+          {mobileListOpen && (
+            <div className="md:hidden fixed inset-0 z-[55] bg-black/50 backdrop-blur-sm" onClick={()=>setMobileListOpen(false)} />
+          )}
 
           {/* Client list */}
-          <aside className="w-64 flex-shrink-0 flex flex-col bg-surface-container-low border-r border-outline-variant/10">
-            <div className="p-6 border-b border-outline-variant/10">
-              <h3 className="font-headline text-xl text-on-surface">Client Directory</h3>
-              <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mt-1">
-                Total: {allNames.length} {allNames.length === 1 ? 'account' : 'accounts'}
-              </p>
+          <aside className={`${mobileListOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed top-0 bottom-0 left-0 z-[56] w-72 md:static md:z-auto md:w-64 flex-shrink-0 flex flex-col bg-surface-container-low border-r border-outline-variant/10 transition-transform duration-200`}>
+            <div className="p-6 border-b border-outline-variant/10 flex items-start justify-between gap-3">
+              <div>
+                <h3 className="font-headline text-xl text-on-surface">Client Directory</h3>
+                <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mt-1">
+                  Total: {allNames.length} {allNames.length === 1 ? 'account' : 'accounts'}
+                </p>
+              </div>
+              <button onClick={()=>setMobileListOpen(false)} className="md:hidden p-1 text-on-surface-variant hover:text-on-surface" aria-label="Close client list">
+                <span className="material-symbols-outlined text-lg">close</span>
+              </button>
             </div>
             <div className="p-4 border-b border-outline-variant/10">
               <input
@@ -98,7 +112,7 @@ export default function Clients() {
                   return (
                     <button
                       key={name}
-                      onClick={() => selectClient(name)}
+                      onClick={() => { selectClient(name); setMobileListOpen(false); }}
                       className={`w-full text-left p-6 border-b border-outline-variant/5 transition-colors cursor-pointer group ${
                         isActive
                           ? 'bg-surface-container-high border-l-2 border-l-primary'

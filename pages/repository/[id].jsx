@@ -633,7 +633,7 @@ export default function ProjectDetail() {
           </div>
 
           <div className="flex-1 overflow-y-auto relative z-10">
-            <div className="max-w-[900px] mx-auto px-6 md:px-10 pt-8 pb-20">
+            <div className="max-w-[900px] mx-auto px-4 md:px-10 pt-6 md:pt-8 pb-20">
 
               {/* Breadcrumb + actions */}
               <div className="flex justify-between items-center mb-12 flex-wrap gap-4">
@@ -775,10 +775,10 @@ export default function ProjectDetail() {
             <TaxonomyEditor project={project} taxItems={taxItems} onSave={saveTaxonomy} />
 
             {/* Tabs */}
-            <div className="flex border-b mb-5" style={{ borderColor: 'rgba(77,70,54,0.3)' }}>
+            <div className="flex border-b mb-5 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0" style={{ borderColor: 'rgba(77,70,54,0.3)' }}>
               {tabs.map(t => (
                 <button key={t.id} onClick={() => setActiveTab(t.id)}
-                  className="px-4 py-2 text-[12.5px] font-medium border-b-2 transition-all flex items-center gap-2"
+                  className="px-4 py-2 text-[12.5px] font-medium border-b-2 transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0"
                   style={{ borderColor: activeTab === t.id ? '#e8c357' : 'transparent', color: activeTab === t.id ? '#e8c357' : '#d0c5b0' }}>
                   {t.label}
                   {t.badge && <span className="text-[10px] px-1.5 py-0.5 rounded font-label" style={{ background: activeTab === t.id ? '#e8c357' : 'rgba(77,70,54,0.15)', color: activeTab === t.id ? 'white' : '#d0c5b0' }}>{t.badge}</span>}
