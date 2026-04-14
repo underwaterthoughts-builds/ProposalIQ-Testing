@@ -19,17 +19,14 @@ const SECONDARY_NAV = [
   { href: '/onboarding/profile', label: 'Organisation Profile' },
 ];
 
-// Pages that show the Lens Switcher sidebar (Quick/Pro mode contexts)
+// Pages that expose the Quick / Pro mode toggle in the topbar
 const LENS_PAGES = ['/dashboard', '/rfp'];
 
-export default function Layout({ children, title, subtitle, actions, user, showSidebar }) {
+export default function Layout({ children, title, subtitle, actions, user }) {
   const router = useRouter();
   const { mode, setMode } = useMode();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-
-  // Default sidebar visibility: show on Quick/Pro pages unless explicitly overridden
-  const sidebarVisible = showSidebar ?? LENS_PAGES.some(p => router.pathname.startsWith(p));
 
   useEffect(() => { setMenuOpen(false); }, [router.pathname]);
 
@@ -86,8 +83,37 @@ export default function Layout({ children, title, subtitle, actions, user, showS
             </nav>
           </div>
 
-          {/* Right: utility + CTA + avatar */}
-          <div className="flex items-center gap-3 md:gap-4">
+          {/* Right: mode toggle + utility + CTA + avatar */}
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* Quick / Pro mode toggle — only on Dashboard + RFP pages */}
+            {LENS_PAGES.some(p => router.pathname.startsWith(p)) && (
+              <div className="hidden sm:flex items-center gap-1">
+                <button
+                  onClick={() => setMode('quick')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-label uppercase tracking-widest transition-colors ${
+                    mode === 'quick'
+                      ? 'bg-surface-container-high text-primary font-bold'
+                      : 'text-on-surface-variant hover:text-on-surface'
+                  }`}
+                  title="Quick lens — fast decision brief"
+                >
+                  <span className="material-symbols-outlined text-sm">bolt</span>
+                  Quick
+                </button>
+                <button
+                  onClick={() => setMode('pro')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-label uppercase tracking-widest transition-colors ${
+                    mode === 'pro'
+                      ? 'bg-surface-container-high text-primary font-bold'
+                      : 'text-on-surface-variant hover:text-on-surface'
+                  }`}
+                  title="Pro lens — full strategic workspace"
+                >
+                  <span className="material-symbols-outlined text-sm">psychology</span>
+                  Pro
+                </button>
+              </div>
+            )}
             <div className="hidden sm:flex gap-1">
               <button className="p-2 hover:bg-surface-container-high rounded-sm transition-all" aria-label="Search">
                 <span className="material-symbols-outlined text-on-surface-variant">search</span>
@@ -100,7 +126,7 @@ export default function Layout({ children, title, subtitle, actions, user, showS
               href="/rfp"
               className="hidden sm:inline-block bg-primary text-on-primary px-4 py-1.5 rounded-sm font-bold text-sm tracking-tight hover:scale-95 transition-transform"
             >
-              Create Proposal
+              New Analysis
             </Link>
             <button
               onClick={logout}
@@ -126,83 +152,8 @@ export default function Layout({ children, title, subtitle, actions, user, showS
         )}
       </header>
 
-      {/* ── SIDEBAR (Lens Switcher) ─────────────────────────────────────── */}
-      {sidebarVisible && (
-        <aside className="hidden lg:flex flex-col fixed left-0 top-0 pt-16 w-64 h-screen bg-surface-container-lowest border-r border-outline-variant/10 z-40">
-          <div className="px-6 py-6 border-b border-outline-variant/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary-container/20 rounded flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
-              </div>
-              <div>
-                <p className="text-base font-black text-primary uppercase tracking-tighter">Lens Switcher</p>
-                <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">Intelligence Mode</p>
-              </div>
-            </div>
-          </div>
-
-          <nav className="flex-1 px-2 py-4 space-y-1">
-            <button
-              onClick={() => setMode('quick')}
-              className={`w-full text-left rounded-md px-4 py-3 flex items-center gap-3 transition-all ${
-                mode === 'quick'
-                  ? 'bg-surface-container-high text-primary font-bold'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface'
-              }`}
-            >
-              <span className="material-symbols-outlined">bolt</span>
-              <span className="text-sm uppercase tracking-widest">Quick Lens</span>
-            </button>
-            <button
-              onClick={() => setMode('pro')}
-              className={`w-full text-left rounded-md px-4 py-3 flex items-center gap-3 transition-all ${
-                mode === 'pro'
-                  ? 'bg-surface-container-high text-primary font-bold'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface'
-              }`}
-            >
-              <span className="material-symbols-outlined">psychology</span>
-              <span className="text-sm uppercase tracking-widest">Pro Lens</span>
-            </button>
-
-            <div className="h-px bg-outline-variant/10 my-3" />
-
-            <Link
-              href="/repository"
-              className="block rounded-md px-4 py-3 flex items-center gap-3 text-on-surface-variant hover:text-on-surface hover:bg-surface transition-all"
-            >
-              <span className="material-symbols-outlined">bookmark</span>
-              <span className="text-sm uppercase tracking-widest">Saved</span>
-            </Link>
-            <Link
-              href="/rfp"
-              className="block rounded-md px-4 py-3 flex items-center gap-3 text-on-surface-variant hover:text-on-surface hover:bg-surface transition-all"
-            >
-              <span className="material-symbols-outlined">edit_note</span>
-              <span className="text-sm uppercase tracking-widest">Drafts</span>
-            </Link>
-            <Link
-              href="/repository"
-              className="block rounded-md px-4 py-3 flex items-center gap-3 text-on-surface-variant hover:text-on-surface hover:bg-surface transition-all"
-            >
-              <span className="material-symbols-outlined">inventory_2</span>
-              <span className="text-sm uppercase tracking-widest">Archive</span>
-            </Link>
-          </nav>
-
-          <div className="p-4 border-t border-outline-variant/10">
-            <Link
-              href="/rfp"
-              className="block w-full bg-primary-container text-on-primary-container py-3 rounded-sm font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-opacity text-center"
-            >
-              New Analysis
-            </Link>
-          </div>
-        </aside>
-      )}
-
       {/* ── CONTENT ──────────────────────────────────────────────────────── */}
-      <main className={`pt-14 md:pt-14 min-h-screen ${sidebarVisible ? 'lg:pl-64' : ''}`}>
+      <main className="pt-14 md:pt-14 min-h-screen">
         {children}
       </main>
 
