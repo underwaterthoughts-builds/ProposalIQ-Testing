@@ -459,10 +459,34 @@ export default function Repository() {
       const d = await r.json();
       setToast(`✓ ${d.message} — this may take several minutes`);
       setAnalysisHealth(prev => ({ ...prev, unanalysed: 0, unanalysedIds: [] }));
-      // Reload after a delay to pick up any fast completions
       setTimeout(() => { loadProjects(); checkAnalysisHealth(); }, 5000);
     } catch { setToast('Failed to start analysis'); }
     setRunningAnalysis(false);
+  }
+
+  // Rescan every project in the repository. Staggered 1.5s between calls so
+  // we don't flood the API. Confirms first because this incurs real AI cost
+  // and can take a while for large libraries.
+  async function rescanAll() {
+    if (!projects.length) return;
+    if (!confirm(
+      `Re-analyse all ${projects.length} project${projects.length === 1 ? '' : 's'}?\n\n` +
+      `This re-runs AI analysis across the full repository. It will cost money and take several minutes.`
+    )) return;
+    setRunningAnalysis(true);
+    setToast(`Re-analysing ${projects.length} project${projects.length === 1 ? '' : 's'} — this may take a while…`);
+    let started = 0, failed = 0;
+    for (const p of projects) {
+      try {
+        const r = await fetch(`/api/projects/${p.id}/reindex`, { method: 'POST' });
+        if (r.ok) started++; else failed++;
+      } catch { failed++; }
+      // 1.5s stagger keeps us well under any rate limits
+      await new Promise(res => setTimeout(res, 1500));
+    }
+    setToast(`✓ Kicked off ${started} rescans${failed ? ` (${failed} failed to start)` : ''}. Refresh in 60s to see updated analyses.`);
+    setRunningAnalysis(false);
+    setTimeout(() => { loadProjects(); checkAnalysisHealth(); }, 8000);
   }
   useEffect(()=>{ loadProjects(); },[selectedFolder,search,semanticSearch,selectedOffering,selectedServiceIndustry,selectedClientIndustry]);
 
@@ -790,6 +814,13 @@ export default function Repository() {
                   <button onClick={()=>setSelectMode(true)}
                     className="text-[10px] font-label uppercase tracking-widest px-3 py-2 border border-outline/30 text-on-surface-variant hover:text-on-surface transition-all">
                     Select
+                  </button>
+                  <button onClick={rescanAll}
+                    disabled={runningAnalysis || !projects.length}
+                    title={`Re-analyse all ${projects.length} project${projects.length === 1 ? '' : 's'}`}
+                    className="text-[10px] font-label uppercase tracking-widest px-3 py-2 border border-outline/30 text-on-surface-variant hover:text-primary hover:border-primary transition-all disabled:opacity-40 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-sm">sync</span>
+                    {runningAnalysis ? 'Rescanning…' : 'Rescan All'}
                   </button>
                   <button onClick={()=>setShowBatch(true)}
                     className="bg-primary text-on-primary px-6 py-2 text-[10px] font-label uppercase tracking-widest font-bold flex items-center gap-2 hover:brightness-110 transition-all">
