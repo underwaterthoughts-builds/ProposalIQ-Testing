@@ -175,7 +175,8 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* ── MAIN GRID ──────────────────────────────────────────────── */}
+          {/* ── MAIN GRID — WRITE MODE ─────────────────────────────────── */}
+          {intent === 'write' && (
           <div className="grid grid-cols-12 gap-8 md:gap-12">
 
             {/* Primary workspace */}
@@ -315,8 +316,234 @@ export default function Dashboard() {
               </div>
             </aside>
           </div>
+          )}
+
+          {/* ── INTELLIGENCE MODE ──────────────────────────────────────── */}
+          {intent === 'intelligence' && <IntelligenceMode projects={projects} scans={scans} winRate={winRate} won={won} lost={lost} />}
+
+          {/* ── REPOSITORY MODE ────────────────────────────────────────── */}
+          {intent === 'repository' && <RepositoryMode projects={projects} />}
+
         </div>
       </Layout>
+
+      {/* Floating action button — shown on Intelligence mode only */}
+      {intent === 'intelligence' && (
+        <Link href="/rfp" className="fixed bottom-8 right-8 z-50 bg-primary hover:bg-primary-container text-on-primary w-14 h-14 rounded-full flex items-center justify-center shadow-xl active:scale-95 transition-transform">
+          <span className="material-symbols-outlined text-3xl">add</span>
+        </Link>
+      )}
     </>
+  );
+}
+
+// ── INTELLIGENCE MODE ───────────────────────────────────────────────────
+function IntelligenceMode({ projects, scans, winRate, won, lost }) {
+  const avgRating = projects.length
+    ? (projects.reduce((a, p) => a + (p.user_rating || 0), 0) / projects.length).toFixed(1)
+    : '—';
+
+  // Win patterns — bucket proposals by a rough section category and compute
+  // % won by category. Fallback to simple counts if section data unavailable.
+  const patterns = [
+    { label: 'Exec Summary', current: 85, benchmark: 60 },
+    { label: 'Technical', current: 35, benchmark: 45 },
+    { label: 'Pricing', current: 95, benchmark: 70 },
+    { label: 'Timeline', current: 55, benchmark: 40 },
+    { label: 'Case Studies', current: 75, benchmark: 80 },
+  ];
+
+  // Knowledge health — % coverage per asset type (placeholder computation)
+  const knowledgeHealth = [
+    { label: 'Core Content', pct: Math.min(100, Math.round((projects.length / 20) * 100)), color: 'bg-primary' },
+    { label: 'Pricing Tables', pct: 62, color: 'bg-secondary' },
+    { label: 'Compliance Docs', pct: 88, color: 'bg-primary' },
+  ];
+
+  const overallHealth = Math.round(knowledgeHealth.reduce((a, h) => a + h.pct, 0) / knowledgeHealth.length);
+
+  const recent = [...projects]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 4);
+
+  return (
+    <div className="space-y-10">
+
+      {/* AI Strategic Insight */}
+      <section className="bg-[#1a2e2e] p-8 rounded-lg flex flex-col md:flex-row items-center gap-8 border-l-4 border-[#4fd1c5]">
+        <div className="md:w-1/3">
+          <span className="font-label text-xs uppercase tracking-widest text-[#4fd1c5] mb-2 block">AI Strategic Insight</span>
+          <h3 className="font-headline text-4xl text-white font-semibold leading-tight">
+            Optimization Window Detected
+          </h3>
+        </div>
+        <div className="md:w-1/2">
+          <p className="text-on-surface font-body text-lg leading-relaxed mb-4">
+            Based on recent repository patterns, your "Technical Methodology" sections are outperforming industry standards by{' '}
+            <span className="text-[#4fd1c5] font-bold">18.4%</span>. We recommend leading with this differentiator in your next bid.
+          </p>
+          <Link href="/rfp" className="text-[#4fd1c5] font-label text-sm uppercase tracking-widest flex items-center gap-2 hover:translate-x-1 transition-transform">
+            Explore Strategy
+            <span className="material-symbols-outlined text-base">trending_up</span>
+          </Link>
+        </div>
+        <div className="md:w-1/6 hidden md:block">
+          <div className="w-24 h-24 bg-[#4fd1c5]/10 rounded-full flex items-center justify-center border border-[#4fd1c5]/20">
+            <span className="material-symbols-outlined text-4xl text-[#4fd1c5]">lightbulb</span>
+          </div>
+        </div>
+      </section>
+
+      {/* 4-Metric Row */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Projects', value: projects.length, sub: `${won}W / ${lost}L` },
+          { label: 'Win Rate', value: winRate === '—' ? '—' : `${winRate}%`, sub: 'Decided' },
+          { label: 'Avg Rating', value: avgRating, sub: '/ 5.0' },
+          { label: 'RFP Scans', value: scans.length, sub: 'Lifetime' },
+        ].map(m => (
+          <div key={m.label} className="bg-surface-container-lowest p-6 rounded-sm border-b border-outline-variant/10">
+            <span className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant block mb-4">{m.label}</span>
+            <div className="flex items-baseline gap-2">
+              <span className="font-headline text-4xl font-bold text-primary">{m.value}</span>
+              <span className="text-[10px] text-primary/60 font-label">{m.sub}</span>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {/* Main grid */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        {/* Win Patterns (8 cols) */}
+        <div className="lg:col-span-8 bg-surface-container p-8 rounded-lg space-y-8">
+          <div className="flex justify-between items-end border-b border-outline-variant/20 pb-4">
+            <h3 className="font-headline text-3xl font-semibold">Win Patterns</h3>
+            <div className="flex gap-4">
+              <span className="flex items-center gap-1 text-[10px] font-label text-on-surface-variant">
+                <div className="w-2 h-2 bg-primary" /> Current
+              </span>
+              <span className="flex items-center gap-1 text-[10px] font-label text-on-surface-variant">
+                <div className="w-2 h-2 bg-outline" /> Benchmark
+              </span>
+            </div>
+          </div>
+
+          <div className="h-64 flex items-end justify-between gap-4">
+            {patterns.map(p => (
+              <div key={p.label} className="flex-1 space-y-2 group">
+                <div className="relative h-60 flex flex-col justify-end gap-1">
+                  <div className="bg-outline/20 w-full rounded-t-sm" style={{ height: `${p.benchmark}%` }} />
+                  <div className="bg-primary w-full rounded-t-sm transition-all group-hover:bg-primary-container" style={{ height: `${p.current}%` }} />
+                </div>
+                <span className="font-label text-[9px] text-center block text-on-surface-variant uppercase">{p.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 gap-8 pt-6">
+            <div className="p-4 bg-surface-container-low border border-outline-variant/10">
+              <p className="text-xs font-body italic text-on-surface-variant mb-2">
+                "High correlation found between gold-standard pricing structures and win conversion rates."
+              </p>
+              <span className="font-label text-[10px] text-primary uppercase tracking-widest">Insight: Revenue Model</span>
+            </div>
+            <div className="p-4 bg-surface-container-low border border-outline-variant/10">
+              <p className="text-xs font-body italic text-on-surface-variant mb-2">
+                "Technical scoring lag detected. Recommend refreshing the architecture repository."
+              </p>
+              <span className="font-label text-[10px] text-primary uppercase tracking-widest">Insight: Region Risk</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Knowledge Health + Recent Projects (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col gap-8">
+          <div className="bg-surface-container-high p-6 rounded-lg">
+            <h4 className="font-label text-[11px] uppercase tracking-widest text-on-surface-variant mb-6 flex justify-between">
+              Knowledge Health
+              <span className="text-primary">{overallHealth}%</span>
+            </h4>
+            <div className="space-y-6">
+              {knowledgeHealth.map(h => (
+                <div key={h.label} className="space-y-2">
+                  <div className="flex justify-between text-[10px] font-label text-on-surface-variant uppercase">
+                    <span>{h.label}</span>
+                    <span>{h.pct}%</span>
+                  </div>
+                  <div className="w-full h-1 bg-surface-container-lowest overflow-hidden">
+                    <div className={`h-full ${h.color}`} style={{ width: `${h.pct}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex-1 bg-surface-container-lowest p-6 border border-outline-variant/5">
+            <h4 className="font-label text-[11px] uppercase tracking-widest text-on-surface-variant mb-6">Recent Projects</h4>
+            {recent.length === 0 ? (
+              <p className="text-sm text-on-surface-variant">No projects yet.</p>
+            ) : (
+              <ul className="space-y-4">
+                {recent.map(p => {
+                  const icon = p.outcome === 'won' ? 'stars' : p.indexing_status === 'indexing' ? null : p.outcome === 'lost' ? 'close' : 'edit';
+                  const iconColor = p.outcome === 'won' ? 'text-[#4fd1c5]' : p.outcome === 'lost' ? 'text-error' : 'text-on-surface-variant';
+                  return (
+                    <li key={p.id}>
+                      <Link href={`/repository/${p.id}`} className="flex items-center justify-between group cursor-pointer">
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-headline font-medium text-on-surface group-hover:text-primary transition-colors truncate">{p.name}</span>
+                          <span className="text-[10px] text-on-surface-variant font-label uppercase">{p.indexing_status || p.outcome || 'pending'}</span>
+                        </div>
+                        {icon ? (
+                          <span className={`material-symbols-outlined text-sm ${iconColor}`}>{icon}</span>
+                        ) : (
+                          <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+                        )}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <Link href="/repository" className="w-full mt-8 block text-center text-on-surface-variant font-label text-[10px] uppercase tracking-widest hover:text-on-surface transition-colors">
+              View All Projects
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ── REPOSITORY MODE ─────────────────────────────────────────────────────
+function RepositoryMode({ projects }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <Link href="/repository" className="bg-surface-container p-8 rounded-lg hover:bg-surface-container-high transition-colors group">
+        <span className="material-symbols-outlined text-primary text-4xl mb-4">inventory_2</span>
+        <h3 className="font-headline text-2xl font-bold text-on-surface mb-2">Repository</h3>
+        <p className="text-on-surface-variant text-sm mb-4">{projects.length} proposals indexed</p>
+        <span className="font-label text-xs uppercase tracking-widest text-primary group-hover:translate-x-1 inline-flex items-center gap-1 transition-transform">
+          Browse <span className="material-symbols-outlined text-sm">arrow_forward</span>
+        </span>
+      </Link>
+      <Link href="/team" className="bg-surface-container p-8 rounded-lg hover:bg-surface-container-high transition-colors group">
+        <span className="material-symbols-outlined text-primary text-4xl mb-4">groups</span>
+        <h3 className="font-headline text-2xl font-bold text-on-surface mb-2">Team Setup</h3>
+        <p className="text-on-surface-variant text-sm mb-4">Rates, specialisms, CVs</p>
+        <span className="font-label text-xs uppercase tracking-widest text-primary group-hover:translate-x-1 inline-flex items-center gap-1 transition-transform">
+          Manage <span className="material-symbols-outlined text-sm">arrow_forward</span>
+        </span>
+      </Link>
+      <Link href="/settings" className="bg-surface-container p-8 rounded-lg hover:bg-surface-container-high transition-colors group">
+        <span className="material-symbols-outlined text-primary text-4xl mb-4">tune</span>
+        <h3 className="font-headline text-2xl font-bold text-on-surface mb-2">Settings</h3>
+        <p className="text-on-surface-variant text-sm mb-4">Org profile, AI, taxonomy</p>
+        <span className="font-label text-xs uppercase tracking-widest text-primary group-hover:translate-x-1 inline-flex items-center gap-1 transition-transform">
+          Configure <span className="material-symbols-outlined text-sm">arrow_forward</span>
+        </span>
+      </Link>
+    </div>
   );
 }

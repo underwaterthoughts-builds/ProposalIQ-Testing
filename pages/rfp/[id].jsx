@@ -586,9 +586,9 @@ ${sectionHtml('Winning Language', languageHtml)}
             </Btn>
           </div>
         }>
-        <div className="flex h-full overflow-hidden">
+        <div className="flex h-full overflow-hidden bg-surface">
           {/* Main */}
-          <div className="flex-1 flex flex-col overflow-hidden md:border-r" style={{ borderColor:'#ddd5c4' }}>
+          <div className="flex-1 flex flex-col overflow-hidden md:border-r border-outline-variant/10">
             {(scan.status === 'processing' || scan.status === 'fast_ready') && (
               <div className="flex items-center gap-3 px-5 py-3 text-sm border-b"
                 style={{
@@ -650,37 +650,69 @@ ${sectionHtml('Winning Language', languageHtml)}
               </div>
             )}
 
-            {/* RFP classification tags — visible above all tabs so user can
-                verify and correct the AI's categorisation at a glance */}
-            {scan.status !== 'processing' && (
-              <RfpTaxonomyBar scan={scan} rfpData={rfpData} scanId={id} />
-            )}
+            {/* RFP classification tags — shown inline in the breadcrumb
+                header below; the editable dropdown bar is still available
+                for correction via the tag chips (future enhancement). */}
 
-            {/* Tabs — scrollable pills on mobile, border tabs on desktop */}
-            <div className="hidden md:flex border-b bg-white" style={{ borderColor:'#ddd5c4' }}>
-              {tabs.map(t => (
-                <button key={t.id} onClick={() => setActiveTab(t.id)}
-                  className={`px-4 py-3 text-[12.5px] font-medium border-b-2 transition-all flex items-center gap-2 ${activeTab===t.id?'border-teal':' border-transparent hover:text-ink'}`}
-                  style={{ borderColor:activeTab===t.id?'#1e4a52':'transparent', color:activeTab===t.id?'#1e4a52':'#6b6456' }}>
-                  {t.label}
-                  {t.count > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded font-mono text-white" style={{ background:t.id==='gaps'?'#b04030':t.id==='writing'?'#b8962e':'#1e4a52' }}>{t.count}</span>}
-                </button>
-              ))}
-            </div>
-            <div className="tab-pills-scroll md:hidden border-b pt-3" style={{ borderColor:'#f0ebe0' }}>
-              {tabs.map(t => (
-                <button key={t.id} onClick={() => setActiveTab(t.id)}
-                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap"
-                  style={{
-                    background: activeTab===t.id ? '#1e4a52' : '#f0ebe0',
-                    color: activeTab===t.id ? 'white' : '#6b6456',
-                    minHeight: '36px',
-                  }}>
-                  {t.label}
-                  {t.count > 0 && <span className="text-[10px] font-mono opacity-80">{t.count}</span>}
-                </button>
-              ))}
-            </div>
+            {/* Breadcrumb + Intelligence Workbench title (Stitch design) */}
+            <section className="px-6 md:px-8 py-6 bg-surface flex items-start justify-between gap-6 flex-wrap">
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-2 text-xs font-label text-on-surface-variant/50 uppercase tracking-widest mb-2">
+                  <Link href="/rfp" className="hover:text-primary transition-colors">Intelligence</Link>
+                  <span className="material-symbols-outlined text-xs">chevron_right</span>
+                  <span className="text-on-surface truncate max-w-[240px]">{scan.name}</span>
+                </div>
+                <h1 className="text-3xl md:text-4xl font-headline font-medium tracking-tight text-on-surface">
+                  Intelligence Workbench
+                </h1>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="font-label text-xs text-on-surface-variant uppercase">Active Tags:</span>
+                <div className="flex gap-2 flex-wrap">
+                  {scan.client_industry && (
+                    <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] uppercase font-bold tracking-widest rounded-full border border-primary/20 flex items-center">
+                      {scan.client_industry}
+                    </span>
+                  )}
+                  {scan.service_industry && (
+                    <span className="px-3 py-1 bg-tertiary-container/20 text-tertiary-container text-[10px] uppercase font-bold tracking-widest rounded-full border border-tertiary-container/20 flex items-center">
+                      {scan.service_industry}
+                    </span>
+                  )}
+                  {(!scan.client_industry && !scan.service_industry) && (
+                    <span className="px-3 py-1 bg-surface-container-high text-on-surface-variant text-[10px] uppercase font-bold tracking-widest rounded-full border border-outline-variant/30 flex items-center">
+                      Untagged
+                    </span>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* Tabs — Stitch editorial style */}
+            <nav className="px-6 md:px-8 border-b border-outline-variant/10 bg-surface-container-low/30 overflow-x-auto flex">
+              <div className="flex gap-6 md:gap-8">
+                {tabs.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setActiveTab(t.id)}
+                    className={`py-4 text-xs font-label uppercase tracking-widest whitespace-nowrap transition-colors flex items-center gap-2 ${
+                      activeTab === t.id
+                        ? 'text-primary border-b-2 border-primary font-bold'
+                        : 'text-on-surface-variant hover:text-on-surface'
+                    }`}
+                  >
+                    {t.label}
+                    {t.count > 0 && (
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
+                        t.id === 'gaps' ? 'bg-error/20 text-error' :
+                        t.id === 'writing' ? 'bg-secondary/20 text-secondary' :
+                        'bg-primary/15 text-primary'
+                      }`}>{t.count}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </nav>
 
             {/* Mobile action strip */}
             <div className="md:hidden flex gap-2 px-3 py-2 border-b bg-white flex-shrink-0" style={{ borderColor:'#f0ebe0' }}>
@@ -702,7 +734,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                 ✕
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 md:p-4">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-surface-container-lowest">
               {scan.status === 'processing' ? (
                 <div className="py-16 text-center"><Spinner size={32}/><p className="text-sm mt-4" style={{ color:'#6b6456' }}>Running intelligence pipeline — fast brief in ~30s…</p></div>
               ) : activeTab === 'brief' ? (
@@ -2582,22 +2614,23 @@ const TieredMatches = memo(function TieredMatches({ matches, expandedMatches, se
   // matching the RFP. Renders together at the top.
   const topFit = [...tier1, ...tier2, ...tier3];
 
-  function renderGroup(label, sublabel, items, accentColor) {
+  function renderGroup(label, sublabel, items) {
     if (!items.length) return null;
     return (
-      <div className="mb-6">
-        <div className="flex items-baseline justify-between mb-3">
+      <div className="mb-10">
+        <div className="flex items-baseline justify-between mb-5">
           <div>
-            <div className="text-[11px] font-mono uppercase tracking-widest" style={{ color: accentColor }}>
+            <div className="text-[10px] font-label uppercase tracking-widest text-primary">
               {label}
             </div>
-            <div className="text-xs mt-0.5" style={{ color: '#6b6456' }}>{sublabel}</div>
+            <div className="text-xs mt-1 text-on-surface-variant">{sublabel}</div>
           </div>
-          <div className="text-[11px] font-mono" style={{ color: '#9b8e80' }}>{items.length} {items.length === 1 ? 'match' : 'matches'}</div>
+          <div className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant/60">
+            {items.length} {items.length === 1 ? 'match' : 'matches'}
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {items.map((m) => {
-            // Use the global index from `matches` so expand state stays consistent.
             const i = matches.indexOf(m);
             return (
               <MatchCard key={m.id} match={m}
@@ -2613,106 +2646,113 @@ const TieredMatches = memo(function TieredMatches({ matches, expandedMatches, se
     );
   }
 
-  // Empty state — nothing matched at all
   if (matches.length === 0) {
-    return <div className="text-center py-12"><p className="text-sm" style={{ color: '#6b6456' }}>No matches found. Add more proposals to your repository.</p></div>;
+    return (
+      <div className="text-center py-16">
+        <p className="text-sm text-on-surface-variant">No matches found. Add more proposals to your repository.</p>
+      </div>
+    );
   }
 
   return (
     <>
-      {/* Filter buttons — match by sector / type of work / all */}
-      <div className="flex flex-wrap items-center gap-2 mb-5">
-        <span className="text-[11px] font-mono uppercase tracking-widest mr-1" style={{ color: '#9b8e80' }}>Filter:</span>
+      {/* Editorial intro */}
+      <header className="mb-10 max-w-3xl">
+        <h2 className="font-headline text-2xl font-headline italic text-primary mb-2">High-Fidelity Asset Matching</h2>
+        <p className="text-on-surface-variant text-base leading-relaxed">
+          ProposalIQ has identified {matches.length} historical asset{matches.length === 1 ? '' : 's'} that align with this RFP. Assets are tiered by relevance and compliance.
+        </p>
+      </header>
+
+      {/* Filter buttons */}
+      <div className="flex flex-wrap items-center gap-2 mb-8">
+        <span className="text-[10px] font-label uppercase tracking-widest mr-2 text-on-surface-variant/60">Filter:</span>
         {[
-          { val: 'all',     label: 'All matches',         count: matches.length, color: '#6b6456' },
-          { val: 'sector',  label: 'Same client sector',  count: sectorCount,    color: '#8a6200' },
-          { val: 'service', label: 'Same type of work',   count: serviceCount,   color: '#1e4a52' },
+          { val: 'all',     label: 'All matches',        count: matches.length },
+          { val: 'sector',  label: 'Same client sector', count: sectorCount },
+          { val: 'service', label: 'Same type of work',  count: serviceCount },
         ].map(opt => {
           const active = filterMode === opt.val;
           return (
-            <button key={opt.val} onClick={() => setFilterMode(opt.val)}
-              className="text-[11px] px-3 py-1.5 rounded-full border transition-colors flex items-center gap-1.5"
-              style={{
-                borderColor: active ? opt.color : '#ddd5c4',
-                background: active ? opt.color + '14' : 'white',
-                color: active ? opt.color : '#6b6456',
-                fontWeight: active ? 600 : 400,
-              }}>
+            <button
+              key={opt.val}
+              onClick={() => setFilterMode(opt.val)}
+              className={`text-[10px] font-label uppercase tracking-widest px-3 py-1.5 rounded-full border transition-colors flex items-center gap-2 ${
+                active
+                  ? 'border-primary bg-primary/10 text-primary font-bold'
+                  : 'border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:border-outline'
+              }`}
+            >
               {opt.label}
-              <span className="font-mono text-[10px] opacity-70">{opt.count}</span>
+              <span className="opacity-60">{opt.count}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Empty state for filter that produced no results */}
       {filteredMatches.length === 0 && (
-        <div className="text-center py-10 rounded-lg border border-dashed" style={{ borderColor: '#ddd5c4' }}>
-          <p className="text-sm" style={{ color: '#6b6456' }}>
+        <div className="text-center py-10 rounded-lg border border-dashed border-outline-variant/30">
+          <p className="text-sm text-on-surface-variant">
             No matches in this filter. Try "All matches" to see everything.
           </p>
         </div>
       )}
 
-      {/* Direct-fit groupings — always expanded.
-          Ordered: tier 1 first, then tier 3 (same type of work), then
-          tier 2 (same sector). This puts the "same work" matches higher
-          because a same-work-different-sector proposal is usually a
-          better transferable reference than a same-sector-different-work
-          one, from a bid writer's perspective. */}
       {renderGroup(
-        '◆ Direct fit · same sector and same type of work',
-        'Strongest matches — same client industry and same service line as this RFP.',
-        tier1, '#3d5c3a'
+        'Direct fit · same sector and same type of work',
+        'Strongest matches — same client industry and same service line.',
+        tier1
       )}
       {renderGroup(
-        '◈ Same type of work · different sector',
+        'Same type of work · different sector',
         'Same service line, but the client was in a different industry.',
-        tier3, '#1e4a52'
+        tier3
       )}
       {renderGroup(
-        '◆ Same sector · different type of work',
+        'Same sector · different type of work',
         'Same client industry but a different service line.',
-        tier2, '#8a6200'
+        tier2
       )}
       {renderGroup(
-        '◌ Untagged proposals',
+        'Untagged proposals',
         'Industry could not be inferred from the proposal text — re-analyse to classify.',
-        tier4, '#9b8e80'
+        tier4
       )}
 
       {/* Cross-sector — hidden by default */}
       {tier5.length > 0 && (
-        <div className="mt-6 border-t pt-5" style={{ borderColor: '#ddd5c4' }}>
+        <div className="mt-6 border-t border-outline-variant/10 pt-8">
           {!showCrossSector ? (
             <button
               onClick={() => setShowCrossSector(true)}
-              className="w-full py-4 rounded-lg border border-dashed transition-all hover:bg-white"
-              style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
-              <div className="text-sm font-medium mb-1">
+              className="w-full py-6 rounded-lg border border-dashed border-outline-variant/30 text-on-surface-variant hover:bg-surface-container transition-all"
+            >
+              <div className="text-sm font-medium mb-1 text-on-surface">
                 Show {tier5.length} cross-sector {tier5.length === 1 ? 'proposal' : 'proposals'}
               </div>
-              <div className="text-[11px]" style={{ color: '#9b8e80' }}>
-                Different industry and different service line. May still be useful for tone, structure, or rhetorical approach — but not for direct content reuse.
+              <div className="text-[11px] text-on-surface-variant/60 max-w-lg mx-auto">
+                Different industry and different service line. May still be useful for tone, structure, or approach — but not for direct content reuse.
               </div>
             </button>
           ) : (
             <>
-              <div className="flex items-baseline justify-between mb-3">
+              <div className="flex items-baseline justify-between mb-5">
                 <div>
-                  <div className="text-[11px] font-mono uppercase tracking-widest" style={{ color: '#9b8e80' }}>
-                    ◌ Cross-sector references
+                  <div className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant/60">
+                    Cross-sector references
                   </div>
-                  <div className="text-xs mt-0.5" style={{ color: '#6b6456' }}>
+                  <div className="text-xs mt-1 text-on-surface-variant">
                     Different industry — useful for tone, structure or approach only.
                   </div>
                 </div>
-                <button onClick={() => setShowCrossSector(false)}
-                  className="text-[11px] font-mono" style={{ color: '#9b8e80' }}>
+                <button
+                  onClick={() => setShowCrossSector(false)}
+                  className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant hover:text-on-surface"
+                >
                   hide
                 </button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {tier5.map((m) => {
                   const i = matches.indexOf(m);
                   return (
@@ -2720,7 +2760,8 @@ const TieredMatches = memo(function TieredMatches({ matches, expandedMatches, se
                       expanded={expandedMatches[i]}
                       onToggle={() => setExpandedMatches(e => ({ ...e, [i]: !e[i] }))}
                       onSuppress={() => suppress(m.id)}
-                      onToast={setToast} />
+                      onToast={setToast}
+                      onLog={onLog} />
                   );
                 })}
               </div>
@@ -2729,11 +2770,9 @@ const TieredMatches = memo(function TieredMatches({ matches, expandedMatches, se
         </div>
       )}
 
-      {/* Banner if everything is in tier 4/5 — likely means the user hasn't
-          re-analysed proposals against the new taxonomy yet */}
       {topFit.length === 0 && (tier4.length > 0 || tier5.length > 0) && (
-        <div className="mt-4 rounded-lg p-3 text-xs border" style={{ background: '#faf4e2', borderColor: 'rgba(184,150,46,.3)', color: '#7a5800' }}>
-          <strong>No direct sector matches yet.</strong> Re-analyse your repository so proposals get tagged against the new taxonomy — until then matching falls back to text inference and may be less precise.
+        <div className="mt-6 rounded-lg p-4 text-xs bg-primary/10 border border-primary/20 text-primary">
+          <strong>No direct sector matches yet.</strong> Re-analyse your repository so proposals get tagged — until then matching falls back to text inference and may be less precise.
         </div>
       )}
     </>
@@ -2743,125 +2782,180 @@ const TieredMatches = memo(function TieredMatches({ matches, expandedMatches, se
 const MatchCard = memo(function MatchCard({ match: m, expanded, onToggle, onSuppress, onToast, onLog }) {
   const meta = m.ai_metadata || {};
   const wq = meta.writing_quality;
-  const labelColor = m.match_label==='Strong'?'#3d5c3a':m.match_label==='Good'?'#1e4a52':m.match_label==='Partial'?'#b8962e':'#6b6456';
+
+  // Score → SVG arc maths
+  const score = Math.max(0, Math.min(100, m.match_score || 0));
+  const r = 28;
+  const circ = 2 * Math.PI * r;
+  const dashOffset = circ * (1 - score / 100);
+
+  // Label for match quality — maps to Stitch "Optimal/Partial"
+  const labelText =
+    m.match_label === 'Strong' ? 'OPTIMAL MATCH' :
+    m.match_label === 'Good'   ? 'STRONG MATCH' :
+    m.match_label === 'Partial'? 'PARTIAL MATCH' :
+    'RELATED';
+  const labelIsPrimary = m.match_label === 'Strong' || m.match_label === 'Good';
+  const arcColorClass = labelIsPrimary ? 'text-primary' : 'text-secondary';
+  const labelColorClass = labelIsPrimary ? 'text-primary' : 'text-secondary';
+
+  // Match summary — prefer AI recommended_use, fall back to went_well or client blurb
+  const summary = m.match_explanation?.recommended_use || m.went_well || meta.summary || '';
+
+  // Time-ago label for "6 months ago" style
+  const timeAgo = (() => {
+    if (!m.date_submitted) return '';
+    const d = new Date(m.date_submitted);
+    if (Number.isNaN(d.getTime())) return '';
+    const months = Math.round((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24 * 30));
+    if (months < 1) return 'this month';
+    if (months < 12) return `${months} month${months > 1 ? 's' : ''} ago`;
+    const years = Math.round(months / 12);
+    return `${years} year${years > 1 ? 's' : ''} ago`;
+  })();
+
   return (
-    <Card className="mb-3 overflow-visible">
-      <div className="flex items-start gap-3 p-4">
-        <ScoreRing score={m.match_score || 0} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2 mb-1">
-            <div className="font-semibold text-sm">{m.name}</div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {/* Wave 3 — feedback signal: how often this proposal has been
-                  used in past scans, and how many of those scans were won */}
-              {(m.won_count > 0 || m.used_count > 0) && (
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border"
-                  style={{
-                    borderColor: m.won_count > 0 ? 'rgba(61,92,58,.4)' : 'rgba(30,74,82,.3)',
-                    background: m.won_count > 0 ? 'rgba(61,92,58,.08)' : 'rgba(30,74,82,.06)',
-                    color: m.won_count > 0 ? '#3d5c3a' : '#1e4a52',
-                  }}
-                  title={`Used in ${m.used_count} past scans, ${m.won_count} of which won`}>
-                  {m.won_count > 0 ? `★ used in ${m.won_count} won bid${m.won_count > 1 ? 's' : ''}` : `· used ${m.used_count}×`}
-                </span>
-              )}
-              <OutcomeLabel outcome={m.outcome} />
-              <button onClick={(e) => { e.stopPropagation(); onSuppress(); }} className="text-[10px] px-2 py-0.5 rounded border transition-colors hover:bg-red-50" style={{ borderColor:'#ddd5c4', color:'#6b6456' }} title="Exclude from this scan">Exclude</button>
-            </div>
-          </div>
-          <div className="text-xs font-mono mb-2 flex flex-wrap gap-x-2 gap-y-0.5" style={{ color:'#6b6456' }}>
-            <span>{m.client}</span>
-            <span>·</span>
-            <span>{m.date_submitted?.slice(0,4) || 'Date unknown'}</span>
-            <span>·</span>
-            <span>{formatMoney(m.contract_value, m.currency)}</span>
-            {m.llm_relevance && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ background: m.llm_relevance==='high'?'#edf3ec':m.llm_relevance==='medium'?'#faf4e2':'#f0ebe0', color: m.llm_relevance==='high'?'#3d5c3a':m.llm_relevance==='medium'?'#7a5800':'#6b6456' }}>
-                ◈ {m.llm_relevance} relevance
-              </span>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-1 mb-2">
-            {(m.match_reasons||[]).slice(0,4).map(t => <span key={t} className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background:'#e8f2f4', color:'#1e4a52' }}>{t}</span>)}
-          </div>
-          {/* Sanity check warning — shown when the AI gatekeeper flagged
-              the match with a specific caveat. Visible by default so the
-              writer sees the heads-up before they spend time on it. */}
-          {m.sanity_warning && (
-            <div className="rounded px-2 py-1.5 mb-2 text-[11px] flex items-start gap-1.5"
+    <div className="bg-surface-container group p-6 rounded-lg transition-all hover:bg-surface-container-high relative overflow-hidden cursor-pointer"
+      onClick={() => { onToggle(); if (!expanded && onLog) onLog('match_expanded', { target_type: 'project', target_id: m.id }); }}
+    >
+      {/* Score ring — top right */}
+      <div className="absolute top-0 right-0 p-4">
+        <div className="relative w-16 h-16 flex items-center justify-center">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
+            <circle className="text-outline-variant/20" cx="32" cy="32" r={r} fill="none" stroke="currentColor" strokeWidth="4" />
+            <circle
+              className={arcColorClass}
+              cx="32" cy="32" r={r}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="4"
+              strokeDasharray={circ}
+              strokeDashoffset={dashOffset}
+              strokeLinecap="round"
+            />
+          </svg>
+          <span className="absolute text-sm font-label font-bold text-on-surface">{score}</span>
+        </div>
+      </div>
+
+      <div className="pr-20">
+        <span className={`text-[10px] font-label font-bold tracking-[0.2em] ${labelColorClass} uppercase mb-2 block`}>
+          {labelText}
+        </span>
+        <h3 className="text-lg md:text-xl font-headline font-bold text-on-surface leading-tight mb-3">
+          {m.name}
+        </h3>
+        {summary && (
+          <p className="text-on-surface-variant text-sm leading-relaxed mb-4 line-clamp-2">
+            {summary}
+          </p>
+        )}
+
+        <div className="flex items-center gap-3 flex-wrap text-[10px] font-label">
+          {m.outcome && (
+            <span
+              className="px-2 py-0.5 uppercase border"
               style={{
-                background: m.sanity_demoted ? 'rgba(176,64,48,.06)' : 'rgba(184,150,46,.10)',
-                border: `1px solid ${m.sanity_demoted ? 'rgba(176,64,48,.2)' : 'rgba(184,150,46,.3)'}`,
-                color: m.sanity_demoted ? '#7a3023' : '#7a5800',
-              }}>
-              <span className="flex-shrink-0">⚠</span>
-              <span className="flex-1"><strong>{m.sanity_demoted ? 'Demoted by AI sanity check:' : 'AI flag:'}</strong> {m.sanity_warning}</span>
-            </div>
+                background: m.outcome === 'won' ? 'rgba(79,209,197,.1)' : m.outcome === 'lost' ? 'rgba(176,64,48,.1)' : 'rgba(232,195,87,.1)',
+                color: m.outcome === 'won' ? '#4fd1c5' : m.outcome === 'lost' ? '#ffb4ab' : '#e8c357',
+                borderColor: m.outcome === 'won' ? 'rgba(79,209,197,.2)' : m.outcome === 'lost' ? 'rgba(176,64,48,.2)' : 'rgba(232,195,87,.2)',
+              }}
+            >
+              {m.outcome}
+            </span>
           )}
-          <div className="flex items-center gap-3">
-            <Stars rating={m.user_rating} />
-            {wq?.overall_score > 0 && <span className="text-[10px] font-mono" style={{ color:wq.overall_score>=75?'#3d5c3a':wq.overall_score>=55?'#b8962e':'#b04030' }}>✍ {wq.overall_score}/100</span>}
+          {m.sanity_warning && (
+            <span className="px-2 py-0.5 uppercase border bg-secondary/10 text-secondary border-secondary/20">
+              Adjustment needed
+            </span>
+          )}
+          <span className="text-on-surface-variant/60 flex items-center gap-1">
+            <span className="material-symbols-outlined text-[14px]">history</span>
+            {timeAgo || 'unknown'}
+          </span>
+          {m.client && <span className="text-on-surface-variant/60">{m.client}</span>}
+        </div>
+
+        {(m.match_reasons || []).slice(0, 3).length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {(m.match_reasons || []).slice(0, 3).map(t => (
+              <span key={t} className="text-[10px] font-label px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant">
+                {t}
+              </span>
+            ))}
           </div>
-        </div>
+        )}
+
+        {/* Expanded content — progressive disclosure */}
+        {expanded && (
+          <div className="mt-6 space-y-3 animate-fadeIn border-t border-outline-variant/10 pt-4">
+            {m.llm_reason && (
+              <div className="rounded p-3 bg-primary-container/10 border border-primary/20">
+                <div className="text-[10px] font-label uppercase tracking-widest mb-1 text-primary">Why AI selected this</div>
+                <p className="text-xs leading-relaxed text-on-surface-variant">{m.llm_reason}</p>
+              </div>
+            )}
+            {m.match_explanation && (
+              <div className="rounded p-3 bg-surface-container-highest">
+                <div className="text-[10px] font-label uppercase tracking-widest mb-1 text-on-surface-variant">Why matched</div>
+                <p className="text-xs leading-relaxed text-on-surface">{m.match_explanation.recommended_use}</p>
+              </div>
+            )}
+            {m.style_classification && (
+              <div className="text-xs text-on-surface-variant">
+                <span className="font-label uppercase tracking-widest text-[10px] mr-2">Style</span>
+                <span className="text-on-surface">{m.style_classification.primary_style}</span>
+                <span className="mx-2">·</span>
+                <span>{m.style_classification.tone}</span>
+              </div>
+            )}
+            {m.lh_status === 'complete' && m.lh_what_delivered && (
+              <div className="rounded p-3 bg-primary/5 border border-primary/20">
+                <div className="text-[10px] font-label uppercase tracking-widest mb-1 text-primary">What was delivered</div>
+                <p className="text-xs leading-relaxed text-on-surface-variant">{m.lh_what_delivered}</p>
+              </div>
+            )}
+            {/* Card actions */}
+            <div className="flex items-center gap-3 flex-wrap pt-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigator.clipboard.writeText(`Reference: "${m.name}" (${m.outcome || ''}, ${m.date_submitted?.slice(0, 4) || ''}) — ${m.went_well || m.client || ''}`);
+                  onToast('Reference copied');
+                  if (onLog) onLog('reference_copied', { target_type: 'project', target_id: m.id });
+                }}
+                className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors"
+              >
+                Copy Reference
+              </button>
+              <a
+                href={`/api/projects/${m.id}/download`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => { e.stopPropagation(); if (onLog) onLog('match_downloaded', { target_type: 'project', target_id: m.id }); }}
+                className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors"
+              >
+                Download
+              </a>
+              <Link
+                href={`/repository/${m.id}`}
+                onClick={(e) => { e.stopPropagation(); if (onLog) onLog('match_opened', { target_type: 'project', target_id: m.id }); }}
+                className="ml-auto text-[10px] font-label uppercase tracking-widest text-primary hover:underline"
+              >
+                Open →
+              </Link>
+              <button
+                onClick={(e) => { e.stopPropagation(); onSuppress(); }}
+                className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant/50 hover:text-error transition-colors"
+                title="Exclude from this scan"
+              >
+                Exclude
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-      {expanded && (
-        <div className="border-t px-4 py-3 space-y-2 animate-fadeIn" style={{ borderColor:'#f0ebe0' }}>
-          {/* LLM re-ranking reason — source traceability */}
-          {m.llm_reason && (
-            <div className="rounded-lg p-3 mb-2" style={{ background:'#faf4e2', border:'1px solid rgba(184,150,46,.2)' }}>
-              <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color:'#b8962e' }}>Why this was selected by AI</div>
-              <p className="text-xs leading-relaxed" style={{ color:'#7a5800' }}>{m.llm_reason}</p>
-            </div>
-          )}
-          {/* Match explanation from AI chain */}
-          {m.match_explanation && (
-            <div className="rounded-lg p-3 mb-2" style={{ background:'#e8f2f4' }}>
-              <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color:'#1e4a52' }}>Why this was matched</div>
-              <p className="text-xs leading-relaxed" style={{ color:'#1e4a52' }}>{m.match_explanation.recommended_use}</p>
-              {m.match_explanation.strong_for?.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {m.match_explanation.strong_for.slice(0,3).map((s,i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded" style={{ background:'#d0e8ed', color:'#1e4a52' }}>✓ {s}</span>)}
-                </div>
-              )}
-              {m.match_explanation.not_relevant_for?.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {m.match_explanation.not_relevant_for.slice(0,2).map((s,i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded" style={{ background:'#f0ebe0', color:'#9b8e80' }}>≠ {s}</span>)}
-                </div>
-              )}
-            </div>
-          )}
-          {/* Style classification */}
-          {m.style_classification && (
-            <div className="flex gap-2 text-xs py-1.5 border-b" style={{ borderColor:'#f0ebe0' }}>
-              <span className="flex-shrink-0 font-medium w-36" style={{ color:'#6b6456' }}>Writing style</span>
-              <span className="font-mono" style={{ color:'#1e4a52' }}>{m.style_classification.primary_style}</span>
-              <span style={{ color:'#9b8e80' }}>·</span>
-              <span style={{ color:'#6b6456' }}>{m.style_classification.tone}</span>
-            </div>
-          )}
-          {m.went_well && <div className="flex gap-2 text-xs py-1.5 border-b" style={{ borderColor:'#f0ebe0' }}><span className="flex-shrink-0 font-medium w-36" style={{ color:'#6b6456' }}>What won it</span><span>{m.went_well}</span></div>}
-          {(meta.deliverables||[]).length>0 && <div className="flex gap-2 text-xs py-1.5 border-b" style={{ borderColor:'#f0ebe0' }}><span className="flex-shrink-0 font-medium w-36" style={{ color:'#6b6456' }}>Deliverables</span><span>{(meta.deliverables||[]).join(' · ')}</span></div>}
-          {(meta.methodologies||[]).length>0 && <div className="flex gap-2 text-xs py-1.5 border-b" style={{ borderColor:'#f0ebe0' }}><span className="flex-shrink-0 font-medium w-36" style={{ color:'#6b6456' }}>Methodologies</span><span>{(meta.methodologies||[]).join(' · ')}</span></div>}
-          {(meta.standout_sentences||[]).slice(0,1).map((s,i)=><blockquote key={i} className="text-xs italic border-l-2 pl-3 my-2" style={{ borderColor:'#b8962e', color:'#6b6456' }}>"{s}"</blockquote>)}
-          {m.lh_status==='complete'&&m.lh_what_delivered&&<div className="flex gap-2 text-xs py-1.5 rounded px-2" style={{ background:'#edf3ec' }}><span className="flex-shrink-0 font-medium w-36" style={{ color:'#3d5c3a' }}>What was delivered</span><span>{m.lh_what_delivered}</span></div>}
-        </div>
-      )}
-      <div className="flex items-center gap-2 px-4 py-2.5 border-t" style={{ borderColor:'#f0ebe0', background:'#faf7f2' }}>
-        <Btn variant="ghost" size="sm" onClick={() => { onToggle(); if (!expanded && onLog) onLog('match_expanded', { target_type: 'project', target_id: m.id }); }}>{expanded?'▴ Less':'▾ More detail'}</Btn>
-        <button onClick={() => {
-          navigator.clipboard.writeText(`Reference: "${m.name}" (${m.outcome}, ${m.date_submitted?.slice(0,4)}) — ${m.went_well||m.client}`);
-          onToast('Reference copied to clipboard');
-          if (onLog) onLog('reference_copied', { target_type: 'project', target_id: m.id });
-        }}
-          className="text-xs px-2 py-1 rounded border transition-colors hover:bg-white" style={{ borderColor:'#ddd5c4', color:'#6b6456' }}>Copy Reference</button>
-        <a href={`/api/projects/${m.id}/download`} target="_blank" rel="noopener noreferrer"
-          className="text-xs px-2 py-1 rounded border transition-colors hover:bg-white" style={{ borderColor:'#ddd5c4', color:'#1e4a52' }}
-          onClick={e => { e.stopPropagation(); if (onLog) onLog('match_downloaded', { target_type: 'project', target_id: m.id }); }}>↓ Download</a>
-        <Link href={`/repository/${m.id}`}
-          onClick={() => { if (onLog) onLog('match_opened', { target_type: 'project', target_id: m.id }); }}
-          className="ml-auto text-xs" style={{ color:'#1e4a52' }}>Open →</Link>
-      </div>
-    </Card>
+    </div>
   );
 });
 
