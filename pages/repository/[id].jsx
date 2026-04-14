@@ -1095,6 +1095,7 @@ export default function ProjectDetail() {
                 </Card>
               </div>
             )}
+            </div> {/* close .max-w-[900px] inner container */}
           </div>
 
           {/* Right panel */}
