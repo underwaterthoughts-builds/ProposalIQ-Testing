@@ -179,7 +179,7 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
           <div className="flex items-center gap-2 flex-shrink-0">
             {p.analysis_model === 'gpt' ? (
               <span
-                className="px-2 py-0.5 text-[10px] font-label font-bold tracking-widest bg-primary/10 text-primary border border-primary/20"
+                className="px-2 py-0.5 text-[10px] font-label font-bold tracking-widest bg-[#1f3a1c] text-[#7bd07a] border border-[#7bd07a]/30"
                 title="Full scan — analysed with OpenAI (deep reasoning)"
               >
                 FULL SCAN

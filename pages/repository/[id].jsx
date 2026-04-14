@@ -677,7 +677,7 @@ export default function ProjectDetail() {
                     </div>
                     {project.analysis_model === 'gpt' ? (
                       <span
-                        className="px-3 py-1 text-[10px] font-label font-bold tracking-widest bg-primary/10 text-primary border border-primary/20 rounded-full"
+                        className="px-3 py-1 text-[10px] font-label font-bold tracking-widest bg-[#1f3a1c] text-[#7bd07a] border border-[#7bd07a]/30 rounded-full"
                         title="Full scan — analysed with OpenAI (deep reasoning)"
                       >
                         FULL SCAN
@@ -1292,9 +1292,12 @@ const PlainTextTab = memo(function PlainTextTab({ id }) {
     let alive = true;
     fetch(`/api/projects/${id}/text`)
       .then(async r => {
-        const d = await r.json();
+        const txt = await r.text();
+        let d;
+        try { d = JSON.parse(txt); }
+        catch { d = { error: `Server returned non-JSON (${r.status}): ${txt.slice(0, 200)}` }; }
         if (!alive) return;
-        if (!r.ok) setState({ loading: false, text: null, error: d.error || 'Failed to load', stats: null });
+        if (!r.ok) setState({ loading: false, text: null, error: d.error || `HTTP ${r.status}`, stats: null });
         else setState({ loading: false, text: d.text, error: null, stats: { length: d.length, words: d.words } });
       })
       .catch(e => alive && setState({ loading: false, text: null, error: e.message, stats: null }));
@@ -1335,9 +1338,12 @@ const LibraryDataTab = memo(function LibraryDataTab({ id }) {
     let alive = true;
     fetch(`/api/projects/${id}/library-data`)
       .then(async r => {
-        const d = await r.json();
+        const txt = await r.text();
+        let d;
+        try { d = JSON.parse(txt); }
+        catch { d = { error: `Server returned non-JSON (${r.status}): ${txt.slice(0, 200)}` }; }
         if (!alive) return;
-        if (!r.ok) setState({ loading: false, data: null, error: d.error || 'Failed to load' });
+        if (!r.ok) setState({ loading: false, data: null, error: d.error || `HTTP ${r.status}` });
         else setState({ loading: false, data: d, error: null });
       })
       .catch(e => alive && setState({ loading: false, data: null, error: e.message }));

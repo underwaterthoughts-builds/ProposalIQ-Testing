@@ -649,13 +649,42 @@ ${sectionHtml('Winning Language', languageHtml)}
                     <span className="material-symbols-outlined text-xs">chevron_right</span>
                     <span className="text-on-surface truncate max-w-[240px]">{scan.name}</span>
                   </div>
-                  <h1 className="text-3xl md:text-4xl font-headline font-medium tracking-tight text-on-surface mb-4">
-                    Intelligence Workbench
-                  </h1>
+                  <div className="flex items-baseline gap-4 mb-4 flex-wrap">
+                    <h1 className="text-3xl md:text-4xl font-headline font-medium tracking-tight text-on-surface">
+                      Intelligence Workbench
+                    </h1>
+                    {scan.analysis_model === 'gpt' ? (
+                      <span
+                        className="px-3 py-1 text-[10px] font-label font-bold tracking-widest bg-[#1f3a1c] text-[#7bd07a] border border-[#7bd07a]/30 rounded-full"
+                        title="Full scan — analysed with OpenAI (deep reasoning)"
+                      >
+                        FULL SCAN
+                      </span>
+                    ) : (scan.status === 'complete' || scan.status === 'fast_ready') ? (
+                      <span
+                        className="px-3 py-1 text-[10px] font-label font-bold tracking-widest bg-secondary/10 text-secondary border border-secondary/20 rounded-full"
+                        title="Quick scan — analysed with Gemini 2.5 Flash. Rescan with OpenAI configured for full thinking."
+                      >
+                        QUICK SCAN
+                      </span>
+                    ) : null}
+                  </div>
                   <div className="flex items-center gap-3 flex-wrap">
                     <span className="font-label text-xs text-on-surface-variant uppercase">Active Tags:</span>
                     <RfpTaxonomyBar scan={scan} rfpData={rfpData} scanId={id} />
                   </div>
+
+                  {(scan.status === 'complete' || scan.status === 'fast_ready') && scan.analysis_model !== 'gpt' && (
+                    <div className="mt-4 flex items-start gap-2 text-xs text-secondary bg-secondary/5 px-4 py-3 border-l-2 border-secondary">
+                      <span className="material-symbols-outlined text-base flex-shrink-0">info</span>
+                      <span>
+                        Quick scan only — Gemini handled extraction and matching, but several deep tabs
+                        (Opportunity Gaps, Win Strategy, Winning Language, Suggested Approach, Narrative Advice,
+                        Proposal Assembly) need OpenAI to generate quality output. Configure OPENAI_API_KEY in
+                        Railway and rescan for full results.
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Stacked action buttons */}
