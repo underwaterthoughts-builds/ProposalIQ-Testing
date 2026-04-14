@@ -461,13 +461,6 @@ export default function Team() {
             </>}
           {activeTab === 'ratecard' && (
             <div className="flex-1 overflow-y-auto bg-surface">
-              {/* Editorial divider */}
-              <div className="flex items-center gap-6 mb-12">
-                <div className="h-[1px] flex-grow bg-outline-variant/20" />
-                <h2 className="text-3xl md:text-4xl font-headline italic text-on-surface-variant">Strategic Rate Card</h2>
-                <div className="h-[1px] flex-grow bg-outline-variant/20" />
-              </div>
-
               {/* Role import preview */}
               {showRoleImport && (
                 <div className="mb-6">
@@ -536,7 +529,7 @@ export default function Team() {
                         <>
                           <label className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12.5px] font-medium rounded-md border border-[#ddd5c4] hover:bg-cream cursor-pointer transition-all">
                             <input type="file" ref={roleFileRef} accept=".xlsx,.xls,.csv" className="hidden" onChange={handleRoleFileSelect}/>
-                            {roleImportLoading?<><Spinner size={12}/> Reading…</>:'⊞ Import Spreadsheet'}
+                            {roleImportLoading?<><Spinner size={12}/> Reading…</>:'⊞ Import Ratecard'}
                           </label>
                           {roles.length>0&&<button onClick={()=>setRoleSelectMode(true)}
                             className="text-xs px-3 py-1.5 rounded-md border" style={{borderColor:'#ddd5c4',color:'#6b6456'}}>☐ Select</button>}
@@ -553,7 +546,7 @@ export default function Team() {
                       <p className="text-sm mb-4" style={{color:'#6b6456'}}>No roles yet. Import a spreadsheet with columns for Role, Grade, Category, Client Rate, Cost Rate.</p>
                       <label className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md cursor-pointer text-white" style={{background:'#1e4a52'}}>
                         <input type="file" ref={roleFileRef} accept=".xlsx,.xls,.csv" className="hidden" onChange={handleRoleFileSelect}/>
-                        ⊞ Import Rate Card
+                        ⊞ Import Ratecard
                       </label>
                     </div>
                   ) : (
