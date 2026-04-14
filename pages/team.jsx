@@ -283,6 +283,7 @@ export default function Team() {
           <div className="flex flex-1 overflow-hidden relative z-10">
           <div className="flex-1 overflow-y-auto px-6 md:px-12 pb-12">
 
+            {activeTab === 'members' && <>
             {/* Import preview table */}
             {showImport && (
               <div className="mb-6">
@@ -364,105 +365,80 @@ export default function Team() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {members.map((m, i) => {
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {members.map(m => {
                   const memberHistory = history.filter(h => h.member_id === m.id);
                   const cv = m.cv_extracted || {};
                   const isSelected = selectedIds.has(m.id);
-
-                  // Tier badge — rough heuristic based on years (null-safe)
                   const yrs = Number(m.years_experience) || 0;
                   const tier = yrs >= 15 ? 'Lead' : yrs >= 8 ? 'Expert' : 'Staff';
+                  const initials = m.name.split(' ').map(n => n[0]).join('').slice(0, 2);
+                  const wonProjects = memberHistory.filter(h => h.outcome === 'won').length;
 
                   return (
                     <div
                       key={m.id}
-                      className={`bg-surface-container-high p-8 flex flex-col gap-6 group hover:bg-surface-container-highest transition-all duration-300 ${isSelected ? 'outline outline-2 outline-primary' : ''}`}
+                      className={`bg-surface-container-high p-4 flex items-center gap-4 group hover:bg-surface-container-highest transition-colors ${isSelected ? 'outline outline-2 outline-primary' : ''}`}
                     >
-                      {/* Header: avatar + tier tag */}
-                      <div className="flex justify-between items-start">
-                        <div className="w-20 h-20 bg-surface-container-lowest overflow-hidden flex items-center justify-center">
-                          {m.cv_filename ? (
-                            <div className="w-full h-full flex items-center justify-center text-lg font-bold text-primary bg-surface-container-low">
-                              {m.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                            </div>
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-lg font-bold text-on-surface-variant">
-                              {m.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-start gap-2">
-                          {selectMode ? (
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => toggleSelectMember(m.id)}
-                              className="w-4 h-4 cursor-pointer"
-                              style={{ accentColor: '#e8c357' }}
-                            />
-                          ) : (
-                            <span className="text-xs font-label text-primary font-bold tracking-[0.2em] uppercase">{tier}</span>
-                          )}
-                        </div>
+                      {/* Avatar tile */}
+                      <div className={`w-12 h-12 flex-shrink-0 bg-surface-container-lowest flex items-center justify-center text-sm font-bold ${m.cv_filename ? 'text-primary' : 'text-on-surface-variant'}`}>
+                        {initials}
                       </div>
 
-                      {/* Name + title */}
-                      <div>
-                        <h3 className="text-2xl font-headline font-bold text-on-surface">
-                          {m.name}
+                      {/* Main info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <h3 className="font-headline text-base font-bold text-on-surface truncate">{m.name}</h3>
                           {m.cv_filename && (
-                            <span className="ml-2 text-[10px] font-label px-1.5 py-0.5 bg-primary/10 text-primary align-middle">CV</span>
+                            <span className="text-[9px] font-label px-1 py-0.5 bg-primary/10 text-primary flex-shrink-0">CV</span>
                           )}
-                        </h3>
-                        <p className="text-on-surface-variant font-body text-sm mt-1">
-                          {m.title}
+                        </div>
+                        <p className="text-on-surface-variant text-xs truncate">
+                          {m.title || '—'}
                           {m.years_experience ? ` · ${m.years_experience} yrs` : ''}
                         </p>
+                        {(m.stated_specialisms || []).slice(0, 2).length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {(m.stated_specialisms || []).slice(0, 2).map(s => (
+                              <span
+                                key={s}
+                                className="px-1.5 py-0.5 text-[9px] font-label uppercase tracking-wider"
+                                style={{ background: '#1a2e2c', color: '#4db6ac' }}
+                              >
+                                {s}
+                              </span>
+                            ))}
+                            {memberHistory.length > 0 && (
+                              <span className="text-[9px] font-label uppercase tracking-wider text-on-surface-variant/60 px-1.5 py-0.5">
+                                {wonProjects}W / {memberHistory.length}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
 
-                      {/* Tag chips */}
-                      <div className="flex flex-wrap gap-2">
-                        {(m.stated_specialisms || []).slice(0, 3).map(s => (
-                          <span
-                            key={s}
-                            className="px-3 py-1 text-[10px] font-label font-bold uppercase tracking-widest"
-                            style={{ background: '#1a2e2c', color: '#4db6ac' }}
-                          >
-                            {s}
-                          </span>
-                        ))}
-                        {(cv.certifications || []).slice(0, 2).map(c => (
-                          <span
-                            key={c}
-                            className="px-3 py-1 text-[10px] font-label font-bold uppercase tracking-widest"
-                            style={{ background: '#1f261e', color: '#a5d6a7' }}
-                          >
-                            {c}
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* History line */}
-                      {memberHistory.length > 0 && (
-                        <div className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant/60">
-                          {memberHistory.length} project{memberHistory.length === 1 ? '' : 's'} · {memberHistory.filter(h => h.outcome === 'won').length} won
-                        </div>
-                      )}
-
-                      {/* Footer: rate + CTA */}
-                      <div className="mt-auto pt-6 border-t border-outline-variant/10 flex justify-between items-center">
-                        <div className="text-xl font-label font-light text-on-surface">
+                      {/* Rate + tier + action */}
+                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        <span className="text-[9px] font-label text-primary font-bold tracking-[0.15em] uppercase">{tier}</span>
+                        <span className="text-sm font-label font-light text-on-surface whitespace-nowrap">
                           £{m.day_rate_client?.toLocaleString() || '—'}
-                          <span className="text-xs text-on-surface-variant ml-1">/ day</span>
-                        </div>
-                        {!selectMode && (
+                          <span className="text-[10px] text-on-surface-variant ml-0.5">/d</span>
+                        </span>
+                        {selectMode ? (
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelectMember(m.id)}
+                            className="w-4 h-4 cursor-pointer mt-1"
+                            style={{ accentColor: '#e8c357' }}
+                          />
+                        ) : (
                           <button
                             onClick={() => { setEditMember(m); setShowAdd(true); }}
-                            className="text-primary group-hover:translate-x-1 transition-transform"
+                            className="text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-all mt-1"
                             title="Edit member"
                           >
-                            <span className="material-symbols-outlined">arrow_forward</span>
+                            <span className="material-symbols-outlined text-base">arrow_forward</span>
                           </button>
                         )}
                       </div>
@@ -470,24 +446,22 @@ export default function Team() {
                   );
                 })}
 
-                {/* Recruit / add member card */}
+                {/* Recruit / add member card — compressed */}
                 <button
                   onClick={() => { setEditMember(null); setShowAdd(true); }}
-                  className="bg-surface-container-lowest border-2 border-dashed border-outline-variant/20 p-8 flex flex-col justify-center items-center text-center gap-4 hover:border-primary/50 transition-colors"
+                  className="bg-surface-container-lowest border-2 border-dashed border-outline-variant/20 p-4 flex items-center justify-center gap-3 hover:border-primary/50 transition-colors min-h-[80px]"
                 >
-                  <div className="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-3xl">add</span>
+                  <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary flex-shrink-0">
+                    <span className="material-symbols-outlined">add</span>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-headline font-bold text-on-surface">Add to the Consortium</h3>
-                    <p className="text-on-surface-variant text-sm mt-2">Add a team member manually or import via spreadsheet.</p>
+                  <div className="text-left">
+                    <h3 className="text-sm font-headline font-bold text-on-surface">Add to the Consortium</h3>
+                    <span className="text-primary text-[10px] font-label font-bold uppercase tracking-widest">New Member</span>
                   </div>
-                  <span className="mt-2 text-primary text-xs font-label font-bold uppercase tracking-widest border-b border-primary pb-1">
-                    New Member
-                  </span>
                 </button>
               </div>
             )}
+            </>}
           {activeTab === 'ratecard' && (
             <div className="flex-1 overflow-y-auto bg-surface">
               {/* Editorial divider */}
@@ -656,32 +630,6 @@ export default function Team() {
           )}
           </div>
 
-          <aside className="w-64 flex-shrink-0 overflow-y-auto p-4 space-y-4 border-l" style={{ background: '#f0ebe0', borderColor: '#ddd5c4' }}>
-            <Card className="p-4">
-              <div className="text-[9px] font-mono uppercase tracking-widest mb-3" style={{ color: '#6b6456' }}>Team Overview</div>
-              {[['Members', members.length], ['Avg Client Rate', `£${avgClient.toLocaleString()}/day`], ['Avg Cost Rate', `£${avgCost.toLocaleString()}/day`], ['Blended Margin', `${avgMargin}%`], ['With CV', members.filter(m => m.cv_filename).length]].map(([k, v]) => (
-                <div key={k} className="flex justify-between py-1.5 border-b last:border-0 text-xs" style={{ borderColor: '#f0ebe0' }}>
-                  <span style={{ color: '#6b6456' }}>{k}</span><span className="font-mono font-medium">{v}</span>
-                </div>
-              ))}
-            </Card>
-            <Card className="p-4">
-              <div className="text-[9px] font-mono uppercase tracking-widest mb-2" style={{ color: '#6b6456' }}>Import Formats</div>
-              <p className="text-xs leading-relaxed" style={{ color: '#6b6456' }}>
-                Accepts Excel (.xlsx), CSV, Word (.docx), and plain text. Column names are detected automatically.
-              </p>
-            </Card>
-            {activeTab === 'ratecard' && (
-              <Card className="p-4">
-                <div className="text-[9px] font-mono uppercase tracking-widest mb-3" style={{ color: '#6b6456' }}>Rate Card</div>
-                {[['Roles', roles.length], ['Categories', new Set(roles.map(r=>r.category||'Uncategorised')).size]].map(([k,v])=>(
-                  <div key={k} className="flex justify-between py-1.5 border-b last:border-0 text-xs" style={{borderColor:'#f0ebe0'}}>
-                    <span style={{color:'#6b6456'}}>{k}</span><span className="font-mono font-medium">{v}</span>
-                  </div>
-                ))}
-              </Card>
-            )}
-          </aside>
           </div>
         </div>
       </Layout>
