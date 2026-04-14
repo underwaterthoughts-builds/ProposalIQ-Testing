@@ -568,8 +568,10 @@ export default function Repository() {
         const r = await fetch(`/api/projects/${p.id}/reindex`, { method: 'POST' });
         if (r.ok) started++; else failed++;
       } catch { failed++; }
-      // 1.5s stagger keeps us well under any rate limits
-      await new Promise(res => setTimeout(res, 1500));
+      // 3s stagger matches batch import — the server-side OpenAI queue
+      // serialises anyway, but a tighter client loop just piles work into
+      // the backlog without getting through faster.
+      await new Promise(res => setTimeout(res, 3000));
     }
     setToast(`✓ Kicked off ${started} rescans${failed ? ` (${failed} failed to start)` : ''}. Refresh in 60s to see updated analyses.`);
     setRunningAnalysis(false);
