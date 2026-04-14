@@ -479,8 +479,6 @@ ${sectionHtml('Winning Language', languageHtml)}
   const coverageSummary = coverageData?.summary || null;
   const news = scan.news || [];
   const team = scan.team_suggestions || [];
-  const financial = scan.financial_model || {};
-  const coverage = scan.coverage || {};
   const writingInsights = scan.writing_insights || [];
   const suggestedApproach = scan.suggested_approach || null;
   const winStrategy = scan.win_strategy || null;
