@@ -16,6 +16,7 @@ const NAV = [
 const SECONDARY_NAV = [
   { href: '/clients', label: 'Clients' },
   { href: '/users',   label: 'Users' },
+  { href: '/onboarding/profile', label: 'Organisation Profile' },
 ];
 
 // Pages that show the Lens Switcher sidebar (Quick/Pro mode contexts)

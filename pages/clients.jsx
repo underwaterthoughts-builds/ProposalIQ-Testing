@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import Layout from '../components/Layout';
@@ -7,6 +8,7 @@ import { useUser } from '../lib/useUser';
 import { formatMoney } from '../lib/format';
 
 export default function Clients() {
+  const router = useRouter();
   const { user, loading: authLoading } = useUser();
   const [clients, setClients] = useState([]);
   const [unprofiled, setUnprofiled] = useState([]);
@@ -349,7 +351,7 @@ export default function Clients() {
                                 const statusDot = isWon ? 'bg-primary' : isLost ? 'bg-error' : 'bg-outline-variant';
                                 const statusColor = isWon ? 'text-primary' : isLost ? 'text-error' : 'text-on-surface-variant';
                                 return (
-                                  <tr key={p.id} className="group hover:bg-surface-container-high/40 transition-colors cursor-pointer" onClick={() => window.location.assign(`/repository/${p.id}`)}>
+                                  <tr key={p.id} className="group hover:bg-surface-container-high/40 transition-colors cursor-pointer" onClick={() => router.push(`/repository/${p.id}`)}>
                                     <td className="px-6 py-5">
                                       <span className="block font-body text-sm font-bold text-on-surface truncate">{p.name}</span>
                                       <span className="text-[10px] font-label text-on-surface-variant uppercase">

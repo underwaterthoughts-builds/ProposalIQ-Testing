@@ -138,8 +138,13 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
     : 'bg-primary/20 text-primary border-primary/20';
   const outcomeLabel = (p.outcome || 'pending').toUpperCase();
 
-  // Short project code derived from id
-  const projectCode = `${(p.id || '').slice(0, 2).toUpperCase()}-${(p.id || '').slice(-2).toUpperCase() || '00'}`;
+  // Short project code derived from id — safe against short/missing ids
+  const idStr = String(p.id || '');
+  const projectCode = idStr.length >= 4
+    ? `${idStr.slice(0, 2).toUpperCase()}-${idStr.slice(-2).toUpperCase()}`
+    : idStr.length >= 2
+    ? `${idStr.slice(0, 2).toUpperCase()}-00`
+    : '—';
 
   return (
     <div

@@ -49,68 +49,59 @@ const RfpTaxonomyBar = memo(function RfpTaxonomyBar({ scan, rfpData, scanId }) {
   const serviceIndustries = (taxItems || []).filter(t => t.taxonomy_type === 'service' && t.category === 'Industry');
 
   return (
-    <div className="flex items-center gap-2 px-5 py-2 border-b flex-wrap" style={{ borderColor: '#f0ebe0', background: '#fbf9f4' }}>
-      <span className="text-[10px] font-mono uppercase tracking-widest" style={{ color: '#9b8e80' }}>Classification:</span>
-
-      {/* Client industry */}
+    <div className="flex items-center gap-2 flex-wrap">
+      {/* Client industry — gold accent */}
       {editing === 'client_industry' ? (
-        <select autoFocus value={clientIndustry || ''} onChange={e => saveTaxonomy('client_industry', e.target.value)}
+        <select
+          autoFocus
+          value={clientIndustry || ''}
+          onChange={e => saveTaxonomy('client_industry', e.target.value)}
           onBlur={() => setEditing(null)}
-          className="text-[11px] px-2 py-1 rounded border bg-white outline-none"
-          style={{ borderColor: 'rgba(184,150,46,.5)' }}>
+          className="text-[10px] font-label uppercase tracking-widest px-3 py-1 rounded-full bg-surface-container-high text-primary border border-primary/30 outline-none"
+        >
           <option value="">— Untagged —</option>
           {clientIndustries.map(i => <option key={i.id} value={i.name}>{i.name}</option>)}
         </select>
       ) : (
-        <button onClick={() => setEditing('client_industry')}
-          className="text-[11px] px-2.5 py-1 rounded-full border transition-colors hover:bg-white"
-          style={{
-            borderColor: clientIndustry ? 'rgba(184,150,46,.5)' : '#ddd5c4',
-            background: clientIndustry ? 'rgba(184,150,46,.1)' : 'transparent',
-            color: clientIndustry ? '#8a6200' : '#9b8e80',
-          }}
-          title="Click to change client industry">
+        <button
+          onClick={() => setEditing('client_industry')}
+          className={`px-3 py-1 text-[10px] font-label uppercase font-bold tracking-widest rounded-full border transition-colors flex items-center gap-1 hover:brightness-110 ${
+            clientIndustry
+              ? 'bg-primary/10 text-primary border-primary/20'
+              : 'bg-surface-container-high text-on-surface-variant border-outline-variant/30 border-dashed'
+          }`}
+          title="Click to change client industry"
+          disabled={saving}
+        >
           ◆ {clientIndustry || '+ Client sector'}
         </button>
       )}
 
-      {/* Service industry */}
+      {/* Service industry — tertiary accent */}
       {editing === 'service_industry' ? (
-        <select autoFocus value={serviceIndustry || ''} onChange={e => saveTaxonomy('service_industry', e.target.value)}
+        <select
+          autoFocus
+          value={serviceIndustry || ''}
+          onChange={e => saveTaxonomy('service_industry', e.target.value)}
           onBlur={() => setEditing(null)}
-          className="text-[11px] px-2 py-1 rounded border bg-white outline-none"
-          style={{ borderColor: 'rgba(30,74,82,.5)' }}>
+          className="text-[10px] font-label uppercase tracking-widest px-3 py-1 rounded-full bg-surface-container-high text-tertiary border border-tertiary/30 outline-none"
+        >
           <option value="">— Untagged —</option>
           {serviceIndustries.map(i => <option key={i.id} value={i.name}>{i.name}</option>)}
         </select>
       ) : (
-        <button onClick={() => setEditing('service_industry')}
-          className="text-[11px] px-2.5 py-1 rounded-full border transition-colors hover:bg-white"
-          style={{
-            borderColor: serviceIndustry ? 'rgba(30,74,82,.5)' : '#ddd5c4',
-            background: serviceIndustry ? 'rgba(30,74,82,.1)' : 'transparent',
-            color: serviceIndustry ? '#1e4a52' : '#9b8e80',
-          }}
-          title="Click to change type of work">
+        <button
+          onClick={() => setEditing('service_industry')}
+          className={`px-3 py-1 text-[10px] font-label uppercase font-bold tracking-widest rounded-full border transition-colors flex items-center gap-1 hover:brightness-110 ${
+            serviceIndustry
+              ? 'bg-tertiary-container/20 text-tertiary-container border-tertiary-container/20'
+              : 'bg-surface-container-high text-on-surface-variant border-outline-variant/30 border-dashed'
+          }`}
+          title="Click to change type of work"
+          disabled={saving}
+        >
           ◈ {serviceIndustry || '+ Type of work'}
         </button>
-      )}
-
-      {/* Static info tags */}
-      {rfpData.client && rfpData.client !== 'Unknown' && (
-        <span className="text-[11px] px-2 py-1 rounded-full border" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
-          {rfpData.client}
-        </span>
-      )}
-      {rfpData.sector && rfpData.sector !== 'Unknown' && (
-        <span className="text-[11px] px-2 py-1 rounded-full border" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
-          {rfpData.sector}
-        </span>
-      )}
-      {rfpData.contract_value_hint && (
-        <span className="text-[11px] px-2 py-1 rounded-full border" style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
-          {rfpData.contract_value_hint}
-        </span>
       )}
     </div>
   );
@@ -668,23 +659,7 @@ ${sectionHtml('Winning Language', languageHtml)}
               </div>
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="font-label text-xs text-on-surface-variant uppercase">Active Tags:</span>
-                <div className="flex gap-2 flex-wrap">
-                  {scan.client_industry && (
-                    <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] uppercase font-bold tracking-widest rounded-full border border-primary/20 flex items-center">
-                      {scan.client_industry}
-                    </span>
-                  )}
-                  {scan.service_industry && (
-                    <span className="px-3 py-1 bg-tertiary-container/20 text-tertiary-container text-[10px] uppercase font-bold tracking-widest rounded-full border border-tertiary-container/20 flex items-center">
-                      {scan.service_industry}
-                    </span>
-                  )}
-                  {(!scan.client_industry && !scan.service_industry) && (
-                    <span className="px-3 py-1 bg-surface-container-high text-on-surface-variant text-[10px] uppercase font-bold tracking-widest rounded-full border border-outline-variant/30 flex items-center">
-                      Untagged
-                    </span>
-                  )}
-                </div>
+                <RfpTaxonomyBar scan={scan} rfpData={rfpData} scanId={id} />
               </div>
             </section>
 

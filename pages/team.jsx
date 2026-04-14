@@ -370,10 +370,9 @@ export default function Team() {
                   const cv = m.cv_extracted || {};
                   const isSelected = selectedIds.has(m.id);
 
-                  // Tier badge — rough heuristic based on years + rate
-                  const tier = m.years_experience >= 15 ? 'Lead'
-                    : m.years_experience >= 8 ? 'Expert'
-                    : 'Staff';
+                  // Tier badge — rough heuristic based on years (null-safe)
+                  const yrs = Number(m.years_experience) || 0;
+                  const tier = yrs >= 15 ? 'Lead' : yrs >= 8 ? 'Expert' : 'Staff';
 
                   return (
                     <div

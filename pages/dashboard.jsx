@@ -60,6 +60,7 @@ export default function Dashboard() {
   const { user, loading: authLoading } = useUser();
   const [projects, setProjects] = useState([]);
   const [scans, setScans] = useState([]);
+  const [patterns, setPatterns] = useState(null);
   const [loading, setLoading] = useState(true);
   const [needsSeed, setNeedsSeed] = useState(false);
   const [seeding, setSeeding] = useState(false);
@@ -86,6 +87,10 @@ export default function Dashboard() {
     fetch('/api/rfp/scan')
       .then(r => r.json())
       .then(d => setScans(d.scans || []))
+      .catch(() => {});
+    fetch('/api/win-patterns')
+      .then(r => r.json())
+      .then(d => setPatterns(d))
       .catch(() => {});
   }, []);
 
@@ -319,7 +324,7 @@ export default function Dashboard() {
           )}
 
           {/* ── INTELLIGENCE MODE ──────────────────────────────────────── */}
-          {intent === 'intelligence' && <IntelligenceMode projects={projects} scans={scans} winRate={winRate} won={won} lost={lost} />}
+          {intent === 'intelligence' && <IntelligenceMode projects={projects} scans={scans} patterns={patterns} winRate={winRate} won={won} lost={lost} />}
 
           {/* ── REPOSITORY MODE ────────────────────────────────────────── */}
           {intent === 'repository' && <RepositoryMode projects={projects} />}
@@ -338,29 +343,49 @@ export default function Dashboard() {
 }
 
 // ── INTELLIGENCE MODE ───────────────────────────────────────────────────
-function IntelligenceMode({ projects, scans, winRate, won, lost }) {
+function IntelligenceMode({ projects, scans, patterns, winRate, won, lost }) {
   const avgRating = projects.length
     ? (projects.reduce((a, p) => a + (p.user_rating || 0), 0) / projects.length).toFixed(1)
     : '—';
 
-  // Win patterns — bucket proposals by a rough section category and compute
-  // % won by category. Fallback to simple counts if section data unavailable.
-  const patterns = [
-    { label: 'Exec Summary', current: 85, benchmark: 60 },
-    { label: 'Technical', current: 35, benchmark: 45 },
-    { label: 'Pricing', current: 95, benchmark: 70 },
-    { label: 'Timeline', current: 55, benchmark: 40 },
-    { label: 'Case Studies', current: 75, benchmark: 80 },
-  ];
+  // Win patterns — derive from API `patterns.by_sector` if available, fall
+  // back to empty until the win-patterns API responds.
+  const sectorPatterns = (patterns?.by_sector || []).slice(0, 5);
+  const patternRows = sectorPatterns.length > 0
+    ? sectorPatterns.map(s => ({
+        label: s.sector || 'Unspecified',
+        current: typeof s.win_rate === 'number' ? s.win_rate : 0,
+        benchmark: 50, // industry-average placeholder
+      }))
+    : [];
 
-  // Knowledge health — % coverage per asset type (placeholder computation)
+  // Knowledge health — real values from `patterns.health` when available
+  const health = patterns?.health || {};
   const knowledgeHealth = [
-    { label: 'Core Content', pct: Math.min(100, Math.round((projects.length / 20) * 100)), color: 'bg-primary' },
-    { label: 'Pricing Tables', pct: 62, color: 'bg-secondary' },
-    { label: 'Compliance Docs', pct: 88, color: 'bg-primary' },
+    {
+      label: 'Writing Analysis',
+      pct: health.writing_analysis_coverage ?? 0,
+      color: 'bg-primary',
+    },
+    {
+      label: 'Learning Histories',
+      pct: health.learning_history_coverage ?? 0,
+      color: 'bg-secondary',
+    },
+    {
+      label: 'Taxonomy Coverage',
+      pct: health.taxonomy_coverage ?? Math.round(
+        (projects.filter(p => p.client_industry || p.service_industry).length / Math.max(1, projects.length)) * 100
+      ),
+      color: 'bg-primary',
+    },
   ];
 
-  const overallHealth = Math.round(knowledgeHealth.reduce((a, h) => a + h.pct, 0) / knowledgeHealth.length);
+  const overallHealth = Math.round(
+    knowledgeHealth.reduce((a, h) => a + (h.pct || 0), 0) / knowledgeHealth.length
+  );
+
+  const topRecommendation = patterns?.ai_analysis?.top_recommendation;
 
   const recent = [...projects]
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -369,30 +394,47 @@ function IntelligenceMode({ projects, scans, winRate, won, lost }) {
   return (
     <div className="space-y-10">
 
-      {/* AI Strategic Insight */}
-      <section className="bg-[#1a2e2e] p-8 rounded-lg flex flex-col md:flex-row items-center gap-8 border-l-4 border-[#4fd1c5]">
-        <div className="md:w-1/3">
-          <span className="font-label text-xs uppercase tracking-widest text-[#4fd1c5] mb-2 block">AI Strategic Insight</span>
-          <h3 className="font-headline text-4xl text-white font-semibold leading-tight">
-            Optimization Window Detected
-          </h3>
-        </div>
-        <div className="md:w-1/2">
-          <p className="text-on-surface font-body text-lg leading-relaxed mb-4">
-            Based on recent repository patterns, your "Technical Methodology" sections are outperforming industry standards by{' '}
-            <span className="text-[#4fd1c5] font-bold">18.4%</span>. We recommend leading with this differentiator in your next bid.
-          </p>
-          <Link href="/rfp" className="text-[#4fd1c5] font-label text-sm uppercase tracking-widest flex items-center gap-2 hover:translate-x-1 transition-transform">
-            Explore Strategy
-            <span className="material-symbols-outlined text-base">trending_up</span>
-          </Link>
-        </div>
-        <div className="md:w-1/6 hidden md:block">
-          <div className="w-24 h-24 bg-[#4fd1c5]/10 rounded-full flex items-center justify-center border border-[#4fd1c5]/20">
-            <span className="material-symbols-outlined text-4xl text-[#4fd1c5]">lightbulb</span>
+      {/* AI Strategic Insight — live top_recommendation if the patterns API has one */}
+      {topRecommendation ? (
+        <section className="bg-[#1a2e2e] p-8 rounded-lg flex flex-col md:flex-row items-center gap-8 border-l-4 border-[#4fd1c5]">
+          <div className="md:w-1/3">
+            <span className="font-label text-xs uppercase tracking-widest text-[#4fd1c5] mb-2 block">AI Strategic Insight</span>
+            <h3 className="font-headline text-3xl md:text-4xl text-white font-semibold leading-tight">
+              Top Recommendation
+            </h3>
           </div>
-        </div>
-      </section>
+          <div className="md:w-1/2">
+            <p className="text-on-surface font-body text-lg leading-relaxed mb-4">
+              {topRecommendation}
+            </p>
+            <Link href="/rfp" className="text-[#4fd1c5] font-label text-sm uppercase tracking-widest flex items-center gap-2 hover:translate-x-1 transition-transform">
+              Act on this insight
+              <span className="material-symbols-outlined text-base">trending_up</span>
+            </Link>
+          </div>
+          <div className="md:w-1/6 hidden md:block">
+            <div className="w-24 h-24 bg-[#4fd1c5]/10 rounded-full flex items-center justify-center border border-[#4fd1c5]/20">
+              <span className="material-symbols-outlined text-4xl text-[#4fd1c5]">lightbulb</span>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="bg-surface-container-low p-8 rounded-lg flex items-center gap-4 border-l-4 border-outline-variant/30">
+          <span className="material-symbols-outlined text-3xl text-on-surface-variant">insights</span>
+          <div>
+            <span className="font-label text-xs uppercase tracking-widest text-on-surface-variant block mb-1">
+              AI Strategic Insight
+            </span>
+            <p className="text-on-surface-variant font-body">
+              {patterns === null
+                ? 'Analysing your repository…'
+                : projects.length < 3
+                ? 'Upload at least 3 proposals for ProposalIQ to surface strategic recommendations.'
+                : 'No strategic recommendation yet — try refreshing after your next scan.'}
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* 4-Metric Row */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -429,32 +471,51 @@ function IntelligenceMode({ projects, scans, winRate, won, lost }) {
             </div>
           </div>
 
-          <div className="h-64 flex items-end justify-between gap-4">
-            {patterns.map(p => (
-              <div key={p.label} className="flex-1 space-y-2 group">
-                <div className="relative h-60 flex flex-col justify-end gap-1">
-                  <div className="bg-outline/20 w-full rounded-t-sm" style={{ height: `${p.benchmark}%` }} />
-                  <div className="bg-primary w-full rounded-t-sm transition-all group-hover:bg-primary-container" style={{ height: `${p.current}%` }} />
+          {patternRows.length === 0 ? (
+            <div className="py-16 text-center text-on-surface-variant">
+              <p className="font-body text-sm max-w-md mx-auto">
+                {patterns === null
+                  ? 'Loading win patterns…'
+                  : projects.length < 3
+                  ? 'Upload at least 3 proposals and capture outcomes to unlock sector win-rate patterns.'
+                  : 'No sector breakdown available yet — try refreshing.'}
+              </p>
+            </div>
+          ) : (
+            <div className="h-64 flex items-end justify-between gap-4">
+              {patternRows.map(p => (
+                <div key={p.label} className="flex-1 space-y-2 group">
+                  <div className="relative h-60 flex flex-col justify-end gap-1">
+                    <div className="bg-outline/20 w-full rounded-t-sm" style={{ height: `${p.benchmark}%` }} />
+                    <div className="bg-primary w-full rounded-t-sm transition-all group-hover:bg-primary-container" style={{ height: `${p.current}%` }} />
+                  </div>
+                  <span className="font-label text-[9px] text-center block text-on-surface-variant uppercase truncate" title={p.label}>
+                    {p.label}
+                  </span>
                 </div>
-                <span className="font-label text-[9px] text-center block text-on-surface-variant uppercase">{p.label}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
-          <div className="grid grid-cols-2 gap-8 pt-6">
-            <div className="p-4 bg-surface-container-low border border-outline-variant/10">
-              <p className="text-xs font-body italic text-on-surface-variant mb-2">
-                "High correlation found between gold-standard pricing structures and win conversion rates."
-              </p>
-              <span className="font-label text-[10px] text-primary uppercase tracking-widest">Insight: Revenue Model</span>
+          {/* Quality score insights — derived from patterns.quality_scores */}
+          {patterns?.quality_scores?.won && patterns?.quality_scores?.lost && (
+            <div className="grid grid-cols-2 gap-8 pt-6">
+              {[['Writing', 'writing'], ['Approach', 'approach']].map(([label, key]) => {
+                const wonScore = patterns.quality_scores.won[key];
+                const lostScore = patterns.quality_scores.lost[key];
+                if (!wonScore || !lostScore) return null;
+                const delta = wonScore - lostScore;
+                return (
+                  <div key={key} className="p-4 bg-surface-container-low border border-outline-variant/10">
+                    <p className="text-xs font-body italic text-on-surface-variant mb-2">
+                      Won bids score <span className="text-primary font-bold">{wonScore}</span> on {label.toLowerCase()} vs <span className="opacity-70">{lostScore}</span> for losses ({delta > 0 ? '+' : ''}{delta} points).
+                    </p>
+                    <span className="font-label text-[10px] text-primary uppercase tracking-widest">Insight: {label}</span>
+                  </div>
+                );
+              })}
             </div>
-            <div className="p-4 bg-surface-container-low border border-outline-variant/10">
-              <p className="text-xs font-body italic text-on-surface-variant mb-2">
-                "Technical scoring lag detected. Recommend refreshing the architecture repository."
-              </p>
-              <span className="font-label text-[10px] text-primary uppercase tracking-widest">Insight: Region Risk</span>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Knowledge Health + Recent Projects (4 cols) */}
