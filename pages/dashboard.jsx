@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Layout from '../components/Layout';
+import OnboardingPrompt from '../components/OnboardingPrompt';
 import { useUser } from '../lib/useUser';
 import { useMode } from '../lib/useMode';
 
@@ -393,6 +394,8 @@ function IntelligenceMode({ projects, scans, patterns, winRate, won, lost }) {
 
   return (
     <div className="space-y-10">
+
+      <OnboardingPrompt />
 
       {/* Overview & Insights — link to the full org-level analysis page */}
       <Link href="/intelligence" className="block group">

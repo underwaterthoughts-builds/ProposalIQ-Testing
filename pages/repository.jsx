@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Layout from '../components/Layout';
 import { Btn, Card, Stars, StarsPct, ClientField, OutcomeLabel, FileChip, Spinner, Toast } from '../components/ui';
+import OnboardingPrompt from '../components/OnboardingPrompt';
 import { useUser } from '../lib/useUser';
 import { formatMoney } from '../lib/format';
 import { DebouncedSearch } from '../lib/useDebounce';
@@ -1071,6 +1072,9 @@ export default function Repository() {
                   </span>
                 </div>
               )}
+              <div className="mb-4">
+                <OnboardingPrompt />
+              </div>
               {analysisHealth && analysisHealth.unanalysed > 0 && !loading && (
                 <div className="flex items-center gap-3 mb-4 px-4 py-3 rounded-lg border border-error/30 bg-error/10">
                   <span className="material-symbols-outlined text-error text-lg">warning</span>
