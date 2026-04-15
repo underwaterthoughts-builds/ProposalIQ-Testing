@@ -38,6 +38,22 @@ async function handler(req, res) {
   const winStrategy = safe(scan.win_strategy, null);
   const winningLanguage = safe(scan.winning_language, []);
   const executiveBrief = safe(scan.executive_brief, null);
+  const gaps = safe(scan.gaps, []);
+  const suggestedApproach = safe(scan.suggested_approach, null);
+  // narrative_advice may be a plain string or a JSON { text, writing_insights }
+  let narrativeAdvice = '';
+  let writingInsights = [];
+  try {
+    const parsed = JSON.parse(scan.narrative_advice);
+    if (parsed && typeof parsed === 'object') {
+      narrativeAdvice = parsed.text || '';
+      writingInsights = Array.isArray(parsed.writing_insights) ? parsed.writing_insights : [];
+    } else {
+      narrativeAdvice = scan.narrative_advice || '';
+    }
+  } catch {
+    narrativeAdvice = scan.narrative_advice || '';
+  }
 
   // Load confirmed org profile so drafts stay grounded in what we actually do
   let orgProfile = null;
@@ -78,7 +94,8 @@ async function handler(req, res) {
       winStrategy,
       winningLanguage,
       executiveBrief,
-      orgProfile
+      orgProfile,
+      { gaps, suggestedApproach, narrativeAdvice, writingInsights }
     );
   } catch (e) {
     console.error(`[draft ${id}/${body.section_id}] generation error:`, e.message);
