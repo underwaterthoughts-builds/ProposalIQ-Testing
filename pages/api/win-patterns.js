@@ -269,7 +269,7 @@ async function handler(req, res) {
   // ── Org profile ─────────────────────────────────────────────────────────
   let orgProfile = null;
   try {
-    const row = db.prepare("SELECT * FROM organisation_profile WHERE id = 'default'").get();
+    const row = db.prepare("SELECT * FROM organisation_profile WHERE user_id = ?").get(req.user.id);
     if (row?.confirmed_profile) {
       try { orgProfile = { ...row, confirmed_profile: JSON.parse(row.confirmed_profile) }; }
       catch { orgProfile = row; }

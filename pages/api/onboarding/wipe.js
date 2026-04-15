@@ -24,8 +24,10 @@ async function handler(req, res) {
   const db = getDb();
   let profileDeleted = 0;
   try {
-    const r = db.prepare("DELETE FROM organisation_profile WHERE id = 'default'").run();
+    const r = db.prepare("DELETE FROM organisation_profile WHERE user_id = ?").run(req.user.id);
     profileDeleted = r.changes || 0;
+    // Also un-stamp onboarded_at so the user goes back through the flow
+    db.prepare("UPDATE users SET onboarded_at = NULL WHERE id = ?").run(req.user.id);
   } catch (e) {
     return res.status(500).json({ error: 'Failed to delete profile: ' + e.message });
   }

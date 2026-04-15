@@ -1,17 +1,21 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { safe } from '../../../lib/embeddings';
+import crypto from 'crypto';
 
-// GET  /api/onboarding/profile → current confirmed profile (or null)
-// POST /api/onboarding/profile → upsert confirmed profile
+// GET  /api/onboarding/profile → current user's confirmed profile (or null)
+// POST /api/onboarding/profile → upsert current user's profile; also stamps
+//                                 users.onboarded_at so the onboarding gate
+//                                 in useUser stops redirecting them here.
 //
-// Singleton — one row with id='default'. Scoped per-deployment, not per-user,
-// because ProposalIQ runs as a single-org install.
+// Per-user since the multi-tenant migration. The table still carries an
+// id column for legacy reasons, but user_id is the real key (UNIQUE index).
 async function handler(req, res) {
   const db = getDb();
+  const userId = req.user.id;
 
   if (req.method === 'GET') {
-    const row = db.prepare("SELECT * FROM organisation_profile WHERE id = 'default'").get();
+    const row = db.prepare("SELECT * FROM organisation_profile WHERE user_id = ?").get(userId);
     if (!row) {
       return res.status(200).json({ profile: null });
     }
@@ -27,8 +31,6 @@ async function handler(req, res) {
   if (req.method === 'POST') {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
 
-    // Validate the confirmed profile shape. Preserve the user's own labels
-    // but coerce types defensively.
     const confirmed = {
       offerings: Array.isArray(body?.confirmed_profile?.offerings)
         ? body.confirmed_profile.offerings.map(o => ({
@@ -58,30 +60,42 @@ async function handler(req, res) {
     const orgName = String(body?.org_name || '').slice(0, 200);
     const websiteUrl = String(body?.website_url || '').slice(0, 500);
 
-    // Upsert the singleton row
-    db.prepare(`
-      INSERT INTO organisation_profile (
-        id, org_name, website_url, extracted_snapshot, confirmed_profile,
-        last_scanned_at, updated_at, created_at
-      ) VALUES ('default', ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      ON CONFLICT(id) DO UPDATE SET
-        org_name = excluded.org_name,
-        website_url = excluded.website_url,
-        extracted_snapshot = CASE
-          WHEN excluded.extracted_snapshot = '{}' THEN organisation_profile.extracted_snapshot
-          ELSE excluded.extracted_snapshot
-        END,
-        confirmed_profile = excluded.confirmed_profile,
-        last_scanned_at = CASE
-          WHEN excluded.extracted_snapshot = '{}' THEN organisation_profile.last_scanned_at
-          ELSE CURRENT_TIMESTAMP
-        END,
-        updated_at = CURRENT_TIMESTAMP
-    `).run(
-      orgName, websiteUrl,
-      JSON.stringify(extracted || {}),
-      JSON.stringify(confirmed)
-    );
+    const existing = db.prepare("SELECT id FROM organisation_profile WHERE user_id = ?").get(userId);
+
+    if (existing) {
+      db.prepare(`
+        UPDATE organisation_profile SET
+          org_name = ?,
+          website_url = ?,
+          extracted_snapshot = CASE WHEN ? = '{}' THEN extracted_snapshot ELSE ? END,
+          confirmed_profile = ?,
+          last_scanned_at = CASE WHEN ? = '{}' THEN last_scanned_at ELSE CURRENT_TIMESTAMP END,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `).run(
+        orgName, websiteUrl,
+        JSON.stringify(extracted || {}), JSON.stringify(extracted || {}),
+        JSON.stringify(confirmed),
+        JSON.stringify(extracted || {}),
+        existing.id
+      );
+    } else {
+      const newId = crypto.randomUUID();
+      db.prepare(`
+        INSERT INTO organisation_profile (
+          id, user_id, org_name, website_url, extracted_snapshot, confirmed_profile,
+          last_scanned_at, updated_at, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `).run(
+        newId, userId, orgName, websiteUrl,
+        JSON.stringify(extracted || {}),
+        JSON.stringify(confirmed)
+      );
+    }
+
+    // Saving the profile completes onboarding. Idempotent — once stamped,
+    // subsequent saves keep the original timestamp.
+    db.prepare("UPDATE users SET onboarded_at = COALESCE(onboarded_at, CURRENT_TIMESTAMP) WHERE id = ?").run(userId);
 
     return res.status(200).json({ ok: true });
   }

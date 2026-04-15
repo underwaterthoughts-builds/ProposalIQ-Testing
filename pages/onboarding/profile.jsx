@@ -155,6 +155,11 @@ export default function OnboardingProfile() {
       });
       if (!r.ok) { setToast('Save failed'); setSaving(false); return; }
       setToast('✓ Profile saved — it will now inform future RFP scans');
+      // If user was being held at onboarding (onboarded_at NULL), send
+      // them into the app now that their profile exists.
+      if (user && !user.onboarded_at && user.role !== 'admin') {
+        setTimeout(() => { window.location.href = '/dashboard'; }, 800);
+      }
     } catch (e) {
       setToast('Save failed: ' + e.message);
     }

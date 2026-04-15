@@ -58,7 +58,7 @@ async function handler(req, res) {
   // Load confirmed org profile so drafts stay grounded in what we actually do
   let orgProfile = null;
   try {
-    const row = db.prepare("SELECT * FROM organisation_profile WHERE id = 'default'").get();
+    const row = db.prepare("SELECT * FROM organisation_profile WHERE user_id = ?").get(req.user.id);
     if (row) {
       orgProfile = { ...row, confirmed_profile: safe(row.confirmed_profile, {}) };
     }
