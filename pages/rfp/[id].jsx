@@ -2489,9 +2489,9 @@ const ExecutiveBrief = memo(function ExecutiveBrief({ brief, bidScore, matches, 
               <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Intelligence Score</p>
             </div>
             <div className="hidden md:block h-16 w-px bg-outline-variant/30" />
-            <div className="flex-1 min-w-[120px]">
+            <div className="flex-1 min-w-[140px]">
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-4xl font-bold text-on-surface font-label">{confidenceText || '—'}</span>
+                <span className="text-3xl font-bold text-on-surface font-label whitespace-nowrap">{confidenceText || '—'}</span>
               </div>
               <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant">Confidence</p>
             </div>
