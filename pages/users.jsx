@@ -34,6 +34,46 @@ export default function Users() {
     setToast(`${name} removed`);
   }
 
+  async function toggleRole(u) {
+    const next = u.role === 'admin' ? 'member' : 'admin';
+    if (!confirm(`Set ${u.name} as ${next}?`)) return;
+    const r = await fetch(`/api/users/${u.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: next }),
+    });
+    if (r.ok) { loadUsers(); setToast(`${u.name} is now ${next}`); }
+    else setToast('Failed to update role');
+  }
+
+  async function toggleDisabled(u) {
+    const next = !u.disabled;
+    if (!confirm(`${next ? 'Disable' : 'Re-enable'} ${u.name}? ${next ? 'They will lose access immediately.' : ''}`)) return;
+    const r = await fetch(`/api/users/${u.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ disabled: next }),
+    });
+    if (r.ok) { loadUsers(); setToast(`${u.name} ${next ? 'disabled' : 're-enabled'}`); }
+    else { const d = await r.json().catch(() => ({})); setToast(d.error || 'Failed to update'); }
+  }
+
+  async function impersonate(u) {
+    if (!confirm(`View the app as ${u.name}? Your admin session will be paused until you end the view-as.`)) return;
+    const r = await fetch('/api/admin/impersonate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: u.id }),
+    });
+    if (r.ok) {
+      // Reload to pick up the new session
+      window.location.href = '/dashboard';
+    } else {
+      const d = await r.json().catch(() => ({}));
+      setToast(d.error || 'Failed to start impersonation');
+    }
+  }
+
   async function sendInvite() {
     if (!invite.name || !invite.email || !invite.password) { setToast('All fields required'); return; }
     setSaving(true);
@@ -200,20 +240,48 @@ export default function Users() {
                           </div>
                         </div>
                         <div className="flex items-center gap-3 flex-shrink-0">
-                          <span
-                            className={`font-label text-[10px] uppercase tracking-widest px-2 py-0.5 border ${
-                              isAdmin ? 'text-primary border-primary/20' : 'text-on-surface-variant border-outline-variant/30'
-                            }`}
-                          >
-                            {isAdmin ? 'Admin' : 'Member'}
-                          </span>
-                          {!isSelf && (
-                            <button
-                              onClick={() => removeUser(u.id, u.name)}
-                              className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-error transition-colors opacity-0 group-hover:opacity-100"
+                          {u.disabled ? (
+                            <span className="font-label text-[10px] uppercase tracking-widest px-2 py-0.5 border text-error border-error/30">Disabled</span>
+                          ) : (
+                            <span
+                              className={`font-label text-[10px] uppercase tracking-widest px-2 py-0.5 border ${
+                                isAdmin ? 'text-primary border-primary/20' : 'text-on-surface-variant border-outline-variant/30'
+                              }`}
                             >
-                              Remove
-                            </button>
+                              {isAdmin ? 'Admin' : 'Member'}
+                            </span>
+                          )}
+                          {!isSelf && (
+                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={() => impersonate(u)}
+                                title="Sign in as this user"
+                                disabled={u.disabled}
+                                className="font-label text-[10px] uppercase tracking-widest text-primary hover:underline disabled:opacity-30"
+                              >
+                                View as
+                              </button>
+                              <button
+                                onClick={() => toggleRole(u)}
+                                title={isAdmin ? 'Demote to Member' : 'Promote to Admin'}
+                                className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface"
+                              >
+                                {isAdmin ? '↓ Member' : '↑ Admin'}
+                              </button>
+                              <button
+                                onClick={() => toggleDisabled(u)}
+                                title={u.disabled ? 'Re-enable account' : 'Disable account'}
+                                className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-error"
+                              >
+                                {u.disabled ? 'Enable' : 'Disable'}
+                              </button>
+                              <button
+                                onClick={() => removeUser(u.id, u.name)}
+                                className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-error"
+                              >
+                                Remove
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>

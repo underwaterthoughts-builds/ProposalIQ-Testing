@@ -42,13 +42,32 @@ export default function Layout({ children, title, subtitle, actions, user }) {
     router.push('/login');
   }
 
+  async function endImpersonation() {
+    try {
+      await fetch('/api/admin/end-impersonation', { method: 'POST' });
+    } catch {}
+    window.location.href = '/admin';
+  }
+
   const isActive = (href) => router.pathname === href || router.pathname.startsWith(href + '/');
 
   return (
     <div className="min-h-screen bg-surface text-on-surface font-body">
 
+      {/* ── IMPERSONATION BANNER ────────────────────────────────────────── */}
+      {/* Fixed top stripe at z-[60] (above the header). Header's top
+          offset and main's padding-top are bumped down by ~32px when
+          this is showing so nothing overlaps. */}
+      {user?._impersonator && (
+        <div className="fixed top-0 left-0 right-0 z-[60] bg-error text-on-error-container px-4 py-1.5 flex items-center justify-center gap-3 text-xs font-label uppercase tracking-widest" style={{ height: 32 }}>
+          <span className="material-symbols-outlined text-base">visibility</span>
+          <span>Viewing as <strong>{user.name}</strong> · signed in as <strong>{user._impersonator.name}</strong></span>
+          <button onClick={endImpersonation} className="ml-2 underline hover:no-underline font-bold">End view-as</button>
+        </div>
+      )}
+
       {/* ── TOP NAV ──────────────────────────────────────────────────────── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#141311] border-b border-outline-variant/10">
+      <header className="fixed left-0 right-0 z-50 bg-[#141311] border-b border-outline-variant/10" style={{ top: user?._impersonator ? 32 : 0 }}>
         <div className="flex justify-between items-center w-full px-4 md:px-8 py-3">
           {/* Left: hamburger (mobile) + logo + nav */}
           <div className="flex items-center gap-8">
@@ -63,7 +82,13 @@ export default function Layout({ children, title, subtitle, actions, user }) {
               ProposalIQ
             </Link>
             <nav className="hidden md:flex items-center gap-6">
-              {NAV.map(item => {
+              {[
+                ...NAV,
+                // Admin link only for actual admins (impersonator role wins
+                // over impersonated role for nav visibility, so admins
+                // viewing-as a member still see it).
+                ...((user?._impersonator?.role === 'admin' || user?.role === 'admin') ? [{ href: '/admin', label: 'Admin' }] : []),
+              ].map(item => {
                 const active = isActive(item.href);
                 return (
                   <Link
@@ -153,7 +178,7 @@ export default function Layout({ children, title, subtitle, actions, user }) {
       </header>
 
       {/* ── CONTENT ──────────────────────────────────────────────────────── */}
-      <main className="pt-14 md:pt-14 min-h-screen">
+      <main className="min-h-screen" style={{ paddingTop: user?._impersonator ? 88 : 56 }}>
         {children}
       </main>
 
