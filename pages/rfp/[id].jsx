@@ -1362,6 +1362,39 @@ ${sectionHtml('Winning Language', languageHtml)}
 // these to the actual proposals from the matches array via index. We
 // preserve the markers in the editable text rather than rewriting them
 // inline so the writer always sees what was cited.
+// Compact footer showing how many silent QA corrections were applied to
+// this draft before the user saw it. Expandable to show the change log.
+// Quiet when the count is 0.
+const QaAdjustmentsFooter = memo(function QaAdjustmentsFooter({ adjustments, count }) {
+  const [open, setOpen] = useState(false);
+  const n = typeof count === 'number' ? count : (Array.isArray(adjustments) ? adjustments.length : 0);
+  if (!n || n === 0) return null;
+  const list = Array.isArray(adjustments) ? adjustments : [];
+  return (
+    <div className="mb-3 text-[11px]">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="inline-flex items-center gap-2 px-2.5 py-1 rounded border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+        title="Pre-delivery QA applied these adjustments before you saw the draft"
+      >
+        <span className="material-symbols-outlined text-[14px]">auto_fix_high</span>
+        <span>{n} QA adjustment{n === 1 ? '' : 's'} applied</span>
+        <span className="material-symbols-outlined text-[14px] opacity-70">{open ? 'expand_less' : 'expand_more'}</span>
+      </button>
+      {open && list.length > 0 && (
+        <ul className="mt-2 pl-4 space-y-1 text-on-surface-variant">
+          {list.map((a, i) => (
+            <li key={i} className="leading-relaxed">
+              <span className="font-label text-[9px] uppercase tracking-widest text-outline mr-2">{a.type || 'fix'}</span>
+              {a.summary || ''}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+});
+
 const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winningLanguage, onUpdateText, onAccept, onRegenerate, onDiscard, onClose, regenerating }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(draft.draft_text || '');
@@ -1433,6 +1466,8 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
         {draft.confidence_reason && (
           <p className="text-[11px] italic mb-3" style={{ color: '#d0c5b0' }}>{draft.confidence_reason}</p>
         )}
+
+        <QaAdjustmentsFooter adjustments={draft.qa_adjustments} count={draft.qa_adjustments_count} />
 
         {/* Draft body */}
         <div className="rounded-lg p-4 mb-3" style={{ background: '#211f1d', border: '1px solid #4d4636' }}>
@@ -1689,6 +1724,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
   const [openDraftId, setOpenDraftId] = useState(null); // section_id whose panel is expanded
   // Full proposal state
   const [fullProposal, setFullProposal] = useState(null);
+  const [fullProposalQa, setFullProposalQa] = useState({ count: 0, adjustments: [] });
   const [generatingFull, setGeneratingFull] = useState(false);
   const [editingFull, setEditingFull] = useState(false);
   const [fullProposalText, setFullProposalText] = useState('');
@@ -1844,7 +1880,9 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
       setFullProposal(d.proposal);
       setFullProposalText(d.proposal);
       setCoverageReport(d.coverage || null);
-      onToast('✓ Full proposal draft ready — style-matched and coverage-checked');
+      setFullProposalQa({ count: d.qa_adjustments_count || 0, adjustments: d.qa_adjustments || [] });
+      const qaNote = d.qa_adjustments_count ? ` · ${d.qa_adjustments_count} QA adjustment${d.qa_adjustments_count === 1 ? '' : 's'} applied` : '';
+      onToast(`✓ Full proposal draft ready${qaNote}`);
     } catch (e) {
       onToast('Generation failed: ' + e.message);
     }
@@ -1937,6 +1975,8 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
             {fullProposalText.split(/\s+/).length.toLocaleString()} words
           </span>
         </div>
+
+        <QaAdjustmentsFooter adjustments={fullProposalQa.adjustments} count={fullProposalQa.count} />
 
         {/* Document body */}
         <div className="rounded-xl border overflow-hidden" style={{ background: '#211f1d', borderColor: '#4d4636' }}>

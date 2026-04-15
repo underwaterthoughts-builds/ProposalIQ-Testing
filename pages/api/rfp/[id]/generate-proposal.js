@@ -4,6 +4,7 @@ import { safe } from '../../../../lib/embeddings';
 import {
   generateFullProposal, checkRequirementsCoverage,
   conformToWritingStyle, hasOpenAI, setCostContext,
+  qaFinaliseDraft,
 } from '../../../../lib/gemini';
 import { logUsageEvent } from '../../../../lib/feedback';
 
@@ -79,19 +80,33 @@ async function handler(req, res) {
     return res.status(500).json({ error: 'Generation returned no content.' });
   }
 
-  // Style conformance pass removed — the writing guide handles tone
-  // per-section. A whole-document rewrite was degrading quality.
-  const styledProposal = proposal;
-
-  // ── STAGE 3: Requirements coverage check (OpenAI only) ─────────────
-  let coverageReport = null;
-  if (hasOpenAI()) {
-    try {
-      console.log(`[generate-proposal ${id}] running requirements coverage check`);
-      coverageReport = await checkRequirementsCoverage(styledProposal, rfpData);
-    } catch (e) {
-      console.error(`[generate-proposal ${id}] stage 3 coverage error (non-fatal):`, e.message);
+  // ── STAGE 2: Pre-delivery QA (two-pass: detect + silently correct) ─
+  // User never sees the pre-QA text — only the finalised version with an
+  // adjustments summary. Team records are loaded so invented team members
+  // can be swapped for real people.
+  let finalProposal = proposal;
+  let qaAdjustments = [];
+  let qaCount = 0;
+  try {
+    console.log(`[generate-proposal ${id}] running pre-delivery QA finalisation`);
+    const team = db.prepare('SELECT id, name, title, stated_specialisms FROM team_members').all()
+      .map(m => ({ ...m, stated_specialisms: safe(m.stated_specialisms, []) }));
+    const finalised = await qaFinaliseDraft({
+      draftText: proposal,
+      rfpText: scan.rfp_text || '',
+      rfpData,
+      matches,
+      orgProfile,
+      team,
+      scope: 'full',
+    });
+    if (finalised?.text) {
+      finalProposal = finalised.text;
+      qaAdjustments = finalised.adjustments || [];
+      qaCount = finalised.adjustments_count || qaAdjustments.length;
     }
+  } catch (e) {
+    console.error(`[generate-proposal ${id}] QA finalise error (non-fatal):`, e.message);
   }
 
   // Log usage
@@ -101,16 +116,16 @@ async function handler(req, res) {
     targetType: 'proposal',
     targetId: id,
     payload: {
-      length: styledProposal.length,
-      style_applied: styledProposal !== proposal,
-      coverage_pct: coverageReport?.coverage_summary?.coverage_percentage || null,
+      length: finalProposal.length,
+      qa_adjustments_count: qaCount,
     },
     userId: req.user?.id || null,
   }, db);
 
   return res.status(200).json({
-    proposal: styledProposal,
-    coverage: coverageReport,
+    proposal: finalProposal,
+    qa_adjustments_count: qaCount,
+    qa_adjustments: qaAdjustments,
   });
 }
 

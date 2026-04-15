@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
 import { safe } from '../../../../lib/embeddings';
-import { generateSectionDraft } from '../../../../lib/gemini';
+import { generateSectionDraft, qaFinaliseDraft } from '../../../../lib/gemini';
 import { logUsageEvent } from '../../../../lib/feedback';
 
 // POST /api/rfp/[id]/draft-section
@@ -106,6 +106,33 @@ async function handler(req, res) {
     return res.status(500).json({ error: 'Draft generation returned no content.' });
   }
 
+  // ── Pre-delivery QA finalisation (detect + silent correct) ─────────
+  // Runs before the user sees anything. Non-invention rule: fixes that
+  // would require fabrication are replaced with [EVIDENCE NEEDED] markers.
+  let finalText = draft.draft;
+  let qaAdjustments = [];
+  let qaCount = 0;
+  try {
+    const team = db.prepare('SELECT id, name, title, stated_specialisms FROM team_members').all()
+      .map(m => ({ ...m, stated_specialisms: safe(m.stated_specialisms, []) }));
+    const finalised = await qaFinaliseDraft({
+      draftText: draft.draft,
+      rfpText: scan.rfp_text || '',
+      rfpData,
+      matches,
+      orgProfile,
+      team,
+      scope: 'section',
+    });
+    if (finalised?.text) {
+      finalText = finalised.text;
+      qaAdjustments = finalised.adjustments || [];
+      qaCount = finalised.adjustments_count || qaAdjustments.length;
+    }
+  } catch (e) {
+    console.error(`[draft ${id}/${body.section_id}] QA finalise error (non-fatal):`, e.message);
+  }
+
   // Persist (upsert by scan_id + section_id)
   const draftId = existing?.id || uuid();
   if (existing) {
@@ -113,16 +140,19 @@ async function handler(req, res) {
       UPDATE section_drafts SET
         section_name = ?, draft_text = ?, cited_match_ids = ?,
         cited_language_ids = ?, evidence_needed = ?, confidence = ?,
-        confidence_reason = ?, status = 'draft', updated_at = CURRENT_TIMESTAMP
+        confidence_reason = ?, qa_adjustments_count = ?, qa_adjustments = ?,
+        status = 'draft', updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(
       body.section_name,
-      draft.draft,
+      finalText,
       JSON.stringify(draft.cited_match_ids || []),
       JSON.stringify(draft.cited_language_ids || []),
       JSON.stringify(draft.evidence_needed || []),
       draft.confidence || 'medium',
       draft.confidence_reason || '',
+      qaCount,
+      JSON.stringify(qaAdjustments),
       draftId
     );
   } else {
@@ -130,15 +160,17 @@ async function handler(req, res) {
       INSERT INTO section_drafts (
         id, scan_id, section_id, section_name, draft_text,
         cited_match_ids, cited_language_ids, evidence_needed,
-        confidence, confidence_reason, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft')
+        confidence, confidence_reason, qa_adjustments_count, qa_adjustments, status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft')
     `).run(
-      draftId, id, body.section_id, body.section_name, draft.draft,
+      draftId, id, body.section_id, body.section_name, finalText,
       JSON.stringify(draft.cited_match_ids || []),
       JSON.stringify(draft.cited_language_ids || []),
       JSON.stringify(draft.evidence_needed || []),
       draft.confidence || 'medium',
-      draft.confidence_reason || ''
+      draft.confidence_reason || '',
+      qaCount,
+      JSON.stringify(qaAdjustments)
     );
   }
 
@@ -158,12 +190,14 @@ async function handler(req, res) {
       scan_id: id,
       section_id: body.section_id,
       section_name: body.section_name,
-      draft_text: draft.draft,
+      draft_text: finalText,
       cited_match_ids: draft.cited_match_ids || [],
       cited_language_ids: draft.cited_language_ids || [],
       evidence_needed: draft.evidence_needed || [],
       confidence: draft.confidence || 'medium',
       confidence_reason: draft.confidence_reason || '',
+      qa_adjustments_count: qaCount,
+      qa_adjustments: qaAdjustments,
       status: 'draft',
     },
   });

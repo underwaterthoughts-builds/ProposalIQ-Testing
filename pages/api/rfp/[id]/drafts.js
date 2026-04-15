@@ -21,6 +21,8 @@ async function handler(req, res) {
       cited_match_ids: safe(r.cited_match_ids, []),
       cited_language_ids: safe(r.cited_language_ids, []),
       evidence_needed: safe(r.evidence_needed, []),
+      qa_adjustments: safe(r.qa_adjustments, []),
+      qa_adjustments_count: r.qa_adjustments_count || 0,
     }));
     return res.status(200).json({ drafts });
   }
