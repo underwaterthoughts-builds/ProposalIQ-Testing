@@ -19,17 +19,17 @@ const AI_WEIGHT_DESC = { 1:'5% — loss analysis only', 2:'15% — negative exam
 
 const AiBadge = memo(function AiBadge({ show }) {
   if (!show) return null;
-  return <span className="ml-1.5 text-[9px] font-mono px-1.5 py-0.5 rounded align-middle" style={{ background:'rgba(30,74,82,.12)',color:'#1e4a52' }}>AI ✦</span>;
+  return <span className="ml-1.5 text-[9px] font-mono px-1.5 py-0.5 rounded align-middle" style={{ background:'rgba(30,74,82,.12)',color:'#7fb4bc' }}>AI ✦</span>;
 });
 
 const FieldInput = memo(function FieldInput({ label, required, isAi, error, value, onChange, type='text', placeholder, inputMode }) {
   return (
     <div>
-      <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{color:'#6b6456'}}>
+      <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{color:'#d0c5b0'}}>
         {label}{required && <span className="text-red-500 ml-0.5">*</span>}<AiBadge show={isAi} />
       </label>
       <input type={type} inputMode={inputMode} value={value} onChange={onChange} placeholder={placeholder}
-        className={`w-full px-3 py-2 border rounded-md text-sm outline-none transition-colors bg-paper focus:bg-white ${error?'border-red-400':isAi?'border-teal/40 bg-teal-pale/20':'border-[#ddd5c4] focus:border-[#1e4a52]'}`} />
+        className={`w-full px-3 py-2 border rounded-md text-sm outline-none transition-colors bg-surface-container-low focus:bg-surface-container ${error?'border-red-400':isAi?'border-teal/40 bg-teal-pale/20':'border-[#ddd5c4] focus:border-[#1e4a52]'}`} />
       {error && <p className="text-[11px] text-red-500 mt-1">{error}</p>}
     </div>
   );
@@ -38,11 +38,11 @@ const FieldInput = memo(function FieldInput({ label, required, isAi, error, valu
 const FieldSelect = memo(function FieldSelect({ label, required, isAi, value, onChange, children }) {
   return (
     <div>
-      <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{color:'#6b6456'}}>
+      <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{color:'#d0c5b0'}}>
         {label}{required && <span className="text-red-500 ml-0.5">*</span>}<AiBadge show={isAi} />
       </label>
       <select value={value} onChange={onChange}
-        className={`w-full px-3 py-2 border rounded-md text-sm outline-none bg-paper focus:bg-white focus:border-[#1e4a52] transition-colors ${isAi?'border-teal/40 bg-teal-pale/20':'border-[#ddd5c4]'}`}>
+        className={`w-full px-3 py-2 border rounded-md text-sm outline-none bg-surface-container-low focus:bg-surface-container focus:border-[#1e4a52] transition-colors ${isAi?'border-teal/40 bg-teal-pale/20':'border-[#ddd5c4]'}`}>
         {children}
       </select>
     </div>
@@ -52,24 +52,24 @@ const FieldSelect = memo(function FieldSelect({ label, required, isAi, value, on
 const FieldTextarea = memo(function FieldTextarea({ label, value, onChange, rows=2, placeholder }) {
   return (
     <div>
-      <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{color:'#6b6456'}}>{label}</label>
+      <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{color:'#d0c5b0'}}>{label}</label>
       <textarea value={value} onChange={onChange} rows={rows} placeholder={placeholder} style={{resize:'vertical'}}
-        className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none bg-paper focus:bg-white focus:border-[#1e4a52] transition-colors" />
+        className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none bg-surface-container-low focus:bg-surface-container focus:border-[#1e4a52] transition-colors" />
     </div>
   );
 });
 
 const AddNewInline = memo(function AddNewInline({ field, label, placeholder, showParent, active, onActivate, onSave, onCancel, value, onValueChange, parentValue, onParentChange, rootFolders, saving }) {
   if (!active) return (
-    <button type="button" onClick={onActivate} className="text-xs flex items-center gap-1 mt-1" style={{color:'#1e4a52'}}>
+    <button type="button" onClick={onActivate} className="text-xs flex items-center gap-1 mt-1" style={{color:'#7fb4bc'}}>
       <span>⊕</span> Add new {label||field}
     </button>
   );
   return (
-    <div className="mt-1.5 rounded-md border p-2.5 space-y-2" style={{borderColor:'#1e4a52',background:'#e8f2f4'}}>
-      <div className="text-[10px] font-mono uppercase tracking-wider" style={{color:'#1e4a52'}}>New {label||field}</div>
+    <div className="mt-1.5 rounded-md border p-2.5 space-y-2" style={{borderColor:'#7fb4bc',background:'rgba(30,107,120,.15)'}}>
+      <div className="text-[10px] font-mono uppercase tracking-wider" style={{color:'#7fb4bc'}}>New {label||field}</div>
       {showParent && (
-        <select value={parentValue} onChange={e=>onParentChange(e.target.value)} className="w-full px-2 py-1.5 border rounded text-xs outline-none bg-white" style={{borderColor:'#ddd5c4'}}>
+        <select value={parentValue} onChange={e=>onParentChange(e.target.value)} className="w-full px-2 py-1.5 border rounded text-xs outline-none bg-surface-container" style={{borderColor:'#4d4636'}}>
           <option value="">Top level (no parent)</option>
           {rootFolders.map(fl=><option key={fl.id} value={fl.id}>{fl.name}</option>)}
         </select>
@@ -77,9 +77,9 @@ const AddNewInline = memo(function AddNewInline({ field, label, placeholder, sho
       <div className="flex gap-2">
         <input autoFocus value={value} onChange={e=>onValueChange(e.target.value)}
           onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();onSave();}if(e.key==='Escape')onCancel();}}
-          placeholder={placeholder} className="flex-1 px-2.5 py-1.5 border rounded text-xs outline-none bg-white" style={{borderColor:'#ddd5c4'}} />
+          placeholder={placeholder} className="flex-1 px-2.5 py-1.5 border rounded text-xs outline-none bg-surface-container" style={{borderColor:'#4d4636'}} />
         <button type="button" onClick={onSave} disabled={saving||!value.trim()} className="px-3 py-1.5 rounded text-xs text-white disabled:opacity-50" style={{background:'#1e4a52'}}>{saving?'…':'Add'}</button>
-        <button type="button" onClick={onCancel} className="px-2 py-1.5 rounded text-xs" style={{color:'#6b6456'}}>Cancel</button>
+        <button type="button" onClick={onCancel} className="px-2 py-1.5 rounded text-xs" style={{color:'#d0c5b0'}}>Cancel</button>
       </div>
     </div>
   );
@@ -794,10 +794,10 @@ export default function Repository() {
   const folderItems = [
     {id:'all',label:'All Projects',icon:'⊞',count:projects.length},
     {id:'starred',label:'Top Rated (4–5★)',icon:'★',count:projects.filter(p=>p.user_rating>=4).length},
-    {id:'won',label:'Won',icon:'✓',count:projects.filter(p=>p.outcome==='won').length,color:'#3d5c3a'},
-    {id:'lost',label:'Lost',icon:'✗',count:projects.filter(p=>p.outcome==='lost').length,color:'#b04030'},
+    {id:'won',label:'Won',icon:'✓',count:projects.filter(p=>p.outcome==='won').length,color:'#7bd07a'},
+    {id:'lost',label:'Lost',icon:'✗',count:projects.filter(p=>p.outcome==='lost').length,color:'#ffb4ab'},
     {id:'pending',label:'Pending / Active',icon:'◷',count:projects.filter(p=>['pending','active'].includes(p.outcome)).length,color:'#b8962e'},
-    ...(failedCount>0?[{id:'failed',label:'Failed Uploads',icon:'⚠',count:failedCount,color:'#b04030'}]:[]),
+    ...(failedCount>0?[{id:'failed',label:'Failed Uploads',icon:'⚠',count:failedCount,color:'#ffb4ab'}]:[]),
   ];
 
   if (authLoading) return null;
@@ -841,20 +841,20 @@ export default function Repository() {
                   <input autoFocus value={newFolderName} onChange={e=>setNewFolderName(e.target.value)}
                     onKeyDown={e=>{if(e.key==='Enter')createFolder();if(e.key==='Escape'){setCreatingFolder(false);setNewFolderName('');}}}
                     placeholder="Folder name…"
-                    className="flex-1 px-2 py-1 text-xs border rounded outline-none" style={{borderColor:'#ddd5c4'}}/>
+                    className="flex-1 px-2 py-1 text-xs border rounded outline-none" style={{borderColor:'#4d4636'}}/>
                   <button onClick={createFolder} className="px-2 py-1 rounded text-white text-xs no-min-h" style={{background:'#1e4a52'}}>+</button>
-                  <button onClick={()=>{setCreatingFolder(false);setNewFolderName('');}} className="px-1.5 py-1 rounded text-xs no-min-h" style={{color:'#6b6456'}}>✕</button>
+                  <button onClick={()=>{setCreatingFolder(false);setNewFolderName('');}} className="px-1.5 py-1 rounded text-xs no-min-h" style={{color:'#d0c5b0'}}>✕</button>
                 </div>
               ) : (
                 <button onClick={()=>setCreatingFolder(true)}
                   className="w-full flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] mb-2 transition-all no-min-h"
-                  style={{color:'#9b8e80',border:'1px dashed #ddd5c4'}}>
+                  style={{color:'#99907d',border:'1px dashed #ddd5c4'}}>
                   ⊕ New folder
                 </button>
               )}
 
               {rootFolders.length === 0 && !creatingFolder && (
-                <p className="text-[11px] px-2 pb-2" style={{color:'#9b8e80'}}>No folders yet — create one above to organise your proposals.</p>
+                <p className="text-[11px] px-2 pb-2" style={{color:'#99907d'}}>No folders yet — create one above to organise your proposals.</p>
               )}
 
               {rootFolders.map(folder=>{
@@ -865,33 +865,33 @@ export default function Repository() {
                       <div className="flex gap-1 mb-0.5">
                         <input autoFocus value={editingFolderName} onChange={e=>setEditingFolderName(e.target.value)}
                           onKeyDown={e=>{if(e.key==='Enter')renameFolder(folder.id,editingFolderName);if(e.key==='Escape')setEditingFolderId(null);}}
-                          className="flex-1 px-2 py-1 text-xs border rounded outline-none" style={{borderColor:'#1e4a52'}}/>
+                          className="flex-1 px-2 py-1 text-xs border rounded outline-none" style={{borderColor:'#7fb4bc'}}/>
                         <button onClick={()=>renameFolder(folder.id,editingFolderName)} className="px-2 py-1 rounded text-white text-xs no-min-h" style={{background:'#1e4a52'}}>✓</button>
-                        <button onClick={()=>setEditingFolderId(null)} className="px-1.5 py-1 rounded text-xs no-min-h" style={{color:'#6b6456'}}>✕</button>
+                        <button onClick={()=>setEditingFolderId(null)} className="px-1.5 py-1 rounded text-xs no-min-h" style={{color:'#d0c5b0'}}>✕</button>
                       </div>
                     ) : (
                     <div className="flex items-center gap-1 group/folder">
                     <button onClick={()=>toggle(folder.id)}
-                      className={`flex-1 flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left text-[12.5px] transition-all mb-0.5 ${selectedFolder===folder.id?'bg-white shadow-sm font-medium':'hover:bg-black/5'}`}>
-                      <span className="text-[10px]" style={{color:'#6b6456'}}>{isOpen?'▾':'▸'}</span>
+                      className={`flex-1 flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left text-[12.5px] transition-all mb-0.5 ${selectedFolder===folder.id?'bg-surface-container shadow-sm font-medium':'hover:bg-black/5'}`}>
+                      <span className="text-[10px]" style={{color:'#d0c5b0'}}>{isOpen?'▾':'▸'}</span>
                       <span className="text-sm">📁</span>
                       <span className="flex-1 truncate">{folder.name}</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md" style={{background:'rgba(0,0,0,.06)',color:'#6b6456'}}>{folder.project_count}</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md" style={{background:'rgba(0,0,0,.06)',color:'#d0c5b0'}}>{folder.project_count}</span>
                     </button>
                     <div className="hidden group-hover/folder:flex gap-0.5">
                       <button onClick={()=>{setEditingFolderId(folder.id);setEditingFolderName(folder.name);}}
-                        className="p-1 rounded text-[10px] hover:bg-black/10 no-min-h" style={{color:'#9b8e80'}} title="Rename">✎</button>
+                        className="p-1 rounded text-[10px] hover:bg-black/10 no-min-h" style={{color:'#99907d'}} title="Rename">✎</button>
                       <button onClick={()=>deleteFolder(folder.id)}
-                        className="p-1 rounded text-[10px] hover:bg-red-50 no-min-h" style={{color:'#b04030'}} title="Delete">✕</button>
+                        className="p-1 rounded text-[10px] hover:bg-red-50 no-min-h" style={{color:'#ffb4ab'}} title="Delete">✕</button>
                     </div>
                     </div>
                     )}
                     {isOpen&&children.map(child=>(
                       <button key={child.id} onClick={()=>setSelectedFolder(child.id)}
-                        className={`w-full flex items-center gap-2 pl-8 pr-2.5 py-1.5 rounded-md text-left text-[12px] transition-all mb-0.5 ${selectedFolder===child.id?'bg-white shadow-sm font-medium':'hover:bg-black/5'}`}>
+                        className={`w-full flex items-center gap-2 pl-8 pr-2.5 py-1.5 rounded-md text-left text-[12px] transition-all mb-0.5 ${selectedFolder===child.id?'bg-surface-container shadow-sm font-medium':'hover:bg-black/5'}`}>
                         <span className="text-xs">📂</span>
                         <span className="flex-1 truncate">{child.name}</span>
-                        <span className="text-[10px] font-mono" style={{color:'#6b6456'}}>{child.project_count}</span>
+                        <span className="text-[10px] font-mono" style={{color:'#d0c5b0'}}>{child.project_count}</span>
                       </button>
                     ))}
                   </div>
@@ -899,18 +899,18 @@ export default function Repository() {
               })}
               {/* TYPE OF WORK — service_industry filter (teal) */}
               {taxonomy.serviceIndustries.length > 0 && (
-                <div className="mt-3 border-t pt-2" style={{borderColor:'#ddd5c4'}}>
-                  <div className="text-[9px] font-mono uppercase tracking-widest mb-1.5 px-2.5" style={{color:'#1e4a52'}}>Type of Work</div>
+                <div className="mt-3 border-t pt-2" style={{borderColor:'#4d4636'}}>
+                  <div className="text-[9px] font-mono uppercase tracking-widest mb-1.5 px-2.5" style={{color:'#7fb4bc'}}>Type of Work</div>
                   <button onClick={()=>setSelectedServiceIndustry(null)}
-                    className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${!selectedServiceIndustry?'bg-white shadow-sm font-medium':'hover:bg-black/5'}`}>
-                    <span style={{color:'#1e4a52'}}>◈</span>
+                    className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${!selectedServiceIndustry?'bg-surface-container shadow-sm font-medium':'hover:bg-black/5'}`}>
+                    <span style={{color:'#7fb4bc'}}>◈</span>
                     <span className="flex-1">All Types</span>
                   </button>
                   {taxonomy.serviceIndustries.map(item=>(
                     <button key={item.id} onClick={()=>setSelectedServiceIndustry(selectedServiceIndustry===item.name?null:item.name)}
                       className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${selectedServiceIndustry===item.name?'shadow-sm font-medium':'hover:bg-black/5'}`}
-                      style={selectedServiceIndustry===item.name?{background:'rgba(30,74,82,.12)',color:'#1e4a52'}:{}}>
-                      <span className="w-1 h-1 rounded-full flex-shrink-0" style={{background:selectedServiceIndustry===item.name?'#1e4a52':'#ddd5c4'}}/>
+                      style={selectedServiceIndustry===item.name?{background:'rgba(30,74,82,.12)',color:'#7fb4bc'}:{}}>
+                      <span className="w-1 h-1 rounded-full flex-shrink-0" style={{background:selectedServiceIndustry===item.name?'#1e4a52':'#4d4636'}}/>
                       <span className="flex-1 truncate">{item.name}</span>
                     </button>
                   ))}
@@ -919,18 +919,18 @@ export default function Repository() {
 
               {/* CLIENT SECTOR — client_industry filter (gold) */}
               {taxonomy.clientIndustries.length > 0 && (
-                <div className="mt-3 border-t pt-2" style={{borderColor:'#ddd5c4'}}>
-                  <div className="text-[9px] font-mono uppercase tracking-widest mb-1.5 px-2.5" style={{color:'#8a6200'}}>Client Sector</div>
+                <div className="mt-3 border-t pt-2" style={{borderColor:'#4d4636'}}>
+                  <div className="text-[9px] font-mono uppercase tracking-widest mb-1.5 px-2.5" style={{color:'#e8c357'}}>Client Sector</div>
                   <button onClick={()=>setSelectedClientIndustry(null)}
-                    className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${!selectedClientIndustry?'bg-white shadow-sm font-medium':'hover:bg-black/5'}`}>
-                    <span style={{color:'#8a6200'}}>◆</span>
+                    className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${!selectedClientIndustry?'bg-surface-container shadow-sm font-medium':'hover:bg-black/5'}`}>
+                    <span style={{color:'#e8c357'}}>◆</span>
                     <span className="flex-1">All Sectors</span>
                   </button>
                   {taxonomy.clientIndustries.map(item=>(
                     <button key={item.id} onClick={()=>setSelectedClientIndustry(selectedClientIndustry===item.name?null:item.name)}
                       className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${selectedClientIndustry===item.name?'shadow-sm font-medium':'hover:bg-black/5'}`}
-                      style={selectedClientIndustry===item.name?{background:'rgba(184,150,46,.15)',color:'#8a6200'}:{}}>
-                      <span className="w-1 h-1 rounded-full flex-shrink-0" style={{background:selectedClientIndustry===item.name?'#b8962e':'#ddd5c4'}}/>
+                      style={selectedClientIndustry===item.name?{background:'rgba(184,150,46,.15)',color:'#e8c357'}:{}}>
+                      <span className="w-1 h-1 rounded-full flex-shrink-0" style={{background:selectedClientIndustry===item.name?'#b8962e':'#4d4636'}}/>
                       <span className="flex-1 truncate">{item.name}</span>
                     </button>
                   ))}
@@ -939,17 +939,17 @@ export default function Repository() {
 
               {/* Legacy Service Offering taxonomy — kept for back-compat with pre-migration projects */}
               {taxonomy.offerings.length > 0 && (
-                <div className="mt-3 border-t pt-2" style={{borderColor:'#ddd5c4'}}>
-                  <div className="text-[9px] font-mono uppercase tracking-widest mb-1.5 px-2.5" style={{color:'#6b6456'}}>Legacy Tags</div>
+                <div className="mt-3 border-t pt-2" style={{borderColor:'#4d4636'}}>
+                  <div className="text-[9px] font-mono uppercase tracking-widest mb-1.5 px-2.5" style={{color:'#d0c5b0'}}>Legacy Tags</div>
                   <button onClick={()=>setSelectedOffering(null)}
-                    className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${!selectedOffering?'bg-white shadow-sm font-medium':'hover:bg-black/5'}`}>
-                    <span style={{color:'#6b6456'}}>◈</span>
+                    className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${!selectedOffering?'bg-surface-container shadow-sm font-medium':'hover:bg-black/5'}`}>
+                    <span style={{color:'#d0c5b0'}}>◈</span>
                     <span className="flex-1">All Offerings</span>
                   </button>
                   {taxonomy.offerings.map(item=>(
                     <button key={item.id} onClick={()=>setSelectedOffering(selectedOffering===item.name?null:item.name)}
-                      className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${selectedOffering===item.name?'bg-white shadow-sm font-medium':'hover:bg-black/5'}`}>
-                      <span className="w-1 h-1 rounded-full flex-shrink-0" style={{background:selectedOffering===item.name?'#1e4a52':'#ddd5c4'}}/>
+                      className={`w-full flex items-center gap-2 px-2.5 py-1 rounded-md text-left text-[11.5px] transition-all mb-0.5 no-min-h ${selectedOffering===item.name?'bg-surface-container shadow-sm font-medium':'hover:bg-black/5'}`}>
+                      <span className="w-1 h-1 rounded-full flex-shrink-0" style={{background:selectedOffering===item.name?'#1e4a52':'#4d4636'}}/>
                       <span className="flex-1 truncate">{item.name}</span>
                     </button>
                   ))}
@@ -1058,15 +1058,15 @@ export default function Repository() {
                     + Add all visible
                   </button>
                   <button onClick={clearWorkspace}
-                    className="text-[11px] px-2 py-1 rounded border transition-colors hover:bg-white"
-                    style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+                    className="text-[11px] px-2 py-1 rounded border transition-colors hover:bg-surface-container"
+                    style={{ borderColor: '#4d4636', color: '#d0c5b0' }}>
                     Clear workspace
                   </button>
                 </div>
               )}
               {workspaceLoaded && workspaceIds.size === 0 && !loading && projects.length > 0 && (
                 <div className="flex items-center gap-3 mb-4 px-3 py-2.5 rounded-lg border border-dashed"
-                  style={{ borderColor: '#ddd5c4', color: '#9b8e80' }}>
+                  style={{ borderColor: '#4d4636', color: '#99907d' }}>
                   <span className="text-xs">
                     No workspace set — RFP scans will match against all projects. Click "+ Workspace" on any project to curate your scanning set.
                   </span>
@@ -1097,12 +1097,12 @@ export default function Repository() {
                 </div>
               )}
               {loading?(
-                <div className="flex items-center gap-2 py-12 justify-center" style={{color:'#6b6456'}}><Spinner/> Loading projects…</div>
+                <div className="flex items-center gap-2 py-12 justify-center" style={{color:'#d0c5b0'}}><Spinner/> Loading projects…</div>
               ):projects.length===0?(
                 <div className="text-center py-16">
                   <div className="text-4xl mb-3 opacity-25">⊞</div>
                   <div className="font-serif text-lg mb-2 opacity-40">No projects found</div>
-                  <p className="text-sm mb-4" style={{color:'#6b6456'}}>{search?'Try a different search term':'Upload your first proposal to get started'}</p>
+                  <p className="text-sm mb-4" style={{color:'#d0c5b0'}}>{search?'Try a different search term':'Upload your first proposal to get started'}</p>
                   {!search&&<Btn variant="gold" onClick={()=>setShowUpload(true)}>⊕ Upload Project</Btn>}
                 </div>
               ) : viewMode === 'list' ? (
@@ -1256,25 +1256,25 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{background:'rgba(15,14,12,.65)',backdropFilter:'blur(4px)'}}>
-      <div className="w-full max-w-xl bg-white rounded-xl overflow-hidden shadow-2xl flex flex-col" style={{maxHeight:'92vh'}}>
+      <div className="w-full max-w-xl bg-surface-container rounded-xl overflow-hidden shadow-2xl flex flex-col" style={{maxHeight:'92vh'}}>
         <div className="px-6 py-4 border-b flex items-start justify-between flex-shrink-0" style={{background:'linear-gradient(135deg,#1e4a52,#2d6b78)'}}>
           <div><h2 className="font-serif text-lg text-white mb-0.5">Upload Project</h2><p className="text-xs font-mono text-white/40">Add to knowledge base</p></div>
-          <button onClick={onClose} className="w-7 h-7 rounded-md flex items-center justify-center text-white/60 hover:text-white hover:bg-white/15 text-sm">✕</button>
+          <button onClick={onClose} className="w-7 h-7 rounded-md flex items-center justify-center text-white/60 hover:text-white hover:bg-surface-container/15 text-sm">✕</button>
         </div>
 
         {!done&&(
-          <div className="flex items-center gap-1 px-6 py-3 border-b flex-shrink-0" style={{background:'#f0ebe0',borderColor:'#ddd5c4'}}>
+          <div className="flex items-center gap-1 px-6 py-3 border-b flex-shrink-0" style={{background:'#2b2a27',borderColor:'#4d4636'}}>
             {stepLabels.map((lbl,i)=>{
               const n=i+1;
               return(
                 <div key={n} className="flex items-center gap-1">
-                  <div className={`flex items-center gap-1.5 text-xs ${n===step?'font-semibold':n<step?'':'opacity-40'}`} style={{color:n===step?'#1e4a52':n<step?'#3d5c3a':'#6b6456'}}>
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono flex-shrink-0 ${n<step?'text-white':n===step?'text-amber-300':'border border-[#ddd5c4]'}`} style={{background:n<step?'#3d5c3a':n===step?'#0f0e0c':undefined}}>
+                  <div className={`flex items-center gap-1.5 text-xs ${n===step?'font-semibold':n<step?'':'opacity-40'}`} style={{color:n===step?'#e8c357':n<step?'#7bd07a':'#d0c5b0'}}>
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono flex-shrink-0 ${n<step?'text-white':n===step?'text-on-primary':'border border-outline-variant/30'}`} style={{background:n<step?'#7bd07a':n===step?'#e8c357':undefined}}>
                       {n<step?'✓':n}
                     </div>
                     <span className="hidden sm:inline whitespace-nowrap">{lbl}</span>
                   </div>
-                  {i<stepLabels.length-1&&<div className="w-5 h-px mx-1 flex-shrink-0" style={{background:n<step?'#3d5c3a':'#ddd5c4'}}/>}
+                  {i<stepLabels.length-1&&<div className="w-5 h-px mx-1 flex-shrink-0" style={{background:n<step?'#3d5c3a':'#4d4636'}}/>}
                 </div>
               );
             })}
@@ -1286,11 +1286,11 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
             <div className="text-center py-8">
               <div className="text-5xl mb-4">✅</div>
               <h3 className="font-serif text-xl mb-2">Project Added</h3>
-              <p className="text-sm mb-3" style={{color:'#6b6456'}}>AI is indexing your documents (~60 seconds). A library file is saved so future loads are instant — no re-scanning needed.</p>
+              <p className="text-sm mb-3" style={{color:'#d0c5b0'}}>AI is indexing your documents (~60 seconds). A library file is saved so future loads are instant — no re-scanning needed.</p>
             </div>
           ):step===1?(
             <div className="space-y-4">
-              <p className="text-sm" style={{color:'#6b6456'}}>Upload your documents first. The AI will scan them and pre-fill the details on the next screen.</p>
+              <p className="text-sm" style={{color:'#d0c5b0'}}>Upload your documents first. The AI will scan them and pre-fill the details on the next screen.</p>
               <div className="grid grid-cols-3 gap-3">
                 {['proposal','rfp','budget'].map(ft=>{
                   const icons={proposal:'📄',rfp:'📋',budget:'💰'};
@@ -1301,30 +1301,30 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
                         onChange={e=>{if(e.target.files[0]) setFiles(prev=>({...prev,[ft]:e.target.files[0]}));}}/>
                       <button type="button" onClick={()=>fileInputs[ft].current?.click()}
                         className={`w-full rounded-lg p-4 text-center border-2 transition-all ${files[ft]?'border-solid':'border-dashed hover:border-teal/50'}`}
-                        style={{borderColor:files[ft]?'#1e4a52':errors.files?'#b04030':'#ddd5c4',background:files[ft]?'#e8f2f4':'white'}}>
+                        style={{borderColor:files[ft]?'#7fb4bc':errors.files?'#ffb4ab':'#4d4636',background:files[ft]?'rgba(30,107,120,.15)':'#1d1b19'}}>
                         <div className="text-2xl mb-1">{files[ft]?'✅':icons[ft]}</div>
                         <div className="text-xs font-semibold mb-0.5">{labels[ft]}</div>
-                        <div className="text-[10px] font-mono" style={{color:ft==='proposal'?'#b04030':'#6b6456'}}>{ft==='proposal'?'Required':'Recommended'}</div>
-                        {files[ft]&&<div className="text-[10px] font-mono mt-1 truncate" style={{color:'#1e4a52'}}>{files[ft].name}</div>}
+                        <div className="text-[10px] font-mono" style={{color:ft==='proposal'?'#ffb4ab':'#d0c5b0'}}>{ft==='proposal'?'Required':'Recommended'}</div>
+                        {files[ft]&&<div className="text-[10px] font-mono mt-1 truncate" style={{color:'#7fb4bc'}}>{files[ft].name}</div>}
                       </button>
                     </div>
                   );
                 })}
               </div>
               {errors.files&&<p className="text-xs text-red-500">{errors.files}</p>}
-              <div className="rounded-lg p-3 text-xs" style={{background:'#f0ebe0',color:'#6b6456'}}>
+              <div className="rounded-lg p-3 text-xs" style={{background:'#2b2a27',color:'#d0c5b0'}}>
                 ⓘ By uploading documents you confirm you are authorised to do so and that this does not breach any confidentiality agreement or NDA.
               </div>
             </div>
           ):step===2?(
             <div className="space-y-4">
               {scanning?(
-                <div className="flex items-center gap-3 rounded-lg p-3 text-sm" style={{background:'#faf4e2',color:'#7a5800'}}><Spinner size={14}/><span>AI scanning document and extracting details…</span></div>
+                <div className="flex items-center gap-3 rounded-lg p-3 text-sm" style={{background:'rgba(232,195,87,.08)',color:'#e8c357'}}><Spinner size={14}/><span>AI scanning document and extracting details…</span></div>
               ):aiFields.size>0?(
-                <div className="rounded-lg p-3 text-xs" style={{background:'#e8f2f4',color:'#1e4a52'}}>
+                <div className="rounded-lg p-3 text-xs" style={{background:'rgba(30,107,120,.15)',color:'#7fb4bc'}}>
                   ✦ <strong>AI pre-filled {aiFields.size} field{aiFields.size!==1?'s':''}</strong>{scanConfidence?` (confidence: ${scanConfidence})`:''}. Tinted fields were auto-filled — edit anything incorrect.
                 </div>
-              ):scanNote?(<div className="rounded-lg p-3 text-xs" style={{background:'#faeeeb',color:'#7a2010'}}>⚠ {scanNote}</div>):null}
+              ):scanNote?(<div className="rounded-lg p-3 text-xs" style={{background:'rgba(176,64,48,.12)',color:'#7a2010'}}>⚠ {scanNote}</div>):null}
 
               <div className="grid grid-cols-2 gap-3">
                 <FieldInput label="Project Name" required isAi={aiFields.has('name')} value={form.name} onChange={onChangeName} placeholder="e.g. NHS Digital Transformation" error={errors.name}/>
@@ -1353,8 +1353,8 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
                   {errors.sector&&<p className="text-[11px] text-red-500 mt-1">{errors.sector}</p>}
                 </div>
                 <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{color:'#6b6456'}}>Outcome</label>
-                  <select value={form.outcome} onChange={onChangeOutcome} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none bg-paper focus:bg-white focus:border-[#1e4a52]">
+                  <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{color:'#d0c5b0'}}>Outcome</label>
+                  <select value={form.outcome} onChange={onChangeOutcome} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none bg-surface-container-low focus:bg-surface-container focus:border-[#1e4a52]">
                     {OUTCOMES.map(o=><option key={o}>{o}</option>)}
                   </select>
                 </div>
@@ -1367,8 +1367,8 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
                   <AddNewInline field="type" label="project type" placeholder="e.g. Change Management" {...addCommon} active={addingField==='type'} onActivate={()=>activateAdd('type')}/>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{color:'#6b6456'}}>Save to Folder</label>
-                  <select value={form.folder_id} onChange={onChangeFolder} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none bg-paper focus:bg-white focus:border-[#1e4a52]">
+                  <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{color:'#d0c5b0'}}>Save to Folder</label>
+                  <select value={form.folder_id} onChange={onChangeFolder} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none bg-surface-container-low focus:bg-surface-container focus:border-[#1e4a52]">
                     <option value="">Choose folder…</option>{leafFolders.map(fl=><option key={fl.id} value={fl.id}>{fl.name}</option>)}
                   </select>
                   <AddNewInline field="folder" placeholder="e.g. Central Government" showParent={true} {...addCommon} active={addingField==='folder'} onActivate={()=>activateAdd('folder')}/>
@@ -1378,29 +1378,29 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
             </div>
           ):step===3?(
             <div className="space-y-4">
-              <div className="rounded-lg p-4" style={{background:'#faf4e2',border:'1px solid rgba(184,150,46,.3)'}}>
+              <div className="rounded-lg p-4" style={{background:'rgba(232,195,87,.08)',border:'1px solid rgba(184,150,46,.3)'}}>
                 <h3 className="text-sm font-semibold mb-1">How successful was this project?</h3>
-                <p className="text-xs mb-4" style={{color:'#6b6456'}}>Controls how much the AI learns from this. 5★ = gold standard. 1★ = loss analysis only.</p>
+                <p className="text-xs mb-4" style={{color:'#d0c5b0'}}>Controls how much the AI learns from this. 5★ = gold standard. 1★ = loss analysis only.</p>
                 <div className="flex gap-3 mb-2">
-                  {[1,2,3,4,5].map(n=><button key={n} type="button" onClick={()=>setF('user_rating',n)} className="text-3xl transition-all hover:scale-110" style={{color:n<=form.user_rating?'#b8962e':'#ddd5c4'}}>★</button>)}
+                  {[1,2,3,4,5].map(n=><button key={n} type="button" onClick={()=>setF('user_rating',n)} className="text-3xl transition-all hover:scale-110" style={{color:n<=form.user_rating?'#b8962e':'#4d4636'}}>★</button>)}
                 </div>
-                {form.user_rating>0&&<div className="text-xs font-mono mt-2" style={{color:'#6b6456'}}><span style={{color:'#b8962e',fontWeight:600}}>AI Weight: {WEIGHT[form.user_rating]}</span> — {AI_WEIGHT_DESC[form.user_rating]}</div>}
+                {form.user_rating>0&&<div className="text-xs font-mono mt-2" style={{color:'#d0c5b0'}}><span style={{color:'#b8962e',fontWeight:600}}>AI Weight: {WEIGHT[form.user_rating]}</span> — {AI_WEIGHT_DESC[form.user_rating]}</div>}
                 {errors.rating&&<p className="text-xs text-red-500 mt-2">{errors.rating}</p>}
                 {/* AI rating suggestion */}
                 {aiSuggestions?.rating && (
                   <div className="mt-3 rounded-lg p-3" style={{background:'rgba(30,74,82,.07)',border:'1px solid rgba(30,74,82,.15)'}}>
                     <div className="flex items-center justify-between mb-1">
-                      <div className="text-[10px] font-mono uppercase tracking-widest" style={{color:'#1e4a52'}}>AI Suggests: {aiSuggestions.rating}★</div>
+                      <div className="text-[10px] font-mono uppercase tracking-widest" style={{color:'#7fb4bc'}}>AI Suggests: {aiSuggestions.rating}★</div>
                       <button type="button" onClick={()=>setF('user_rating', aiSuggestions.rating)}
-                        className="text-[10px] px-2 py-0.5 rounded font-medium" style={{background:'#1e4a52',color:'white'}}>
+                        className="text-[10px] px-2 py-0.5 rounded font-medium" style={{background:'#e8c357',color:'#3d2f00'}}>
                         Accept
                       </button>
                     </div>
-                    <p className="text-xs" style={{color:'#1e4a52'}}>{aiSuggestions.rationale}</p>
+                    <p className="text-xs" style={{color:'#7fb4bc'}}>{aiSuggestions.rationale}</p>
                     {aiSuggestions.strengths.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
-                        {aiSuggestions.strengths.slice(0,2).map((s,i)=><span key={i} className="text-[10px] px-1.5 py-0.5 rounded" style={{background:'#edf3ec',color:'#3d5c3a'}}>+ {s}</span>)}
-                        {aiSuggestions.weaknesses.slice(0,1).map((w,i)=><span key={i} className="text-[10px] px-1.5 py-0.5 rounded" style={{background:'#faeeeb',color:'#b04030'}}>− {w}</span>)}
+                        {aiSuggestions.strengths.slice(0,2).map((s,i)=><span key={i} className="text-[10px] px-1.5 py-0.5 rounded" style={{background:'rgba(61,92,58,.15)',color:'#7bd07a'}}>+ {s}</span>)}
+                        {aiSuggestions.weaknesses.slice(0,1).map((w,i)=><span key={i} className="text-[10px] px-1.5 py-0.5 rounded" style={{background:'rgba(176,64,48,.12)',color:'#ffb4ab'}}>− {w}</span>)}
                       </div>
                     )}
                   </div>
@@ -1412,20 +1412,20 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
             </div>
           ):(
             <div className="space-y-4">
-              <div className="rounded-lg p-4 bg-cream border" style={{borderColor:'#ddd5c4'}}>
-                <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{color:'#6b6456'}}>Project Details</div>
+              <div className="rounded-lg p-4 bg-surface-container-high border" style={{borderColor:'#4d4636'}}>
+                <div className="text-[10px] font-mono uppercase tracking-widest mb-3" style={{color:'#d0c5b0'}}>Project Details</div>
                 {[['Name',form.name],['Client',form.client],['Value',`${form.currency} ${parseInt(form.contract_value||0).toLocaleString()}`],['Sector',form.sector],['Outcome',form.outcome],['Folder',leafFolders.find(fl=>fl.id===form.folder_id)?.name||'None']].map(([k,v])=>(
-                  <div key={k} className="flex justify-between py-1.5 border-b text-sm last:border-0" style={{borderColor:'#ddd5c4'}}>
-                    <span style={{color:'#6b6456'}}>{k}</span><span className="font-medium">{v||'—'}</span>
+                  <div key={k} className="flex justify-between py-1.5 border-b text-sm last:border-0" style={{borderColor:'#4d4636'}}>
+                    <span style={{color:'#d0c5b0'}}>{k}</span><span className="font-medium">{v||'—'}</span>
                   </div>
                 ))}
               </div>
-              <div className="rounded-lg p-4 bg-cream border" style={{borderColor:'#ddd5c4'}}>
-                <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{color:'#6b6456'}}>Rating</div>
+              <div className="rounded-lg p-4 bg-surface-container-high border" style={{borderColor:'#4d4636'}}>
+                <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{color:'#d0c5b0'}}>Rating</div>
                 <div className="flex items-center gap-3"><Stars rating={form.user_rating} size="base"/><span className="text-sm font-mono" style={{color:'#b8962e'}}>AI Weight: {WEIGHT[form.user_rating]||'—'}</span></div>
               </div>
-              <div className="rounded-lg p-4 bg-cream border" style={{borderColor:'#ddd5c4'}}>
-                <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{color:'#6b6456'}}>Files</div>
+              <div className="rounded-lg p-4 bg-surface-container-high border" style={{borderColor:'#4d4636'}}>
+                <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{color:'#d0c5b0'}}>Files</div>
                 <div className="flex gap-2">{Object.entries(files).filter(([,v])=>v).map(([k])=><FileChip key={k} type={k}/>)}</div>
               </div>
               {errors.submit&&<p className="text-sm text-red-500 bg-red-50 rounded p-3">{errors.submit}</p>}
@@ -1434,17 +1434,17 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
         </div>
 
         {!done?(
-          <div className="flex items-center justify-between px-6 py-4 border-t flex-shrink-0" style={{background:'#f0ebe0',borderColor:'#ddd5c4'}}>
+          <div className="flex items-center justify-between px-6 py-4 border-t flex-shrink-0" style={{background:'#2b2a27',borderColor:'#4d4636'}}>
             <div>{step>1&&<Btn variant="ghost" onClick={()=>setStep(s=>s-1)} disabled={uploading||scanning}>← Back</Btn>}</div>
             <div className="flex items-center gap-3">
-              <span className="text-xs font-mono" style={{color:'#6b6456'}}>Step {step} of 4</span>
+              <span className="text-xs font-mono" style={{color:'#d0c5b0'}}>Step {step} of 4</span>
               <Btn variant={step===4?'gold':'teal'} onClick={next} disabled={uploading||scanning}>
                 {uploading?<><Spinner size={12}/> Uploading…</>:scanning?<><Spinner size={12}/> Scanning…</>:step===1?'Scan & Continue →':step===4?'Upload ⊕':'Continue →'}
               </Btn>
             </div>
           </div>
         ):(
-          <div className="px-6 py-4 border-t flex-shrink-0 flex justify-end" style={{background:'#f0ebe0',borderColor:'#ddd5c4'}}>
+          <div className="px-6 py-4 border-t flex-shrink-0 flex justify-end" style={{background:'#2b2a27',borderColor:'#4d4636'}}>
             <Btn variant="teal" onClick={onClose}>Done ✓</Btn>
           </div>
         )}
@@ -1550,24 +1550,24 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
   }
 
   function upd(i,k,v){ setQueue(prev=>prev.map((q,idx)=>idx===i?{...q,form:{...q.form,[k]:v}}:q)); }
-  const statusColor={queued:'#6b6456',scanning:'#b8962e',ready:'#1e4a52',uploading:'#b8962e',done:'#3d5c3a',error:'#b04030'};
+  const statusColor={queued:'#d0c5b0',scanning:'#e4c366',ready:'#7fb4bc',uploading:'#e4c366',done:'#7bd07a',error:'#ffb4ab'};
   const statusIcon={queued:'○',scanning:'⟳',ready:'●',uploading:'⟳',done:'✓',error:'✗'};
   const allReady=queue.length>0&&queue.every(q=>['ready','done'].includes(q.status));
   const allDone=queue.length>0&&queue.every(q=>q.status==='done');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{background:'rgba(15,14,12,.65)',backdropFilter:'blur(4px)'}}>
-      <div className="bg-white rounded-xl overflow-hidden shadow-2xl flex" style={{width:'860px',maxWidth:'95vw',maxHeight:'88vh'}}>
-        <div className="w-64 flex-shrink-0 flex flex-col border-r" style={{borderColor:'#ddd5c4',background:'#f0ebe0'}}>
-          <div className="px-4 py-3 border-b bg-white flex items-center justify-between" style={{borderColor:'#ddd5c4'}}>
-            <div><div className="text-sm font-semibold">Batch Import</div><div className="text-xs" style={{color:'#6b6456'}}>{queue.length} files</div></div>
+      <div className="bg-surface-container rounded-xl overflow-hidden shadow-2xl flex" style={{width:'860px',maxWidth:'95vw',maxHeight:'88vh'}}>
+        <div className="w-64 flex-shrink-0 flex flex-col border-r" style={{borderColor:'#4d4636',background:'#2b2a27'}}>
+          <div className="px-4 py-3 border-b bg-surface-container flex items-center justify-between" style={{borderColor:'#4d4636'}}>
+            <div><div className="text-sm font-semibold">Batch Import</div><div className="text-xs" style={{color:'#d0c5b0'}}>{queue.length} files</div></div>
             <button onClick={onClose} className="text-sm opacity-40 hover:opacity-80">✕</button>
           </div>
           {queue.length===0?(
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
               <input type="file" ref={fileRef} className="hidden" multiple accept=".pdf,.docx,.doc,.txt" onChange={handleFileSelect}/>
               <div className="text-3xl mb-3 opacity-30">📄</div>
-              <p className="text-sm mb-3" style={{color:'#6b6456'}}>Select multiple proposal files to import at once</p>
+              <p className="text-sm mb-3" style={{color:'#d0c5b0'}}>Select multiple proposal files to import at once</p>
               <Btn variant="teal" onClick={()=>fileRef.current?.click()}>Select Files</Btn>
             </div>
           ):(
@@ -1575,26 +1575,26 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
               <div className="flex-1 overflow-y-auto p-2">
                 {queue.map((item,i)=>(
                   <button key={i} onClick={()=>setCurrentIdx(i)}
-                    className={`w-full text-left px-3 py-2.5 rounded-md mb-1 text-xs transition-all ${currentIdx===i?'bg-white shadow-sm':'hover:bg-white/60'}`}>
+                    className={`w-full text-left px-3 py-2.5 rounded-md mb-1 text-xs transition-all ${currentIdx===i?'bg-surface-container shadow-sm':'hover:bg-surface-container/60'}`}>
                     <div className="flex items-center gap-2 mb-0.5">
                       <span style={{color:statusColor[item.status]}}>{statusIcon[item.status]}</span>
                       <span className="font-medium truncate flex-1">{item.form.name||item.file.name}</span>
                     </div>
-                    <div className="truncate pl-4" style={{color:'#6b6456'}}>{item.form.client||'No client'}</div>
+                    <div className="truncate pl-4" style={{color:'#d0c5b0'}}>{item.form.client||'No client'}</div>
                   </button>
                 ))}
               </div>
-              <div className="p-3 border-t space-y-2" style={{borderColor:'#ddd5c4'}}>
+              <div className="p-3 border-t space-y-2" style={{borderColor:'#4d4636'}}>
                 {/* Progress summary */}
                 {queue.length>0&&(()=>{
                   const done=queue.filter(q=>q.status==='done').length;
                   const errs=queue.filter(q=>q.status==='error').length;
                   const total=queue.length;
                   if(done>0||errs>0) return(
-                    <div className="text-xs rounded px-2 py-1.5 mb-1" style={{background:'#f0ebe0',color:'#6b6456'}}>
-                      {done>0&&<span style={{color:'#3d5c3a'}}>✓ {done} uploaded</span>}
+                    <div className="text-xs rounded px-2 py-1.5 mb-1" style={{background:'#2b2a27',color:'#d0c5b0'}}>
+                      {done>0&&<span style={{color:'#7bd07a'}}>✓ {done} uploaded</span>}
                       {done>0&&errs>0&&<span> · </span>}
-                      {errs>0&&<span style={{color:'#b04030'}}>✗ {errs} failed</span>}
+                      {errs>0&&<span style={{color:'#ffb4ab'}}>✗ {errs} failed</span>}
                       <span> / {total} total</span>
                     </div>
                   );
@@ -1606,12 +1606,12 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
                 {allReady&&!allDone&&uploading&&<Btn variant="gold" disabled className="w-full justify-center"><Spinner size={12}/> Uploading…</Btn>}
                 {allDone&&(
                   <div className="text-center space-y-2">
-                    <div className="text-sm font-semibold py-2" style={{color:'#3d5c3a'}}>✅ All uploaded</div>
+                    <div className="text-sm font-semibold py-2" style={{color:'#7bd07a'}}>✅ All uploaded</div>
                     <Btn variant="teal" onClick={onClose} className="w-full justify-center">Close & View Repository</Btn>
                   </div>
                 )}
                 {!allDone&&queue.some(q=>q.status==='error')&&allReady&&(
-                  <button onClick={uploadAll} disabled={uploading} className="w-full text-xs underline text-center" style={{color:'#b04030'}}>Retry failed uploads</button>
+                  <button onClick={uploadAll} disabled={uploading} className="w-full text-xs underline text-center" style={{color:'#ffb4ab'}}>Retry failed uploads</button>
                 )}
               </div>
             </>
@@ -1621,7 +1621,7 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
         <div className="flex-1 overflow-y-auto p-6">
           {currentIdx===null?(
             <div className="flex items-center justify-center h-full text-center">
-              <div><div className="text-4xl mb-3 opacity-20">📝</div><p className="text-sm" style={{color:'#6b6456'}}>Click "Scan All with AI" to extract details, then click each file on the left to review before uploading.</p></div>
+              <div><div className="text-4xl mb-3 opacity-20">📝</div><p className="text-sm" style={{color:'#d0c5b0'}}>Click "Scan All with AI" to extract details, then click each file on the left to review before uploading.</p></div>
             </div>
           ):(()=>{
             const item=queue[currentIdx];
@@ -1634,37 +1634,37 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
                     {currentIdx<queue.length-1&&<Btn variant="ghost" size="sm" onClick={()=>setCurrentIdx(i=>i+1)}>Next →</Btn>}
                   </div>
                 </div>
-                {item.error&&<div className="text-xs rounded p-2" style={{background:'#faeeeb',color:'#b04030'}}>⚠ {item.error}</div>}
+                {item.error&&<div className="text-xs rounded p-2" style={{background:'rgba(176,64,48,.12)',color:'#ffb4ab'}}>⚠ {item.error}</div>}
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#6b6456'}}>Project Name</label><input value={item.form.name} onChange={e=>upd(currentIdx,'name',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none focus:border-[#1e4a52]"/></div>
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#6b6456'}}>Client</label><input value={item.form.client} onChange={e=>upd(currentIdx,'client',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none focus:border-[#1e4a52]"/></div>
+                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Project Name</label><input value={item.form.name} onChange={e=>upd(currentIdx,'name',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none focus:border-[#1e4a52]"/></div>
+                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Client</label><input value={item.form.client} onChange={e=>upd(currentIdx,'client',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none focus:border-[#1e4a52]"/></div>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#6b6456'}}>Value</label><input value={item.form.contract_value} onChange={e=>upd(currentIdx,'contract_value',e.target.value)} inputMode="decimal" className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none focus:border-[#1e4a52]"/></div>
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#6b6456'}}>Currency</label><select value={item.form.currency} onChange={e=>upd(currentIdx,'currency',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none">{currencies.map(c=><option key={c}>{c}</option>)}</select></div>
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#6b6456'}}>Outcome</label><select value={item.form.outcome} onChange={e=>upd(currentIdx,'outcome',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none">{OUTCOMES.map(o=><option key={o}>{o}</option>)}</select></div>
+                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Value</label><input value={item.form.contract_value} onChange={e=>upd(currentIdx,'contract_value',e.target.value)} inputMode="decimal" className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none focus:border-[#1e4a52]"/></div>
+                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Currency</label><select value={item.form.currency} onChange={e=>upd(currentIdx,'currency',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none">{currencies.map(c=><option key={c}>{c}</option>)}</select></div>
+                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Outcome</label><select value={item.form.outcome} onChange={e=>upd(currentIdx,'outcome',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none">{OUTCOMES.map(o=><option key={o}>{o}</option>)}</select></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#6b6456'}}>Sector</label><select value={item.form.sector} onChange={e=>upd(currentIdx,'sector',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none"><option value="">Select…</option>{sectors.map(s=><option key={s}>{s}</option>)}</select></div>
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#6b6456'}}>Folder</label><select value={item.form.folder_id} onChange={e=>upd(currentIdx,'folder_id',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none"><option value="">Choose…</option>{leafFolders.map(fl=><option key={fl.id} value={fl.id}>{fl.name}</option>)}</select></div>
+                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Sector</label><select value={item.form.sector} onChange={e=>upd(currentIdx,'sector',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none"><option value="">Select…</option>{sectors.map(s=><option key={s}>{s}</option>)}</select></div>
+                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Folder</label><select value={item.form.folder_id} onChange={e=>upd(currentIdx,'folder_id',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none"><option value="">Choose…</option>{leafFolders.map(fl=><option key={fl.id} value={fl.id}>{fl.name}</option>)}</select></div>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#6b6456'}}>Rating</label>
-                  <div className="flex gap-2">{[1,2,3,4,5].map(n=><button key={n} type="button" onClick={()=>upd(currentIdx,'user_rating',n)} className="text-2xl transition-all hover:scale-110" style={{color:n<=item.form.user_rating?'#b8962e':'#ddd5c4'}}>★</button>)}</div>
+                  <label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Rating</label>
+                  <div className="flex gap-2">{[1,2,3,4,5].map(n=><button key={n} type="button" onClick={()=>upd(currentIdx,'user_rating',n)} className="text-2xl transition-all hover:scale-110" style={{color:n<=item.form.user_rating?'#b8962e':'#4d4636'}}>★</button>)}</div>
                 </div>
                 {item.status==='done'&&(
-                  <div className="rounded-lg p-4 text-center" style={{background:'#edf3ec',border:'1px solid rgba(61,92,58,.3)'}}>
+                  <div className="rounded-lg p-4 text-center" style={{background:'rgba(61,92,58,.15)',border:'1px solid rgba(61,92,58,.3)'}}>
                     <div className="text-2xl mb-1">✅</div>
-                    <div className="font-semibold text-sm" style={{color:'#3d5c3a'}}>Uploaded successfully</div>
-                    <div className="text-xs mt-1" style={{color:'#6b6456'}}>AI is indexing in the background — appears in repository within 60s</div>
-                    {currentIdx<queue.length-1&&<button onClick={()=>setCurrentIdx(i=>i+1)} className="mt-3 text-xs underline" style={{color:'#1e4a52'}}>Review next file →</button>}
+                    <div className="font-semibold text-sm" style={{color:'#7bd07a'}}>Uploaded successfully</div>
+                    <div className="text-xs mt-1" style={{color:'#d0c5b0'}}>AI is indexing in the background — appears in repository within 60s</div>
+                    {currentIdx<queue.length-1&&<button onClick={()=>setCurrentIdx(i=>i+1)} className="mt-3 text-xs underline" style={{color:'#7fb4bc'}}>Review next file →</button>}
                   </div>
                 )}
                 {item.status==='error'&&(
-                  <div className="rounded-lg p-4" style={{background:'#faeeeb',border:'1px solid rgba(176,64,48,.2)'}}>
-                    <div className="font-semibold text-sm mb-1" style={{color:'#b04030'}}>⚠ Upload failed</div>
-                    <div className="text-xs" style={{color:'#b04030'}}>{item.error||'Unknown error'}</div>
-                    <div className="text-xs mt-2" style={{color:'#6b6456'}}>Check that Name and Client fields are filled in, then try uploading again.</div>
+                  <div className="rounded-lg p-4" style={{background:'rgba(176,64,48,.12)',border:'1px solid rgba(176,64,48,.2)'}}>
+                    <div className="font-semibold text-sm mb-1" style={{color:'#ffb4ab'}}>⚠ Upload failed</div>
+                    <div className="text-xs" style={{color:'#ffb4ab'}}>{item.error||'Unknown error'}</div>
+                    <div className="text-xs mt-2" style={{color:'#d0c5b0'}}>Check that Name and Client fields are filled in, then try uploading again.</div>
                   </div>
                 )}
               </div>
