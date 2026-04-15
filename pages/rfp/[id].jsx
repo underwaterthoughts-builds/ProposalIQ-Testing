@@ -3246,8 +3246,7 @@ const RfpDocumentTab = memo(function RfpDocumentTab({ scan }) {
 });
 
 // ── RFP PLAIN TEXT TAB ──────────────────────────────────────────────────
-// rfp_text is already loaded with the scan payload (first 50k chars),
-// so no extra fetch is needed — render what we have.
+// Full RFP text is now stored and returned uncapped — no truncation.
 const RfpPlainTextTab = memo(function RfpPlainTextTab({ scan }) {
   const text = scan.rfp_text || '';
   if (!text) {
@@ -3262,7 +3261,6 @@ const RfpPlainTextTab = memo(function RfpPlainTextTab({ scan }) {
         </div>
         <div className="font-label text-[10px] text-on-surface-variant/60">
           {words.toLocaleString()} words · {text.length.toLocaleString()} chars
-          {text.length >= 50000 && ' · truncated to 50k'}
         </div>
       </div>
       <pre className="font-body text-sm leading-relaxed whitespace-pre-wrap text-on-surface p-6 overflow-auto max-h-[75vh]">
