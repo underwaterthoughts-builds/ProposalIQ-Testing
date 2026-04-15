@@ -1102,9 +1102,35 @@ ${sectionHtml('Winning Language', languageHtml)}
                           {suggestedApproach.indicative_budget.basis && (
                             <p className="text-xs leading-relaxed" style={{ color:'#d0c5b0' }}>{suggestedApproach.indicative_budget.basis}</p>
                           )}
+                          {Array.isArray(suggestedApproach.indicative_budget.breakdown) && suggestedApproach.indicative_budget.breakdown.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-outline-variant/20">
+                              <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color:'#d0c5b0' }}>Breakdown</div>
+                              <div className="space-y-1.5">
+                                {suggestedApproach.indicative_budget.breakdown.map((b, i) => {
+                                  const sym = currencySymbol(suggestedApproach.indicative_budget.currency);
+                                  const lo = b.low ? `${sym}${(b.low/1000).toFixed(0)}K` : '';
+                                  const hi = b.high ? `${sym}${(b.high/1000).toFixed(0)}K` : '';
+                                  const range = (lo && hi) ? `${lo}–${hi}` : (lo || hi || '—');
+                                  return (
+                                    <div key={i} className="text-xs flex gap-3">
+                                      <span className="font-mono whitespace-nowrap" style={{ color:'#7fb4bc', minWidth:'100px' }}>{range}</span>
+                                      <span style={{ color:'#d0c5b0' }}>
+                                        <strong>{b.workstream}</strong>{b.drivers ? <span style={{ color:'#99907d' }}> — {b.drivers}</span> : null}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
                           <div className="flex items-center justify-between mt-2">
                             <span className="text-[10px] font-mono" style={{ color:'#99907d' }}>
                               Confidence: {suggestedApproach.indicative_budget.confidence || 'medium'}
+                              {suggestedApproach.indicative_budget.rfp_range_alignment && suggestedApproach.indicative_budget.rfp_range_alignment !== 'no_range_stated' && (
+                                <span style={{ color: suggestedApproach.indicative_budget.rfp_range_alignment === 'inside' ? '#7bd07a' : '#e8a87c', marginLeft: 10 }}>
+                                  · {suggestedApproach.indicative_budget.rfp_range_alignment} RFP range
+                                </span>
+                              )}
                             </span>
                           </div>
                         </Card>
