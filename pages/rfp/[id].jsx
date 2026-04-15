@@ -1428,18 +1428,23 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
     setEditing(false);
   }
 
-  // Highlighting helper — wraps [#N] match citations and [EVIDENCE NEEDED]
-  // markers in coloured spans so the writer can see what's a placeholder.
+  // Highlighting helper — wraps [#N] match citations, [EVIDENCE NEEDED]
+  // and [TBC: ...] markers in coloured spans so the writer can see at a
+  // glance what still needs filling in. [TBC:] specifically signals a
+  // role the AI couldn't resolve to a real team member; user should
+  // assign or update the team records.
   function renderHighlighted(t) {
     if (!t) return null;
-    // Split by markers but keep them
-    const parts = t.split(/(\[#\d+\]|\[EVIDENCE NEEDED[^\]]*\])/g);
+    const parts = t.split(/(\[#\d+\]|\[EVIDENCE NEEDED[^\]]*\]|\[TBC[^\]]*\])/g);
     return parts.map((part, i) => {
       if (/^\[#\d+\]$/.test(part)) {
         return <span key={i} className="font-mono text-[11px] px-1 rounded" style={{ background: 'rgba(30,74,82,.12)', color: '#7fb4bc' }}>{part}</span>;
       }
       if (/^\[EVIDENCE NEEDED/.test(part)) {
         return <span key={i} className="font-mono text-[11px] px-1 rounded" style={{ background: 'rgba(184,150,46,.18)', color: '#e8c357' }}>{part}</span>;
+      }
+      if (/^\[TBC/.test(part)) {
+        return <span key={i} className="font-mono text-[11px] px-1 rounded" style={{ background: 'rgba(255,180,171,.18)', color: '#ffb4ab' }} title="Team role to assign — open the team page or edit inline">{part}</span>;
       }
       return <span key={i}>{part}</span>;
     });
@@ -2013,8 +2018,9 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
                   );
                 }
 
-                // Normal paragraph — highlight (Proposal: "...") and [EVIDENCE NEEDED] markers
-                const parts = cleanLine.split(/(\(Proposal: "[^"]*"\)|\[EVIDENCE NEEDED[^\]]*\]|\[#\d+\])/g);
+                // Normal paragraph — highlight (Proposal: "..."), [#N],
+                // [EVIDENCE NEEDED:...] and [TBC:...] markers.
+                const parts = cleanLine.split(/(\(Proposal: "[^"]*"\)|\[EVIDENCE NEEDED[^\]]*\]|\[TBC[^\]]*\]|\[#\d+\])/g);
                 return (
                   <p key={i} className="text-sm leading-relaxed mb-3">
                     {parts.map((part, j) => {
@@ -2026,6 +2032,9 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
                       }
                       if (/^\[EVIDENCE NEEDED/.test(part)) {
                         return <span key={j} className="text-[11px] px-1 rounded" style={{ background: 'rgba(184,150,46,.18)', color: '#e8c357' }}>{part}</span>;
+                      }
+                      if (/^\[TBC/.test(part)) {
+                        return <span key={j} className="text-[11px] px-1 rounded" style={{ background: 'rgba(255,180,171,.18)', color: '#ffb4ab' }} title="Team role to assign">{part}</span>;
                       }
                       return <span key={j}>{part}</span>;
                     })}

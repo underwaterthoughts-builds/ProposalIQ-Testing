@@ -63,13 +63,19 @@ async function handler(req, res) {
 
   setCostContext({ category: 'proposal_generation', scanId: id, projectId: null });
 
+  // Real team records — used by section drafts so the Team section uses
+  // real names instead of [TBC] placeholders, and so any phase owner
+  // referenced in Approach can resolve to a real person.
+  const team = db.prepare('SELECT id, name, title, stated_specialisms, stated_sectors FROM team_members').all()
+    .map(m => ({ ...m, stated_specialisms: safe(m.stated_specialisms, []) }));
+
   // ── STAGE 1: Generate the raw proposal ─────────────────────────────────
   let proposal;
   try {
     proposal = await generateFullProposal({
       rfpData, matches, gaps, winStrategy, winningLanguage,
       narrativeAdvice, suggestedApproach, proposalStructure,
-      executiveBrief, orgProfile, teamSuggestions,
+      executiveBrief, orgProfile, teamSuggestions, team,
     });
   } catch (e) {
     console.error(`[generate-proposal ${id}] stage 1 error:`, e.message);

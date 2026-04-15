@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
 import { safe } from '../../../../lib/embeddings';
-import { generateSectionDraft, qaFinaliseDraft } from '../../../../lib/gemini';
+import { generateSectionDraft, qaFinaliseDraft, getSectionContract } from '../../../../lib/gemini';
 import { logUsageEvent } from '../../../../lib/feedback';
 
 // POST /api/rfp/[id]/draft-section
@@ -86,6 +86,15 @@ async function handler(req, res) {
   // Generate
   let draft;
   try {
+    // Resolve the section contract (target_words, required_content, etc)
+    // by section_id so single-section drafts get the same depth contract
+    // the full-proposal generator uses.
+    const contract = getSectionContract(body.section_id) || null;
+    // Real team records — used so the Team section can use real names
+    // instead of [TBC] placeholders, and any phase owner can resolve.
+    const teamRecords = db.prepare(
+      'SELECT id, name, title, stated_specialisms, stated_sectors FROM team_members'
+    ).all().map(m => ({ ...m, stated_specialisms: safe(m.stated_specialisms, []) }));
     draft = await generateSectionDraft(
       body.section_name,
       body.section_description || '',
@@ -95,7 +104,7 @@ async function handler(req, res) {
       winningLanguage,
       executiveBrief,
       orgProfile,
-      { gaps, suggestedApproach, narrativeAdvice, writingInsights }
+      { gaps, suggestedApproach, narrativeAdvice, writingInsights, team: teamRecords, contract }
     );
   } catch (e) {
     console.error(`[draft ${id}/${body.section_id}] generation error:`, e.message);
@@ -123,6 +132,7 @@ async function handler(req, res) {
       orgProfile,
       team,
       scope: 'section',
+      contract: getSectionContract(body.section_id) || null,
     });
     if (finalised?.text) {
       finalText = finalised.text;
