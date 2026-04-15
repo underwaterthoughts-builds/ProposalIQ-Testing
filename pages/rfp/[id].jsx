@@ -2143,6 +2143,10 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
                 Build a complete, submission-ready proposal using everything from this scan — matched proposals, win strategy,
                 winning language, gap analysis, team, and your organisation profile. Written in your winning style.
               </div>
+              <div className="mt-3 text-[11px] text-white/60 leading-relaxed">
+                <strong className="text-white/80">Heads-up:</strong> Full proposal takes ~15 minutes (8 sections + per-section QA).
+                Need it faster? Draft section-by-section below — each one takes ~2 minutes and lets you control which sections to generate first.
+              </div>
             </div>
             <button onClick={generateFullProposalDoc} disabled={generatingFull}
               className="flex-shrink-0 text-sm px-5 py-3 rounded-lg font-semibold transition-all disabled:opacity-60"
@@ -2153,7 +2157,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
           {generatingFull && (
             <div className="px-5 py-3 text-xs flex items-center gap-2" style={{ background: 'rgba(232,195,87,.08)', color: '#e8c357' }}>
               <Spinner size={12} />
-              <span>Writing 8 sections in your winning style and running pre-delivery QA — typically 9–13 minutes. We'll show the finalised draft when it's ready.</span>
+              <span>Writing 8 sections in your winning style and running pre-delivery QA on each — typically 12–16 minutes. We'll show the finalised draft when it's ready.</span>
             </div>
           )}
         </div>

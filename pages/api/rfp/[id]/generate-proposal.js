@@ -69,11 +69,18 @@ async function handler(req, res) {
   const team = db.prepare('SELECT id, name, title, stated_specialisms, stated_sectors FROM team_members').all()
     .map(m => ({ ...m, stated_specialisms: safe(m.stated_specialisms, []) }));
 
-  // ── STAGE 1: Generate the raw proposal ─────────────────────────────────
-  let proposal;
+  // Generate. QA now runs PER SECTION inside generateFullProposal with each
+  // section's own depth contract — previously we ran one full-document QA
+  // pass with no contract, which compressed the substantive sections
+  // (Approach especially) to fit the rewrite token budget. Per-section QA
+  // matches the single-section endpoint exactly so a full proposal reads
+  // at the same depth as 8 single-section drafts concatenated.
+  let result;
   try {
-    proposal = await generateFullProposal({
-      rfpData, matches, gaps, winStrategy, winningLanguage,
+    result = await generateFullProposal({
+      rfpData,
+      rfpText: scan.rfp_text || '',
+      matches, gaps, winStrategy, winningLanguage,
       narrativeAdvice, suggestedApproach, proposalStructure,
       executiveBrief, orgProfile, teamSuggestions, team,
     });
@@ -82,40 +89,14 @@ async function handler(req, res) {
     return res.status(500).json({ error: 'Proposal generation failed: ' + e.message });
   }
 
-  if (!proposal) {
+  if (!result || !result.text) {
     return res.status(500).json({ error: 'Generation returned no content.' });
   }
 
-  // ── STAGE 2: Pre-delivery QA (two-pass: detect + silently correct) ─
-  // User never sees the pre-QA text — only the finalised version with an
-  // adjustments summary. Team records are loaded so invented team members
-  // can be swapped for real people.
-  let finalProposal = proposal;
-  let qaAdjustments = [];
-  let qaCount = 0;
-  try {
-    console.log(`[generate-proposal ${id}] running pre-delivery QA finalisation`);
-    const team = db.prepare('SELECT id, name, title, stated_specialisms FROM team_members').all()
-      .map(m => ({ ...m, stated_specialisms: safe(m.stated_specialisms, []) }));
-    const finalised = await qaFinaliseDraft({
-      draftText: proposal,
-      rfpText: scan.rfp_text || '',
-      rfpData,
-      matches,
-      orgProfile,
-      team,
-      scope: 'full',
-    });
-    if (finalised?.text) {
-      finalProposal = finalised.text;
-      qaAdjustments = finalised.adjustments || [];
-      qaCount = finalised.adjustments_count || qaAdjustments.length;
-    }
-  } catch (e) {
-    console.error(`[generate-proposal ${id}] QA finalise error (non-fatal):`, e.message);
-  }
+  const finalProposal = result.text;
+  const qaAdjustments = result.qa_adjustments || [];
+  const qaCount = result.qa_adjustments_count || qaAdjustments.length;
 
-  // Log usage
   logUsageEvent({
     scanId: id,
     eventType: 'full_proposal_generated',
@@ -124,6 +105,7 @@ async function handler(req, res) {
     payload: {
       length: finalProposal.length,
       qa_adjustments_count: qaCount,
+      sections: (result.sections || []).length,
     },
     userId: req.user?.id || null,
   }, db);

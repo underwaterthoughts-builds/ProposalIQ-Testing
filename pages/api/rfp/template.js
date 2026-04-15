@@ -124,14 +124,45 @@ async function handler(req, res) {
     });
   }
 
-  // Team
-  sections.push({
-    type: 'section',
-    heading: 'Our Team',
-    level: 1,
-    guidance: 'Name individuals. State their specific credentials for this bid.',
-    placeholder: '[Introduce the proposed team. Lead with the Project Lead, then key specialists. For each person: name, role on this project, specific relevant experience.]',
-  });
+  // Team — single section, populated from team_members when available so
+  // we don't end up with two "Our Team" headings (the basic placeholder
+  // one + the credentialled one was a duplicate that landed in the
+  // generated template). When no team records exist, fall back to a
+  // generic placeholder.
+  try {
+    const { safe: safeParse } = require('../../../lib/embeddings');
+    const teamMembers = db.prepare('SELECT * FROM team_members LIMIT 8').all();
+    if (teamMembers.length > 0) {
+      sections.push({
+        type: 'section',
+        heading: 'Our Team',
+        level: 1,
+        guidance: 'Introduce proposed team. Lead with the Project Lead. For each person: name, role on this project, specific relevant experience from matched proposals.',
+        key_messages: teamMembers.slice(0, 4).map(m => {
+          const cv = safeParse(m.cv_extracted, {});
+          const summary = cv.career_summary || '';
+          return `${m.name} (${m.title})${summary ? ' — ' + summary.slice(0, 100) : ''}`;
+        }),
+        placeholder: drafts['Our Team'] || '[Name each team member, their role on this project, and one specific example of relevant past experience. Pull from the case studies above.]',
+      });
+    } else {
+      sections.push({
+        type: 'section',
+        heading: 'Our Team',
+        level: 1,
+        guidance: 'Name individuals. State their specific credentials for this bid.',
+        placeholder: '[Introduce the proposed team. Lead with the Project Lead, then key specialists. For each person: name, role on this project, specific relevant experience.]',
+      });
+    }
+  } catch {
+    sections.push({
+      type: 'section',
+      heading: 'Our Team',
+      level: 1,
+      guidance: 'Name individuals. State their specific credentials for this bid.',
+      placeholder: '[Introduce the proposed team. Lead with the Project Lead, then key specialists. For each person: name, role on this project, specific relevant experience.]',
+    });
+  }
 
   // Addressing the Gaps
   const highGaps = gaps.filter(g => g.priority === 'high').slice(0, 4);
@@ -159,33 +190,6 @@ async function handler(req, res) {
       placeholder: '[Present your commercial model. Explain what drives cost. Reference similar project benchmarks.]',
     });
   }
-
-  // Team credibility section (uses CV data)
-  const db2 = db; // already available
-  try {
-    const teamMembers = db2.prepare('SELECT * FROM team_members LIMIT 8').all();
-    if (teamMembers.length > 0) {
-      const { safe: safeParse } = require('../../../lib/embeddings');
-      const teamSummaries = teamMembers.map(m => {
-        const cv = safeParse(m.cv_extracted, {});
-        const specs = safeParse(m.stated_specialisms, []);
-        const certs = m.certifications || (cv.certifications || []).slice(0,3).join(', ');
-        return `${m.name} — ${m.title}${certs ? ` | ${certs}` : ''}${specs.length ? ` | ${specs.slice(0,3).join(', ')}` : ''}`;
-      }).join('\n');
-      sections.push({
-        type: 'section',
-        heading: 'Our Team',
-        level: 1,
-        guidance: 'Introduce proposed team. Lead with the Project Lead. For each person: name, role, specific relevant experience from matched proposals.',
-        key_messages: teamMembers.slice(0,4).map(m => {
-          const cv = safeParse(m.cv_extracted, {});
-          const summary = cv.career_summary || '';
-          return `${m.name} (${m.title})${summary ? ' — ' + summary.slice(0, 100) : ''}`;
-        }),
-        placeholder: drafts['Our Team'] || '[Name each team member, their role on this project, and one specific example of relevant past experience. Pull from the case studies above.]',
-      });
-    }
-  } catch {}
 
   // What to avoid
   if (winStrategy?.avoid?.length > 0) {
