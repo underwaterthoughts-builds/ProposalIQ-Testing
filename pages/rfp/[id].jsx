@@ -805,7 +805,42 @@ ${sectionHtml('Winning Language', languageHtml)}
             <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-surface-container-lowest">
               {scan.status === 'processing' ? (
                 <div className="py-16 text-center"><Spinner size={32}/><p className="text-sm mt-4" style={{ color:'#d0c5b0' }}>Running intelligence pipeline — fast brief in ~60s…</p></div>
-              ) : activeTab === 'brief' ? (
+              ) : (() => {
+                // Deep-pass tabs depend on output the deep pass produces
+                // after the fast brief lands. If the user opens one of
+                // these while the deep pass is still running, show a
+                // spinner with the live status_detail rather than an
+                // empty state — much clearer that the data is on its
+                // way and not missing.
+                const deepReady = scan.status === 'complete' || scan.status === 'deep_failed';
+                const deepPassTabs = ['gaps', 'writing', 'news', 'approach', 'strategy', 'language', 'narrative', 'assembly'];
+                if (!deepReady && deepPassTabs.includes(activeTab)) {
+                  const labels = {
+                    gaps: 'Opportunity Gaps',
+                    writing: 'Writing Insights',
+                    news: 'Market Context',
+                    approach: 'Suggested Approach',
+                    strategy: 'Win Strategy',
+                    language: 'Winning Language',
+                    narrative: 'Narrative Advice',
+                    assembly: 'Proposal Assembly',
+                  };
+                  return (
+                    <div className="py-16 text-center">
+                      <Spinner size={28}/>
+                      <p className="text-sm mt-4" style={{ color:'#d0c5b0' }}>
+                        Generating {labels[activeTab] || 'this section'} — usually 2–3 minutes.
+                      </p>
+                      {scan.status_detail && (
+                        <p className="text-[11px] mt-2 font-mono" style={{ color:'#99907d' }}>
+                          {scan.status_detail}
+                        </p>
+                      )}
+                    </div>
+                  );
+                }
+                return null;
+              })() || (activeTab === 'brief' ? (
                 <ExecutiveBrief brief={executiveBrief} bidScore={bidScore} matches={matches} onJumpTab={setActiveTab} scanName={scan.name} scanId={id} />
               ) : activeTab === 'matches' ? (
                 <div>
@@ -1329,7 +1364,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                 <RfpPlainTextTab scan={scan} />
               ) : (
                 <div className="text-center py-12"><p className="text-sm" style={{ color:'#d0c5b0' }}>Select a tab above.</p></div>
-              )}
+              ))}
             </div>
           </div>
         </div>
