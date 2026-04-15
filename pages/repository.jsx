@@ -54,7 +54,7 @@ const FieldTextarea = memo(function FieldTextarea({ label, value, onChange, rows
     <div>
       <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{color:'#d0c5b0'}}>{label}</label>
       <textarea value={value} onChange={onChange} rows={rows} placeholder={placeholder} style={{resize:'vertical'}}
-        className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none bg-surface-container-low focus:bg-surface-container focus:border-[#1e4a52] transition-colors" />
+        className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none bg-surface-container-low focus:bg-surface-container focus:border-[#1e4a52] transition-colors" />
     </div>
   );
 });
@@ -1354,7 +1354,7 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{color:'#d0c5b0'}}>Outcome</label>
-                  <select value={form.outcome} onChange={onChangeOutcome} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none bg-surface-container-low focus:bg-surface-container focus:border-[#1e4a52]">
+                  <select value={form.outcome} onChange={onChangeOutcome} className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none bg-surface-container-low focus:bg-surface-container focus:border-[#1e4a52]">
                     {OUTCOMES.map(o=><option key={o}>{o}</option>)}
                   </select>
                 </div>
@@ -1368,7 +1368,7 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{color:'#d0c5b0'}}>Save to Folder</label>
-                  <select value={form.folder_id} onChange={onChangeFolder} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none bg-surface-container-low focus:bg-surface-container focus:border-[#1e4a52]">
+                  <select value={form.folder_id} onChange={onChangeFolder} className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none bg-surface-container-low focus:bg-surface-container focus:border-[#1e4a52]">
                     <option value="">Choose folder…</option>{leafFolders.map(fl=><option key={fl.id} value={fl.id}>{fl.name}</option>)}
                   </select>
                   <AddNewInline field="folder" placeholder="e.g. Central Government" showParent={true} {...addCommon} active={addingField==='folder'} onActivate={()=>activateAdd('folder')}/>
@@ -1636,17 +1636,17 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
                 </div>
                 {item.error&&<div className="text-xs rounded p-2" style={{background:'rgba(176,64,48,.12)',color:'#ffb4ab'}}>⚠ {item.error}</div>}
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Project Name</label><input value={item.form.name} onChange={e=>upd(currentIdx,'name',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none focus:border-[#1e4a52]"/></div>
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Client</label><input value={item.form.client} onChange={e=>upd(currentIdx,'client',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none focus:border-[#1e4a52]"/></div>
+                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Project Name</label><input value={item.form.name} onChange={e=>upd(currentIdx,'name',e.target.value)} className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none focus:border-[#1e4a52]"/></div>
+                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Client</label><input value={item.form.client} onChange={e=>upd(currentIdx,'client',e.target.value)} className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none focus:border-[#1e4a52]"/></div>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Value</label><input value={item.form.contract_value} onChange={e=>upd(currentIdx,'contract_value',e.target.value)} inputMode="decimal" className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none focus:border-[#1e4a52]"/></div>
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Currency</label><select value={item.form.currency} onChange={e=>upd(currentIdx,'currency',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none">{currencies.map(c=><option key={c}>{c}</option>)}</select></div>
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Outcome</label><select value={item.form.outcome} onChange={e=>upd(currentIdx,'outcome',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none">{OUTCOMES.map(o=><option key={o}>{o}</option>)}</select></div>
+                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Value</label><input value={item.form.contract_value} onChange={e=>upd(currentIdx,'contract_value',e.target.value)} inputMode="decimal" className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none focus:border-[#1e4a52]"/></div>
+                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Currency</label><select value={item.form.currency} onChange={e=>upd(currentIdx,'currency',e.target.value)} className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none">{currencies.map(c=><option key={c}>{c}</option>)}</select></div>
+                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Outcome</label><select value={item.form.outcome} onChange={e=>upd(currentIdx,'outcome',e.target.value)} className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none">{OUTCOMES.map(o=><option key={o}>{o}</option>)}</select></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Sector</label><select value={item.form.sector} onChange={e=>upd(currentIdx,'sector',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none"><option value="">Select…</option>{sectors.map(s=><option key={s}>{s}</option>)}</select></div>
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Folder</label><select value={item.form.folder_id} onChange={e=>upd(currentIdx,'folder_id',e.target.value)} className="w-full px-3 py-2 border border-[#ddd5c4] rounded-md text-sm outline-none"><option value="">Choose…</option>{leafFolders.map(fl=><option key={fl.id} value={fl.id}>{fl.name}</option>)}</select></div>
+                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Sector</label><select value={item.form.sector} onChange={e=>upd(currentIdx,'sector',e.target.value)} className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none"><option value="">Select…</option>{sectors.map(s=><option key={s}>{s}</option>)}</select></div>
+                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Folder</label><select value={item.form.folder_id} onChange={e=>upd(currentIdx,'folder_id',e.target.value)} className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none"><option value="">Choose…</option>{leafFolders.map(fl=><option key={fl.id} value={fl.id}>{fl.name}</option>)}</select></div>
                 </div>
                 <div>
                   <label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Rating</label>
