@@ -2885,9 +2885,29 @@ const MatchCard = memo(function MatchCard({ match: m, expanded, onToggle, onSupp
               </div>
             )}
             {m.match_explanation && (
-              <div className="rounded p-3 bg-surface-container-highest">
-                <div className="text-[10px] font-label uppercase tracking-widest mb-1 text-on-surface-variant">Why matched</div>
-                <p className="text-xs leading-relaxed text-on-surface">{m.match_explanation.recommended_use}</p>
+              <div className="rounded p-3 bg-surface-container-highest space-y-2">
+                <div>
+                  <div className="text-[10px] font-label uppercase tracking-widest mb-1 text-on-surface-variant">Why matched</div>
+                  <p className="text-xs leading-relaxed text-on-surface">{m.match_explanation.recommended_use}</p>
+                </div>
+                {m.match_explanation.capability_context?.statement && (
+                  <div className={`flex items-start gap-2 text-xs leading-relaxed pt-2 border-t border-outline-variant/10 ${
+                    m.match_explanation.capability_context.status === 'within_core' ? 'text-[#7bd07a]' :
+                    m.match_explanation.capability_context.status === 'within_offered' ? 'text-on-surface' :
+                    m.match_explanation.capability_context.status === 'adjacent' ? 'text-primary' :
+                    m.match_explanation.capability_context.status === 'outside_stated' ? 'text-on-surface-variant' :
+                    'text-on-surface-variant'
+                  }`}>
+                    <span className="material-symbols-outlined text-[14px] mt-0.5">{
+                      m.match_explanation.capability_context.status === 'within_core' ? 'verified' :
+                      m.match_explanation.capability_context.status === 'within_offered' ? 'check_circle' :
+                      m.match_explanation.capability_context.status === 'adjacent' ? 'north_east' :
+                      m.match_explanation.capability_context.status === 'outside_stated' ? 'info' :
+                      'info'
+                    }</span>
+                    <span>{m.match_explanation.capability_context.statement}</span>
+                  </div>
+                )}
               </div>
             )}
             {m.style_classification && (
