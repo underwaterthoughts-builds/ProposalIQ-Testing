@@ -1,5 +1,6 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
+import { scope, canAccess } from '../../../lib/tenancy';
 import { safe } from '../../../lib/embeddings';
 
 // ── Analysis-health endpoint ──────────────────────────────────────────────
@@ -49,9 +50,11 @@ async function handler(req, res) {
   if (req.method === 'GET') {
     let rows = [];
     try {
+      // Scope by owner so members only see their own projects in the health report.
+      const sc = scope(req.user);
       rows = db.prepare(
-        'SELECT id, name, indexing_status, indexed_at, ai_metadata FROM projects'
-      ).all();
+        `SELECT id, name, indexing_status, indexed_at, ai_metadata, owner_user_id FROM projects WHERE 1=1${sc.clause}`
+      ).all(...sc.params);
     } catch (e) {
       return res.status(200).json({ total: 0, ok: 0, silently_empty: 0, errored: 0, stuck_indexing: 0, unindexed: 0, ids: {}, unanalysed: 0, unanalysedIds: [] });
     }
@@ -92,7 +95,15 @@ async function handler(req, res) {
 
   if (req.method === 'POST') {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-    const ids = Array.isArray(body.ids) ? body.ids.filter(Boolean) : [];
+    const rawIds = Array.isArray(body.ids) ? body.ids.filter(Boolean) : [];
+    if (rawIds.length === 0) return res.status(400).json({ error: 'No ids provided' });
+
+    // Tenant gate — drop any ids the caller doesn't own. Silent filter (not 403)
+    // so we don't leak which ids exist for other users.
+    const ids = rawIds.filter(pid => {
+      const row = db.prepare('SELECT owner_user_id FROM projects WHERE id = ?').get(pid);
+      return row && canAccess(req.user, row);
+    });
     if (ids.length === 0) return res.status(400).json({ error: 'No ids provided' });
 
     // Get the host from the request headers so internal fetches work in

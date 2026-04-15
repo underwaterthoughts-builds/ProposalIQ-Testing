@@ -1,5 +1,6 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
+import { canAccess } from '../../../lib/tenancy';
 import { embed, analyseCv } from '../../../lib/gemini';
 import { safe } from '../../../lib/embeddings';
 import { parseDocument } from '../../../lib/parser';
@@ -14,6 +15,12 @@ export const config = { api: { bodyParser: false } };
 async function handler(req, res) {
   const db = getDb();
   const { id } = req.query;
+
+  // Tenant gate — all methods target a specific team_members row, so check once.
+  const ownerRow = db.prepare('SELECT owner_user_id FROM team_members WHERE id=?').get(id);
+  if (!ownerRow || !canAccess(req.user, ownerRow)) {
+    return res.status(404).json({ error: 'Not found' });
+  }
 
   if (req.method === 'GET') {
     const m = db.prepare('SELECT * FROM team_members WHERE id=?').get(id);

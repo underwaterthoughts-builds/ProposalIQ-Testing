@@ -1,6 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
+import { canAccess } from '../../../lib/tenancy';
 import { safe } from '../../../lib/embeddings';
 import { inferTaxonomyFromProposal } from '../../../lib/taxonomy';
 import { getProjectUsageStats } from '../../../lib/feedback';
@@ -34,6 +35,13 @@ function computeTier(match, rfpClient, rfpService) {
 function handler(req, res) {
   const db = getDb();
   const { id } = req.query;
+
+  // Tenant gate — every method on this endpoint targets a specific scan,
+  // so enforce ownership once up front.
+  const ownerRow = db.prepare('SELECT owner_user_id FROM rfp_scans WHERE id = ?').get(id);
+  if (!ownerRow || !canAccess(req.user, ownerRow)) {
+    return res.status(404).json({ error: 'Not found' });
+  }
 
   if (req.method === 'GET') {
     const scan = db.prepare('SELECT * FROM rfp_scans WHERE id = ?').get(id);

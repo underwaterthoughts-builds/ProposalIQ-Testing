@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
+import { canAccess } from '../../../../lib/tenancy';
 
 // Returns everything the system has saved for a project:
 // - the projects row (decoded: ai_metadata, taxonomy, etc.)
@@ -25,6 +26,8 @@ async function handler(req, res) {
 
     const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(id);
     if (!project) return res.status(404).json({ error: 'Project not found' });
+    // Tenant gate — hide other users' projects behind 404.
+    if (!canAccess(req.user, project)) return res.status(404).json({ error: 'Project not found' });
 
     const decode = (v) => {
       if (typeof v !== 'string') return v;

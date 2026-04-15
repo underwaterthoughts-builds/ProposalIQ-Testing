@@ -2,13 +2,17 @@ import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { embed } from '../../../lib/gemini';
 import { safe } from '../../../lib/embeddings';
+import { scope, ownerId } from '../../../lib/tenancy';
 import { v4 as uuid } from 'uuid';
 
 async function handler(req, res) {
   const db = getDb();
   if (req.method === 'GET') {
-    const members = db.prepare('SELECT * FROM team_members ORDER BY name').all();
-    const history = db.prepare(`SELECT pt.member_id, pt.role, pt.days_contributed, p.name as project_name, p.outcome, p.user_rating, p.sector, p.date_submitted FROM project_team pt JOIN projects p ON p.id=pt.project_id`).all();
+    const mt = scope(req.user);
+    const members = db.prepare(`SELECT * FROM team_members WHERE 1=1${mt.clause} ORDER BY name`).all(...mt.params);
+    // History: only projects the user owns (or admin sees all).
+    const pt = scope(req.user, 'p.owner_user_id');
+    const history = db.prepare(`SELECT pt.member_id, pt.role, pt.days_contributed, p.name as project_name, p.outcome, p.user_rating, p.sector, p.date_submitted FROM project_team pt JOIN projects p ON p.id=pt.project_id WHERE 1=1${pt.clause}`).all(...pt.params);
     return res.status(200).json({
       members: members.map(m => ({
         ...m,
@@ -28,8 +32,8 @@ async function handler(req, res) {
     const embText = [name,title,...specs,stated_sectors||'',bio||''].join(' ');
     let emb = null;
     try { emb = JSON.stringify(await embed(embText)); } catch(e) { console.error('embed:',e.message); }
-    db.prepare(`INSERT INTO team_members (id,name,title,years_experience,day_rate_client,day_rate_cost,availability,stated_specialisms,stated_sectors,bio,color,embedding)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`).run(id,name,title,years_experience||0,day_rate_client||0,day_rate_cost||0,availability||'Available — Full time',JSON.stringify(specs),stated_sectors||'',bio||'',color||'#2d6b78',emb);
+    db.prepare(`INSERT INTO team_members (id,name,title,years_experience,day_rate_client,day_rate_cost,availability,stated_specialisms,stated_sectors,bio,color,embedding,owner_user_id)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(id,name,title,years_experience||0,day_rate_client||0,day_rate_cost||0,availability||'Available — Full time',JSON.stringify(specs),stated_sectors||'',bio||'',color||'#2d6b78',emb,ownerId(req.user));
     return res.status(201).json({ id });
   }
   return res.status(405).end();

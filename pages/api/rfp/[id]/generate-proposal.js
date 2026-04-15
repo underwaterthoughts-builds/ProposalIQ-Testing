@@ -1,5 +1,6 @@
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
+import { canAccess } from '../../../../lib/tenancy';
 import { safe } from '../../../../lib/embeddings';
 import {
   generateFullProposal, checkRequirementsCoverage,
@@ -24,7 +25,7 @@ async function handler(req, res) {
   const { id } = req.query;
 
   const scan = db.prepare('SELECT * FROM rfp_scans WHERE id = ?').get(id);
-  if (!scan) return res.status(404).json({ error: 'Scan not found' });
+  if (!scan || !canAccess(req.user, scan)) return res.status(404).json({ error: 'Scan not found' });
   if (scan.status !== 'complete') {
     return res.status(400).json({
       error: 'Full proposal generation requires a completed scan with all analysis tabs populated.',
@@ -66,7 +67,14 @@ async function handler(req, res) {
   // Real team records — used by section drafts so the Team section uses
   // real names instead of [TBC] placeholders, and so any phase owner
   // referenced in Approach can resolve to a real person.
-  const team = db.prepare('SELECT id, name, title, stated_specialisms, stated_sectors FROM team_members').all()
+  // Tenant-scope the team pool to the scan's owner (admin bypass).
+  const teamOwnerRow = scan.owner_user_id ? db.prepare('SELECT role FROM users WHERE id = ?').get(scan.owner_user_id) : null;
+  const teamIsAdminOwned = teamOwnerRow?.role === 'admin';
+  const teamSql = teamIsAdminOwned || !scan.owner_user_id
+    ? 'SELECT id, name, title, stated_specialisms, stated_sectors FROM team_members'
+    : 'SELECT id, name, title, stated_specialisms, stated_sectors FROM team_members WHERE owner_user_id = ?';
+  const teamParams = teamIsAdminOwned || !scan.owner_user_id ? [] : [scan.owner_user_id];
+  const team = db.prepare(teamSql).all(...teamParams)
     .map(m => ({ ...m, stated_specialisms: safe(m.stated_specialisms, []) }));
 
   // Generate. QA now runs PER SECTION inside generateFullProposal with each

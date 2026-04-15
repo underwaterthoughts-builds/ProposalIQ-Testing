@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
+import { ownerId } from '../../../lib/tenancy';
 import { embed } from '../../../lib/gemini';
 import { ensureDir } from '../../../lib/storage';
 import { v4 as uuid } from 'uuid';
@@ -190,8 +191,9 @@ async function handler(req, res) {
       INSERT OR IGNORE INTO team_members
         (id, name, title, years_experience, day_rate_client, day_rate_cost,
          availability, stated_specialisms, stated_sectors, bio, color, embedding,
-         certifications, email, location, languages)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+         certifications, email, location, languages, owner_user_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    const owner = ownerId(req.user);
 
     let imported = 0;
     const errors = [];
@@ -218,7 +220,8 @@ async function handler(req, res) {
           row.certifications || '',
           row.email || '',
           row.location || '',
-          row.languages || ''
+          row.languages || '',
+          owner
         );
         imported++;
       } catch (e) { errors.push(`${row.name}: ${e.message}`); }

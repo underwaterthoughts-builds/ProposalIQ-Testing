@@ -1,6 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
+import { canAccess } from '../../../../lib/tenancy';
 import { safe } from '../../../../lib/embeddings';
 import { generateSectionDraft, qaFinaliseDraft, getSectionContract } from '../../../../lib/gemini';
 import { logUsageEvent } from '../../../../lib/feedback';
@@ -25,7 +26,7 @@ async function handler(req, res) {
 
   // Load scan + verify it's ready for drafting (deep pass complete)
   const scan = db.prepare('SELECT * FROM rfp_scans WHERE id = ?').get(id);
-  if (!scan) return res.status(404).json({ error: 'Scan not found' });
+  if (!scan || !canAccess(req.user, scan)) return res.status(404).json({ error: 'Scan not found' });
   if (scan.status !== 'complete') {
     return res.status(400).json({
       error: 'Section drafting requires the full scan to be complete (winning language + win strategy must exist).',

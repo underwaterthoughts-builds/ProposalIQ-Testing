@@ -6,6 +6,7 @@ import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { ensureDir } from '../../../lib/storage';
 import { runRfpScanPipeline } from '../../../lib/rfp-pipeline';
+import { scope, ownerId } from '../../../lib/tenancy';
 
 export const config = { api: { bodyParser: false } };
 
@@ -13,7 +14,8 @@ async function handler(req, res) {
   const db = getDb();
 
   if (req.method === 'GET') {
-    const scans = db.prepare('SELECT id,name,status,created_at FROM rfp_scans ORDER BY created_at DESC LIMIT 20').all();
+    const t = scope(req.user);
+    const scans = db.prepare(`SELECT id,name,status,created_at FROM rfp_scans WHERE 1=1${t.clause} ORDER BY created_at DESC LIMIT 20`).all(...t.params);
     return res.status(200).json({ scans });
   }
   if (req.method !== 'POST') return res.status(405).end();
@@ -39,8 +41,8 @@ async function handler(req, res) {
   const newPath = path.join(uploadDir, newName);
   fs.renameSync(rfpFile.filepath, newPath);
 
-  db.prepare('INSERT INTO rfp_scans (id,name,rfp_filename,rfp_original_name,status) VALUES (?,?,?,?,?)').run(
-    scanId, f('name') || rfpFile.originalFilename || 'RFP Scan', newName, rfpFile.originalFilename || newName, 'processing'
+  db.prepare('INSERT INTO rfp_scans (id,name,rfp_filename,rfp_original_name,status,owner_user_id) VALUES (?,?,?,?,?,?)').run(
+    scanId, f('name') || rfpFile.originalFilename || 'RFP Scan', newName, rfpFile.originalFilename || newName, 'processing', ownerId(req.user)
   );
 
   res.status(202).json({ scanId, message: 'Processing started' });

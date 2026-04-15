@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
+import { canAccess } from '../../../../lib/tenancy';
 import { parseDocument } from '../../../../lib/parser';
 import { embed, analyseProposal, extractPricingFromImages, hasOpenAI } from '../../../../lib/gemini';
 
@@ -22,6 +23,8 @@ async function handler(req, res) {
 
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(id);
   if (!project) return res.status(404).json({ error: 'Project not found' });
+  // Tenant gate — can't reindex other users' projects.
+  if (!canAccess(req.user, project)) return res.status(404).json({ error: 'Project not found' });
 
   const files = db.prepare('SELECT * FROM project_files WHERE project_id = ? ORDER BY created_at').all(id);
   if (!files.length) return res.status(400).json({ error: 'No files found — please re-upload' });

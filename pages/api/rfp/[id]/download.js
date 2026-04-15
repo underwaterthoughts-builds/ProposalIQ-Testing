@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
+import { canAccess } from '../../../../lib/tenancy';
 
 // GET /api/rfp/[id]/download — serves the original uploaded RFP file
 async function handler(req, res) {
@@ -9,8 +10,11 @@ async function handler(req, res) {
   const db = getDb();
   const { id } = req.query;
 
-  const scan = db.prepare('SELECT rfp_filename, rfp_original_name FROM rfp_scans WHERE id = ?').get(id);
-  if (!scan || !scan.rfp_filename) return res.status(404).json({ error: 'RFP file not found' });
+  const scan = db.prepare(
+    'SELECT rfp_filename, rfp_original_name, owner_user_id FROM rfp_scans WHERE id = ?'
+  ).get(id);
+  if (!scan || !canAccess(req.user, scan)) return res.status(404).json({ error: 'RFP file not found' });
+  if (!scan.rfp_filename) return res.status(404).json({ error: 'RFP file not found' });
 
   const filePath = path.join(process.cwd(), 'data', 'uploads', 'rfp_scans', scan.rfp_filename);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File no longer exists on disk' });

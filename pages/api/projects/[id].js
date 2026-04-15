@@ -1,11 +1,18 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
+import { canAccess } from '../../../lib/tenancy';
 import { safe } from '../../../lib/embeddings';
 import { snapIndustry, snapSectors } from '../../../lib/taxonomy';
 
 function handler(req, res) {
   const db = getDb();
   const { id } = req.query;
+
+  // Tenant gate — load owner up-front so every branch can enforce access.
+  const ownerRow = db.prepare('SELECT owner_user_id FROM projects WHERE id = ?').get(id);
+  if (!ownerRow || !canAccess(req.user, ownerRow)) {
+    return res.status(404).json({ error: 'Not found' });
+  }
 
   if (req.method === 'GET') {
     const p = db.prepare('SELECT * FROM projects WHERE id = ?').get(id);

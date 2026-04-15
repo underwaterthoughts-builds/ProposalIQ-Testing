@@ -4,6 +4,7 @@ import fs from 'fs';
 import { v4 as uuid } from 'uuid';
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
+import { ownerId } from '../../../lib/tenancy';
 import { projectDir } from '../../../lib/storage';
 import { parseDocument } from '../../../lib/parser';
 import { embed, analyseProposal, extractPricingFromImages, setCostContext, hasOpenAI } from '../../../lib/gemini';
@@ -71,13 +72,14 @@ async function handler(req, res) {
 
   db.prepare(`INSERT INTO projects
     (id, name, client, sector, contract_value, currency, outcome, user_rating, ai_weight,
-     project_type, date_submitted, folder_id, description, went_well, improvements, lessons, indexing_status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'indexing')`).run(
+     project_type, date_submitted, folder_id, description, went_well, improvements, lessons, indexing_status, owner_user_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'indexing', ?)`).run(
     projectId, name, client,
     f('sector'), parseFloat(f('contract_value') || '0'),
     f('currency') || 'GBP', outcome, rating, AI_WEIGHT[rating] ?? 0.40,
     f('project_type'), f('date_submitted'), f('folder_id') || null,
-    f('description'), f('went_well'), f('improvements'), f('lessons')
+    f('description'), f('went_well'), f('improvements'), f('lessons'),
+    ownerId(req.user)
   );
 
   const fileInsert = db.prepare(

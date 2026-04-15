@@ -2,6 +2,7 @@ import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { safe, cosine } from '../../../lib/embeddings';
 import { embed } from '../../../lib/gemini';
+import { scope } from '../../../lib/tenancy';
 
 async function handler(req, res) {
   const db = getDb();
@@ -10,6 +11,8 @@ async function handler(req, res) {
     const { folder, search, outcome, rating, indexing_status } = req.query;
     let sql = 'SELECT p.*, GROUP_CONCAT(pf.file_type) as file_types FROM projects p LEFT JOIN project_files pf ON pf.project_id = p.id WHERE 1=1';
     const params = [];
+    const tenant = scope(req.user, 'p.owner_user_id');
+    sql += tenant.clause; params.push(...tenant.params);
 
     // indexing_status filter (for failed uploads view)
     if (indexing_status) {

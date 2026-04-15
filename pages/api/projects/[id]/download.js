@@ -2,11 +2,18 @@ import path from 'path';
 import fs from 'fs';
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
+import { canAccess } from '../../../../lib/tenancy';
 
 async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end();
   const { id } = req.query;
   const db = getDb();
+
+  // Tenant gate — only the owner (or admin) can download this project's files.
+  const ownerRow = db.prepare('SELECT owner_user_id FROM projects WHERE id = ?').get(id);
+  if (!ownerRow || !canAccess(req.user, ownerRow)) {
+    return res.status(404).json({ error: 'Not found' });
+  }
 
   const files = db.prepare(
     "SELECT * FROM project_files WHERE project_id = ? ORDER BY created_at LIMIT 1"

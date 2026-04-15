@@ -4,6 +4,7 @@ import fs from 'fs';
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { ensureDir } from '../../../lib/storage';
+import { scope, ownerId, canAccess } from '../../../lib/tenancy';
 import { v4 as uuid } from 'uuid';
 import XLSX from 'xlsx';
 
@@ -35,21 +36,26 @@ function findCol(keys, ...candidates) {
 async function handler(req, res) {
   const db = getDb();
 
-  // GET — list all roles
+  // GET — list this user's rate card roles
   if (req.method === 'GET') {
-    const roles = db.prepare('SELECT * FROM rate_card_roles ORDER BY category, sort_order, role_name').all();
+    const t = scope(req.user);
+    const roles = db.prepare(`SELECT * FROM rate_card_roles WHERE 1=1${t.clause} ORDER BY category, sort_order, role_name`).all(...t.params);
     return res.status(200).json({ roles });
   }
 
-  // DELETE — remove a role
+  // DELETE — remove a role (ownership-checked)
   if (req.method === 'DELETE') {
     const body = await new Promise(resolve => {
       let raw = ''; req.on('data', c => raw += c); req.on('end', () => { try { resolve(JSON.parse(raw)); } catch { resolve({}); } });
     });
     if (body.ids?.length) {
       const stmt = db.prepare('DELETE FROM rate_card_roles WHERE id = ?');
-      body.ids.forEach(id => stmt.run(id));
-      return res.status(200).json({ deleted: body.ids.length });
+      let deleted = 0;
+      for (const id of body.ids) {
+        const row = db.prepare('SELECT owner_user_id FROM rate_card_roles WHERE id = ?').get(id);
+        if (row && canAccess(req.user, row)) { stmt.run(id); deleted++; }
+      }
+      return res.status(200).json({ deleted });
     }
     return res.status(400).json({ error: 'ids required' });
   }
@@ -61,6 +67,8 @@ async function handler(req, res) {
     });
     const { id, ...fields } = body;
     if (!id) return res.status(400).json({ error: 'id required' });
+    const existing = db.prepare('SELECT owner_user_id FROM rate_card_roles WHERE id = ?').get(id);
+    if (!existing || !canAccess(req.user, existing)) return res.status(404).json({ error: 'Not found' });
     const allowed = ['role_name','grade','category','day_rate_client','day_rate_cost','currency','notes'];
     const updates = Object.entries(fields).filter(([k]) => allowed.includes(k));
     if (!updates.length) return res.status(400).json({ error: 'No valid fields' });
@@ -83,15 +91,16 @@ async function handler(req, res) {
     if (!rows.length) return res.status(400).json({ error: 'No rows' });
 
     const insert = db.prepare(`INSERT OR REPLACE INTO rate_card_roles
-      (id, role_name, grade, category, day_rate_client, day_rate_cost, currency, notes, sort_order)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+      (id, role_name, grade, category, day_rate_client, day_rate_cost, currency, notes, sort_order, owner_user_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
 
     let imported = 0;
+    const owner = ownerId(req.user);
     for (const row of rows) {
       if (!row.role_name?.trim()) continue;
       insert.run(uuid(), row.role_name.trim(), row.grade || '', row.category || '',
         parseRate(row.day_rate_client), parseRate(row.day_rate_cost),
-        row.currency || 'GBP', row.notes || '', imported);
+        row.currency || 'GBP', row.notes || '', imported, owner);
       imported++;
     }
     return res.status(200).json({ imported });

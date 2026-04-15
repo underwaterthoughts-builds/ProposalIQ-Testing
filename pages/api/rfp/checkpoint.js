@@ -1,5 +1,6 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
+import { canAccess } from '../../../lib/tenancy';
 import { safe } from '../../../lib/embeddings';
 
 async function handler(req, res) {
@@ -10,7 +11,7 @@ async function handler(req, res) {
   const { checkpoint, edited_data } = body;
 
   const scan = db.prepare('SELECT * FROM rfp_scans WHERE id = ?').get(id);
-  if (!scan) return res.status(404).json({ error: 'Scan not found' });
+  if (!scan || !canAccess(req.user, scan)) return res.status(404).json({ error: 'Scan not found' });
 
   if (checkpoint === 'rfp') {
     db.prepare('UPDATE rfp_scans SET checkpoint_rfp_approved=1, rfp_data_edited=? WHERE id=?')

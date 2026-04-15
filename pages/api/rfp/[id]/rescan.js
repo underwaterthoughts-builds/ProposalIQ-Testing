@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
+import { canAccess } from '../../../../lib/tenancy';
 import { runRfpScanPipeline } from '../../../../lib/rfp-pipeline';
 
 // Re-runs the full RFP scan pipeline against the existing uploaded file.
@@ -13,8 +14,8 @@ async function handler(req, res) {
   const db = getDb();
   const { id } = req.query;
 
-  const scan = db.prepare('SELECT id, rfp_filename FROM rfp_scans WHERE id = ?').get(id);
-  if (!scan) return res.status(404).json({ error: 'Scan not found' });
+  const scan = db.prepare('SELECT id, rfp_filename, owner_user_id FROM rfp_scans WHERE id = ?').get(id);
+  if (!scan || !canAccess(req.user, scan)) return res.status(404).json({ error: 'Scan not found' });
   if (!scan.rfp_filename) return res.status(400).json({ error: 'No source file recorded for this scan' });
 
   const filePath = path.join(process.cwd(), 'data', 'uploads', 'rfp_scans', scan.rfp_filename);

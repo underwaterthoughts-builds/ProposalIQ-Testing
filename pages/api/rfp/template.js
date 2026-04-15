@@ -1,5 +1,6 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
+import { canAccess } from '../../../lib/tenancy';
 import { safe } from '../../../lib/embeddings';
 import { generateSectionDraft } from '../../../lib/gemini';
 import { currencySymbol } from '../../../lib/format';
@@ -16,7 +17,7 @@ async function handler(req, res) {
   const db = getDb();
 
   const scan = db.prepare('SELECT * FROM rfp_scans WHERE id = ?').get(id);
-  if (!scan) return res.status(404).json({ error: 'Scan not found' });
+  if (!scan || !canAccess(req.user, scan)) return res.status(404).json({ error: 'Scan not found' });
 
   const rfpData = safe(scan.rfp_data, {});
   const gaps = safe(scan.gaps, []);
