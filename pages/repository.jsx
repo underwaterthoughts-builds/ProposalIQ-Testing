@@ -144,7 +144,7 @@ const ScanTimestamp = memo(function ScanTimestamp({ indexedAt }) {
   const yy = String(d.getFullYear()).slice(-2);
   return (
     <span
-      className="text-[8.5px] font-label text-outline tracking-wider leading-none"
+      className="text-[10px] font-label text-on-surface-variant/70 tracking-wider leading-none tabular-nums"
       title={`Last scanned ${d.toLocaleString()}`}
     >
       {hh}:{mm} {day}/{month}/{yy}
@@ -264,14 +264,6 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
     : 'bg-primary/20 text-primary border-primary/20';
   const outcomeLabel = (p.outcome || 'pending').toUpperCase();
 
-  // Short project code derived from id — safe against short/missing ids
-  const idStr = String(p.id || '');
-  const projectCode = idStr.length >= 4
-    ? `${idStr.slice(0, 2).toUpperCase()}-${idStr.slice(-2).toUpperCase()}`
-    : idStr.length >= 2
-    ? `${idStr.slice(0, 2).toUpperCase()}-00`
-    : '—';
-
   return (
     <div
       onClick={() => selectMode ? onToggleSelect() : router.push(`/repository/${p.id}`)}
@@ -295,7 +287,7 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
       <div className="flex justify-between items-start gap-4">
         <div className="flex flex-col min-w-0 flex-1">
           <span className="font-label text-[10px] text-outline uppercase tracking-widest mb-1">
-            {p.sector || 'Untagged'} · {projectCode}
+            {p.sector || 'Untagged'}
           </span>
           <h2 className="font-headline text-xl md:text-2xl font-medium leading-tight group-hover:text-primary transition-colors line-clamp-2">
             {p.name}
