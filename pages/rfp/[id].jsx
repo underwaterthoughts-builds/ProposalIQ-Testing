@@ -1428,11 +1428,33 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
     setEditing(false);
   }
 
-  // Highlighting helper — wraps [#N] match citations, [EVIDENCE NEEDED]
-  // and [TBC: ...] markers in coloured spans so the writer can see at a
-  // glance what still needs filling in. [TBC:] specifically signals a
-  // role the AI couldn't resolve to a real team member; user should
-  // assign or update the team records.
+  // Build a list of past project + client name tokens we want to
+  // highlight in the draft prose so the user can spot every reference
+  // at a glance and verify it's the right one. Sorted longest-first so
+  // multi-word names match before any subset of those words.
+  const refTokens = (() => {
+    const seen = new Set();
+    const tokens = [];
+    (matches || []).forEach(m => {
+      [m.name, m.client].forEach(v => {
+        const s = (v || '').trim();
+        if (!s || s.length < 4) return;
+        const lower = s.toLowerCase();
+        if (seen.has(lower)) return;
+        seen.add(lower);
+        tokens.push(s);
+      });
+    });
+    return tokens.sort((a, b) => b.length - a.length);
+  })();
+  const refRegex = refTokens.length > 0
+    ? new RegExp('(' + refTokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'gi')
+    : null;
+
+  // Highlighting helper — wraps [#N] match citations, [EVIDENCE NEEDED],
+  // [TBC: ...] markers AND any reference to a past client / project name
+  // in coloured spans so the writer can see at a glance what's a
+  // placeholder vs a real reference, and verify each citation.
   function renderHighlighted(t) {
     if (!t) return null;
     const parts = t.split(/(\[#\d+\]|\[EVIDENCE NEEDED[^\]]*\]|\[TBC[^\]]*\])/g);
@@ -1445,6 +1467,21 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
       }
       if (/^\[TBC/.test(part)) {
         return <span key={i} className="font-mono text-[11px] px-1 rounded" style={{ background: 'rgba(255,180,171,.18)', color: '#ffb4ab' }} title="Team role to assign — open the team page or edit inline">{part}</span>;
+      }
+      // Reference name highlighting — break the prose down further by ref
+      // tokens. Tinted purple to distinguish from the marker colours.
+      if (refRegex) {
+        const subParts = part.split(refRegex);
+        return (
+          <span key={i}>
+            {subParts.map((sp, j) => {
+              if (refTokens.some(r => r.toLowerCase() === sp.toLowerCase())) {
+                return <span key={j} className="px-1 rounded" style={{ background: 'rgba(183,196,255,.18)', color: '#b7c4ff' }} title="Past client or project — verify this reference is correct">{sp}</span>;
+              }
+              return sp;
+            })}
+          </span>
+        );
       }
       return <span key={i}>{part}</span>;
     });
@@ -1722,6 +1759,28 @@ const STATUS_COLORS = { 'not started':'#4d4636', 'in progress':'#b8962e', 'draft
 function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
   onGenerateTemplate, onExportBriefing, generatingTemplate, templateDraftMode, setTemplateDraftMode, exporting }) {
   const rfpData = scan?.rfp_data || {};
+
+  // Past-project + client name tokens for the full-proposal renderer to
+  // highlight inline (so the user can spot every reference at a glance
+  // and verify each one is the correct citation).
+  const fullProposalRefRegex = (() => {
+    const seen = new Set();
+    const tokens = [];
+    (matches || []).forEach(m => {
+      [m.name, m.client].forEach(v => {
+        const s = (v || '').trim();
+        if (!s || s.length < 4) return;
+        const lower = s.toLowerCase();
+        if (seen.has(lower)) return;
+        seen.add(lower);
+        tokens.push(s);
+      });
+    });
+    if (tokens.length === 0) return null;
+    tokens.sort((a, b) => b.length - a.length);
+    return new RegExp('(' + tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'gi');
+  })();
+  const fullProposalRefSet = new Set((matches || []).flatMap(m => [m.name, m.client]).filter(Boolean).map(s => s.toLowerCase()));
   const storageKey = `piq_assembly_${scan?.id}`;
   // Wave 4 — section drafts state
   const [drafts, setDrafts] = useState({});  // section_id → draft object
@@ -2020,7 +2079,9 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
                 }
 
                 // Normal paragraph — highlight (Proposal: "..."), [#N],
-                // [EVIDENCE NEEDED:...] and [TBC:...] markers.
+                // [EVIDENCE NEEDED:...], [TBC:...] markers AND past
+                // client / project references so the user can verify
+                // every citation at a glance.
                 const parts = cleanLine.split(/(\(Proposal: "[^"]*"\)|\[EVIDENCE NEEDED[^\]]*\]|\[TBC[^\]]*\]|\[#\d+\])/g);
                 return (
                   <p key={i} className="text-sm leading-relaxed mb-3">
@@ -2036,6 +2097,19 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
                       }
                       if (/^\[TBC/.test(part)) {
                         return <span key={j} className="text-[11px] px-1 rounded" style={{ background: 'rgba(255,180,171,.18)', color: '#ffb4ab' }} title="Team role to assign">{part}</span>;
+                      }
+                      if (fullProposalRefRegex) {
+                        const subParts = part.split(fullProposalRefRegex);
+                        return (
+                          <span key={j}>
+                            {subParts.map((sp, k) => {
+                              if (sp && fullProposalRefSet.has(sp.toLowerCase())) {
+                                return <span key={k} className="px-1 rounded" style={{ background: 'rgba(183,196,255,.18)', color: '#b7c4ff' }} title="Past client or project — verify this reference is correct">{sp}</span>;
+                              }
+                              return sp;
+                            })}
+                          </span>
+                        );
                       }
                       return <span key={j}>{part}</span>;
                     })}
