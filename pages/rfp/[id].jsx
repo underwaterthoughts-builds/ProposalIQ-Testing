@@ -1756,6 +1756,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
       return;
     }
     setGenerating(section.id);
+    onToast(`Drafting "${section.title}" + pre-delivery QA — typically 1–3 minutes…`);
     try {
       const r = await fetch(`/api/rfp/${scan.id}/draft-section`, {
         method: 'POST',
@@ -2152,7 +2153,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
           {generatingFull && (
             <div className="px-5 py-3 text-xs flex items-center gap-2" style={{ background: 'rgba(232,195,87,.08)', color: '#e8c357' }}>
               <Spinner size={12} />
-              <span>Writing 8 sections in your winning style — this takes 30–60 seconds…</span>
+              <span>Writing 8 sections in your winning style and running pre-delivery QA — typically 9–13 minutes. We'll show the finalised draft when it's ready.</span>
             </div>
           )}
         </div>
