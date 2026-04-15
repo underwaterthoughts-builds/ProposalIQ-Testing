@@ -517,7 +517,7 @@ ${sectionHtml('Winning Language', languageHtml)}
               <div className="py-24 text-center max-w-4xl mx-auto">
                 <div className="w-12 h-12 mx-auto rounded-full border-2 border-primary border-t-transparent animate-spin" />
                 <p className="font-body text-sm mt-6 text-on-surface-variant">
-                  Running intelligence pipeline — fast brief in ~30s…
+                  Running intelligence pipeline — fast brief in ~60s…
                 </p>
               </div>
             ) : (
@@ -804,7 +804,7 @@ ${sectionHtml('Winning Language', languageHtml)}
             </div>
             <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-surface-container-lowest">
               {scan.status === 'processing' ? (
-                <div className="py-16 text-center"><Spinner size={32}/><p className="text-sm mt-4" style={{ color:'#d0c5b0' }}>Running intelligence pipeline — fast brief in ~30s…</p></div>
+                <div className="py-16 text-center"><Spinner size={32}/><p className="text-sm mt-4" style={{ color:'#d0c5b0' }}>Running intelligence pipeline — fast brief in ~60s…</p></div>
               ) : activeTab === 'brief' ? (
                 <ExecutiveBrief brief={executiveBrief} bidScore={bidScore} matches={matches} onJumpTab={setActiveTab} scanName={scan.name} scanId={id} />
               ) : activeTab === 'matches' ? (
