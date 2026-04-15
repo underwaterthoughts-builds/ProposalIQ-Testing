@@ -553,19 +553,12 @@ ${sectionHtml('Winning Language', languageHtml)}
               View RFP ↗
             </a>
             <Btn variant="ghost" onClick={exportBriefing} disabled={exporting}>
-              {exporting ? <><Spinner size={12}/> Exporting…</> : '↓ Export Briefing'}
+              {exporting ? <><Spinner size={12}/> Exporting…</> : '↓ Export briefing for your team'}
             </Btn>
-            <div className="flex rounded-lg overflow-hidden border border-teal" style={{ borderColor:'#7fb4bc' }}>
-              <Btn variant="teal" onClick={() => { setTemplateDraftMode(false); generateTemplate(); }} disabled={generatingTemplate}
-                className="rounded-none border-0 no-min-h px-3 py-1.5">
-                {generatingTemplate && !templateDraftMode ? <><Spinner size={12}/> Building…</> : '📄 Template'}
-              </Btn>
-              <div className="w-px" style={{ background:'rgba(255,255,255,.3)' }}/>
-              <Btn variant="teal" onClick={() => { setTemplateDraftMode(true); generateTemplate(); }} disabled={generatingTemplate}
-                className="rounded-none border-0 no-min-h px-3 py-1.5">
-                {generatingTemplate && templateDraftMode ? <><Spinner size={12}/> Writing…</> : '✍ Draft'}
-              </Btn>
-            </div>
+            <Btn variant="teal" onClick={() => { setTemplateDraftMode(false); generateTemplate(); }} disabled={generatingTemplate}
+              className="no-min-h px-3 py-1.5">
+              {generatingTemplate && !templateDraftMode ? <><Spinner size={12}/> Building…</> : '📄 Template'}
+            </Btn>
             <Btn variant="ghost" onClick={deleteScan} disabled={deleting}
               style={{ color:'#ffb4ab', borderColor:'#f5c6c0' }}>
               {deleting ? <><Spinner size={12}/> Deleting…</> : '✕ Delete Scan'}
@@ -2004,22 +1997,15 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
             </div>
             <div className="flex gap-2 flex-wrap">
               {onGenerateTemplate && (
-                <div className="flex rounded overflow-hidden border border-white/30">
-                  <button onClick={() => { setTemplateDraftMode(false); onGenerateTemplate(); }} disabled={generatingTemplate}
-                    className="text-xs px-3 py-1.5 text-white/80 hover:text-white">
-                    {generatingTemplate && !templateDraftMode ? 'Building…' : '📄 Template'}
-                  </button>
-                  <div className="w-px bg-surface-container/20" />
-                  <button onClick={() => { setTemplateDraftMode(true); onGenerateTemplate(); }} disabled={generatingTemplate}
-                    className="text-xs px-3 py-1.5 text-white/80 hover:text-white">
-                    {generatingTemplate && templateDraftMode ? 'Writing…' : '✍ Draft'}
-                  </button>
-                </div>
+                <button onClick={() => { setTemplateDraftMode(false); onGenerateTemplate(); }} disabled={generatingTemplate}
+                  className="text-xs px-3 py-1.5 rounded text-white/80 hover:text-white border border-white/30">
+                  {generatingTemplate && !templateDraftMode ? 'Building…' : '📄 Template'}
+                </button>
               )}
               {onExportBriefing && (
                 <button onClick={onExportBriefing} disabled={exporting}
                   className="text-xs px-3 py-1.5 rounded text-white/70 hover:text-white border border-white/20">
-                  {exporting ? 'Exporting…' : '↓ Export briefing'}
+                  {exporting ? 'Exporting…' : '↓ Export briefing for your team'}
                 </button>
               )}
               <button onClick={() => setFullProposal(null)}
@@ -2272,24 +2258,17 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
         </div>
       )}
 
-      {/* Quick actions — Template / Draft / Export inline */}
+      {/* Quick actions — Template / Briefing inline */}
       {onGenerateTemplate && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[11px] font-mono uppercase tracking-widest" style={{ color: '#99907d' }}>Export:</span>
-          <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: '#7fb4bc' }}>
-            <button onClick={() => { setTemplateDraftMode(false); onGenerateTemplate(); }} disabled={generatingTemplate}
-              className="text-xs px-3 py-1.5 transition-colors hover:bg-teal-50" style={{ color: '#7fb4bc' }}>
-              {generatingTemplate && !templateDraftMode ? <><Spinner size={10} /> Building…</> : '📄 Template (.docx)'}
-            </button>
-            <div className="w-px" style={{ background: '#1e4a52' }} />
-            <button onClick={() => { setTemplateDraftMode(true); onGenerateTemplate(); }} disabled={generatingTemplate}
-              className="text-xs px-3 py-1.5 transition-colors hover:bg-teal-50" style={{ color: '#7fb4bc' }}>
-              {generatingTemplate && templateDraftMode ? <><Spinner size={10} /> Writing…</> : '✍ AI Draft (.docx)'}
-            </button>
-          </div>
+          <button onClick={() => { setTemplateDraftMode(false); onGenerateTemplate(); }} disabled={generatingTemplate}
+            className="text-xs px-3 py-1.5 rounded-lg border transition-colors hover:bg-teal-50" style={{ borderColor: '#7fb4bc', color: '#7fb4bc' }}>
+            {generatingTemplate && !templateDraftMode ? <><Spinner size={10} /> Building…</> : '📄 Template (.docx)'}
+          </button>
           <button onClick={onExportBriefing} disabled={exporting}
             className="text-xs px-3 py-1.5 rounded border transition-colors hover:bg-gray-50" style={{ borderColor: '#4d4636', color: '#d0c5b0' }}>
-            {exporting ? 'Exporting…' : '↓ Export briefing (.html)'}
+            {exporting ? 'Exporting…' : '↓ Export briefing for your team (.html)'}
           </button>
         </div>
       )}
