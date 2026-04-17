@@ -15,8 +15,15 @@ async function handler(req, res) {
 
   if (req.method === 'GET') {
     const t = scope(req.user);
-    const scans = db.prepare(`SELECT id,name,status,created_at FROM rfp_scans WHERE 1=1${t.clause} ORDER BY created_at DESC LIMIT 20`).all(...t.params);
-    return res.status(200).json({ scans });
+    const scans = db.prepare(`SELECT id,name,status,created_at,bid_score FROM rfp_scans WHERE 1=1${t.clause} ORDER BY created_at DESC LIMIT 20`).all(...t.params);
+    // Parse bid_score once so the UI can read .score / .decision without
+    // calling JSON.parse on every render.
+    const hydrated = scans.map(s => {
+      let bs = null;
+      try { bs = s.bid_score ? JSON.parse(s.bid_score) : null; } catch {}
+      return { ...s, bid_score: bs };
+    });
+    return res.status(200).json({ scans: hydrated });
   }
   if (req.method !== 'POST') return res.status(405).end();
 

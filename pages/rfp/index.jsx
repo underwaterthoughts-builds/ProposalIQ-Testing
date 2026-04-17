@@ -216,7 +216,20 @@ export default function RFPIndex() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
+                        <div className="flex items-center gap-4 flex-shrink-0">
+                          {s.bid_score?.score != null && (
+                            <div className="flex items-baseline gap-1.5" title={s.bid_score.decision || 'Intelligence Score'}>
+                              <span
+                                className="font-label font-bold text-2xl leading-none tabular-nums"
+                                style={{ color: s.bid_score.colour || '#b8962e' }}
+                              >
+                                {s.bid_score.score}
+                              </span>
+                              <span className="font-label text-[9px] uppercase tracking-widest text-on-surface-variant">
+                                / 100
+                              </span>
+                            </div>
+                          )}
                           <span className="font-label text-xs font-bold text-primary uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
                             View
                           </span>
