@@ -2,19 +2,19 @@ import Head from 'next/head';
 import Link from 'next/link';
 
 const PROMISES = [
-  { n: '01', title: 'Qualify faster', body: 'Receive a comprehensive bid/no-bid signal in seconds based on historical win patterns and resource constraints.' },
-  { n: '02', title: 'Respond better', body: 'Past winning language and strategic positioning are surfaced automatically the moment a query is initiated.' },
-  { n: '03', title: 'Win more', body: 'Stop reinventing the wheel. Systematically apply what has consistently resonated with procurement panels.' },
-  { n: '04', title: 'Work efficiently', body: 'Every proposal your team writes compounds into a smarter engine, reducing burnout and increasing throughput.' },
+  { n: '01', title: 'Decide in 60 seconds', body: 'A bid/no-bid signal you can take to a partner meeting, grounded in your own win history — not generic vibes.' },
+  { n: '02', title: 'See what fits', body: 'Past projects ranked by relevance to this RFP, with the language that won them and the people who delivered them.' },
+  { n: '03', title: 'See what\'s missing', body: 'Gaps the RFP demands but your back catalogue doesn\'t yet evidence — flagged before you waste two weeks responding.' },
+  { n: '04', title: 'Get smarter every bid', body: 'Won/lost outcomes feed back. The system weights future matches toward the projects that actually win.' },
 ];
 
 const INDUSTRIES = [
-  { name: 'Management Consulting', body: 'Synthesize complex frameworks and past engagement successes into persuasive technical proposals.' },
-  { name: 'Creative & PR', body: 'Protect your creative IP while ensuring historical campaign data supports every brand pitch.' },
-  { name: 'Technology & IT', body: 'Map technical capabilities to RFP requirements with surgical precision and zero compliance drift.' },
-  { name: 'Architecture & Design', body: 'Leverage project portfolios and sustainability credentials to win major infrastructure tenders.' },
-  { name: 'Recruitment & Staffing', body: 'Respond to Master Service Agreements with verified placement data and regional compliance docs.' },
-  { name: 'Charity & Third Sector', body: 'Maximize social impact reporting to secure grant funding and public sector service contracts.' },
+  { name: 'Management Consulting & Strategy', body: 'Where methodology is the product. Make every proposal reflect your firm\'s IP without re-explaining it from scratch.' },
+  { name: 'Creative, Branding & PR', body: 'Protect your IP. Match a brief to the campaigns that genuinely fit it, not whichever ones share the right keywords.' },
+  { name: 'Engineering, Architecture & Built Environment', body: 'Tender responses against decades of project portfolios; compliance-aware matching and credentialed evidence.' },
+  { name: 'Technology & IT Services', body: 'Map technical capabilities to RFP requirements without paying the rewrite tax every time the brief changes.' },
+  { name: 'Public Sector & Not-for-Profit', body: 'Frameworks, grants, and outcome reporting tied to evidence you\'ve already filed — not aspirational claims.' },
+  { name: 'Specialist Professional Services', body: 'Training, comms, research, audit, advisory — anywhere proposals are how you win the work in the first place.' },
 ];
 
 export default function Home() {
@@ -62,7 +62,7 @@ export default function Home() {
           <section className="min-h-[870px] flex flex-col items-center justify-center text-center px-6 py-24 bg-[#0f0e0c]">
             <div className="inline-flex items-center space-x-3 mb-8 px-4 py-1.5 bg-surface-container rounded-full border border-outline-variant/20">
               <span className="w-1.5 h-1.5 bg-primary rounded-full" />
-              <span className="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant">AI-Powered Bid Intelligence</span>
+              <span className="font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant">For teams that bid for a living</span>
             </div>
             <h1 className="font-headline text-5xl md:text-7xl leading-[1.1] max-w-4xl tracking-tight mb-8">
               Your institutional knowledge,
@@ -74,11 +74,11 @@ export default function Home() {
             </p>
             <div className="flex flex-col md:flex-row gap-6">
               <Link href="/get-access" className="bg-primary-container text-on-primary-container px-10 py-4 font-bold tracking-tight hover:brightness-110 transition-all flex items-center justify-center group">
-                Request Access
+                Try it on your next RFP
                 <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
               </Link>
               <Link href="/how-it-works" className="border border-outline/30 text-on-surface-variant px-10 py-4 font-bold tracking-tight hover:bg-surface-container-high transition-all text-center">
-                See How It Works
+                See what changes for your team
               </Link>
             </div>
           </section>
@@ -115,16 +115,15 @@ export default function Home() {
           {/* ── FINAL CTA ────────────────────────────────────────────────── */}
           <section className="py-40 px-6 bg-[#0f0e0c] text-center relative overflow-hidden">
             <div className="relative z-10 max-w-4xl mx-auto">
-              <h2 className="font-headline text-5xl md:text-6xl mb-12">Ready to start winning more?</h2>
+              <h2 className="font-headline text-5xl md:text-6xl mb-12">Test it on a real RFP this week.</h2>
               <div className="flex flex-col md:flex-row justify-center gap-6">
                 <Link href="/get-access" className="bg-primary text-on-primary px-12 py-5 font-bold tracking-tight text-lg transition-transform active:scale-95 text-center">
-                  Request Institutional Access
+                  Get your first scan
                 </Link>
                 <Link href="/get-access" className="border border-outline/30 text-on-surface-variant px-12 py-5 font-bold tracking-tight text-lg hover:bg-surface-container-high transition-all text-center">
-                  Schedule a Consultation
+                  Talk to us
                 </Link>
               </div>
-              <p className="mt-12 font-label text-[10px] uppercase tracking-[0.3em] text-[#6b6456]">Limited availability for Q1 cohort</p>
             </div>
             <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
               <span className="font-headline italic text-[30vw] whitespace-nowrap">Proposals Done Right</span>
