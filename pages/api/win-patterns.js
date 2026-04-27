@@ -23,10 +23,16 @@ const DATA_DIR = path.join(process.cwd(), 'data');
 const CACHE_TTL_MS = 6 * 3600 * 1000;
 // Bump when the response shape changes so the client never receives an
 // old payload that's missing keys it depends on.
-const CACHE_VERSION = 2;
+// Bumped from 2 → 3 when Wave 6 Phase 2 tenant-scoping shipped. The
+// cache files from version 2 (when the query was unscoped) leaked one
+// tenant's bySector to others, and stale empty caches from members
+// without projects masked admin's real data. Bumping invalidates all
+// existing files; the new path also keys by userId so caches no longer
+// share across tenants.
+const CACHE_VERSION = 3;
 
 function cachePath(scope, userId) {
-  const safeId = (userId || 'global').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const safeId = (userId || 'anonymous').replace(/[^a-zA-Z0-9_-]/g, '_');
   return path.join(DATA_DIR, `win_patterns_cache_${scope}_${safeId}.json`);
 }
 
@@ -102,7 +108,12 @@ async function handler(req, res) {
     scope = 'repository';
   }
 
-  const file = cachePath(scope, scope === 'workspace' ? userId : null);
+  // Always key the cache by userId — Wave 6 Phase 2 tenant scoping means
+  // each user's bySector / by_client / by_industry are different (admin
+  // sees everything; members see only their own). Sharing the file across
+  // users (the pre-Wave 6 behaviour) leaks data and silently caches stale
+  // empty results for whichever tenant happened to load first.
+  const file = cachePath(scope, userId);
   if (forceRefresh) { try { fs.unlinkSync(file); } catch {} }
 
   const cached = readCache(file);
