@@ -3,7 +3,9 @@ import { requireAuth } from '../../../lib/auth';
 import { generateInsightPlaybook } from '../../../lib/gemini';
 import { safe } from '../../../lib/embeddings';
 import { systemPct } from '../../../lib/rating';
-import { scope } from '../../../lib/tenancy';
+// Aliased — the handler uses a local `let scope = 'workspace'|'repository'`
+// string that shadowed this import, causing TypeError silently caught.
+import { scope as tenantScope } from '../../../lib/tenancy';
 
 // POST /api/win-patterns/playbook
 // Body: { scope?: 'workspace'|'repository', weakness: { title, evidence, remedy } }
@@ -59,7 +61,7 @@ async function handler(req, res) {
 
   let wonProjects = [];
   try {
-    const t = scope(req.user);
+    const t = tenantScope(req.user);
     wonProjects = db.prepare(
       `SELECT id, name, client, sector, contract_value, user_rating, ai_metadata, service_industry, client_industry, description FROM projects WHERE outcome = 'won' AND indexing_status = 'complete'${t.clause}`
     ).all(...t.params).map(p => ({ ...p, ai_metadata: safe(p.ai_metadata, {}) }));
@@ -86,7 +88,7 @@ async function handler(req, res) {
   const refIds = new Set(ranked.map(p => p.id));
   let winningLanguage = [];
   try {
-    const ts = scope(req.user);
+    const ts = tenantScope(req.user);
     const rows = db.prepare(
       `SELECT winning_language FROM rfp_scans WHERE winning_language IS NOT NULL AND winning_language != '[]'${ts.clause} ORDER BY created_at DESC LIMIT 20`
     ).all(...ts.params);

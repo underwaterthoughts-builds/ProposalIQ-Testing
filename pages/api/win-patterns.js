@@ -2,7 +2,12 @@ import { getDb } from '../../lib/db';
 import { requireAuth } from '../../lib/auth';
 import { analyseWinPatterns } from '../../lib/gemini';
 import { safe } from '../../lib/embeddings';
-import { scope } from '../../lib/tenancy';
+// Import aliased — the handler uses a local `let scope = 'workspace'|'repository'`
+// string that previously shadowed this import, causing tenantScope(req.user) to
+// throw TypeError ("scope is not a function") which was silently caught and
+// returned empty data. Aliasing keeps the local string variable usable while
+// freeing this name for the tenancy helper.
+import { scope as tenantScope } from '../../lib/tenancy';
 import path from 'path';
 import fs from 'fs';
 
@@ -124,7 +129,7 @@ async function handler(req, res) {
 
   let allProjects = [];
   try {
-    const t = scope(req.user);
+    const t = tenantScope(req.user);
     allProjects = db.prepare(
       `SELECT id, name, client, outcome, sector, contract_value, currency, user_rating, ai_metadata, kqs_composite, lh_status, service_industry, client_industry, date_submitted FROM projects WHERE indexing_status = 'complete'${t.clause}`
     ).all(...t.params).map(p => ({ ...p, ai_metadata: safe(p.ai_metadata, {}) }));
@@ -204,7 +209,7 @@ async function handler(req, res) {
   // signal to cluster obvious repeats without a second AI pass.
   let frequentGaps = [];
   try {
-    const ts = scope(req.user);
+    const ts = tenantScope(req.user);
     const scanRows = db.prepare(`SELECT gaps FROM rfp_scans WHERE gaps IS NOT NULL AND gaps != '[]' AND status IN ('complete', 'fast_ready', 'deep_failed')${ts.clause}`).all(...ts.params);
     const gapFreq = {};
     for (const row of scanRows) {
@@ -251,7 +256,7 @@ async function handler(req, res) {
   try {
     const scopeFilter = workspaceIds ? ` AND p.id IN (${[...workspaceIds].map(() => '?').join(',')})` : '';
     const params = workspaceIds ? [...workspaceIds] : [];
-    const tt = scope(req.user, 'p.owner_user_id');
+    const tt = tenantScope(req.user, 'p.owner_user_id');
     const rows = db.prepare(`
       SELECT tm.id, tm.name, tm.title, p.outcome, COUNT(*) as appearances
       FROM project_team pt
