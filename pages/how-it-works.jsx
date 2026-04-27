@@ -36,7 +36,7 @@ export default function HowItWorks() {
           {/* ── HERO ─────────────────────────────────────────────────────── */}
           <section className="relative min-h-[716px] flex items-center px-8 md:px-24 overflow-hidden bg-surface">
             <div className="max-w-4xl z-10">
-              <span className="font-label text-primary text-xs uppercase tracking-[0.3em] mb-6 block">The ProposalIQ Protocol</span>
+              <span className="font-label text-primary text-xs uppercase tracking-[0.3em] mb-6 block">How ProposalIQ works</span>
               <h1 className="font-headline text-6xl md:text-8xl font-light tracking-tighter leading-none mb-8">
                 From RFP to recommendation in <span className="font-headline italic text-primary">60 seconds.</span>
               </h1>
@@ -44,161 +44,138 @@ export default function HowItWorks() {
                 ProposalIQ is not a template engine. It is a strategic intelligence layer that dissects complex procurement requirements and synthesizes winning responses with the precision of a master architect.
               </p>
               <div className="flex gap-4">
-                <Link href="/get-access" className="bg-primary text-on-primary px-10 py-4 font-bold tracking-tight text-lg active:scale-95 duration-200">Initiate Protocol</Link>
+                <Link href="/get-access" className="bg-primary text-on-primary px-10 py-4 font-bold tracking-tight text-lg active:scale-95 duration-200">Try it on your next RFP</Link>
               </div>
             </div>
             <div className="absolute right-[-10%] top-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-outline-variant/20 rounded-full opacity-20 pointer-events-none" />
             <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
           </section>
 
-          {/* ── VERTICAL NARRATIVE JOURNEY ────────────────────────────────── */}
+          {/* ── FIVE STEPS THE USER ACTUALLY SEES ────────────────────────── */}
           <section className="py-32 px-8 md:px-24 bg-surface-container-lowest">
             <div className="max-w-screen-xl mx-auto">
               <div className="grid grid-cols-12 gap-12 mb-24">
-                <div className="col-span-12 md:col-span-5">
-                  <h2 className="font-headline text-4xl md:text-5xl font-medium tracking-tight">The Ten-Step Descent</h2>
+                <div className="col-span-12 md:col-span-7">
+                  <h2 className="font-headline text-4xl md:text-5xl font-medium tracking-tight">Five steps from upload to decision</h2>
                   <p className="font-body text-on-surface-variant mt-6 text-lg leading-relaxed">
-                    A linear sequence of ProposalIQ intelligence, transforming raw data into high-stakes strategic assets. No friction, only momentum.
+                    The pipeline behind ProposalIQ is twelve internal steps; what you actually see and act on is five. Each one returns a concrete artefact you could take to a partner meeting and defend.
                   </p>
                 </div>
               </div>
 
-              <div className="relative space-y-32">
-                {/* Progress line */}
+              <div className="relative space-y-24">
                 <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-[1px] bg-outline-variant/30 hidden md:block" />
 
-                {/* Step 1 — Ingestion */}
-                <div className="relative grid grid-cols-12 gap-8 items-center">
-                  <div className="col-span-12 md:col-span-5 md:text-right">
-                    <span className="font-label text-primary-container text-sm">01. INGESTION</span>
-                    <h3 className="font-headline text-3xl mt-2">Document Sovereignty</h3>
-                    <p className="font-body text-on-surface-variant mt-4">Upload your RFP. Our system creates a secure, air-gapped environment for your proprietary data.</p>
-                  </div>
-                  <div className="hidden md:flex col-span-2 justify-center z-10">
-                    <div className="w-10 h-10 bg-surface-container-highest border border-primary flex items-center justify-center">
-                      <span className="material-symbols-outlined text-primary text-sm">upload_file</span>
+                {[
+                  {
+                    num: '01',
+                    label: 'UPLOAD',
+                    icon: 'upload_file',
+                    h: 'Upload an RFP',
+                    b: 'PDF, DOCX, or paste. The system parses the brief into requirements and themes in seconds. Your data stays inside your tenant; no cross-customer training.',
+                  },
+                  {
+                    num: '02',
+                    label: 'QUICK VERDICT (≈60s)',
+                    icon: 'bolt',
+                    h: 'Bid / Conditional Bid / No Bid',
+                    b: 'Top matches from your repository, a confidence score, and a short rationale grounded in your past work. Enough signal to triage the opportunity-list call before any real bid hours go in.',
+                  },
+                  {
+                    num: '03',
+                    label: 'DEEP PASS (≈3 min)',
+                    icon: 'analytics',
+                    h: 'Full intelligence pack',
+                    b: 'Opportunity gaps the RFP demands but your archive doesn\'t evidence yet. Win strategy. Winning-language library mined from your own past wins. Suggested team. Indicative budget breakdown. A sanity-check pass on the matches.',
+                  },
+                  {
+                    num: '04',
+                    label: 'SECTION DRAFTS',
+                    icon: 'edit_document',
+                    h: 'Drafts on demand, sourced from your repository',
+                    b: 'Generate any section of the response. The system flags [EVIDENCE NEEDED] markers rather than fabricating claims. A pre-delivery QA pass corrects the draft against contract rules before you ever see it.',
+                  },
+                  {
+                    num: '05',
+                    label: 'OUTCOME CAPTURE',
+                    icon: 'flag',
+                    h: 'Tell it what happened',
+                    b: 'Won, lost, no-bid, withdrawn. Future scans weight matches toward the projects that actually convert in your hands. Every bid makes the next decision sharper.',
+                  },
+                ].map((step, i) => (
+                  <div key={step.num} className={`relative grid grid-cols-12 gap-8 items-center`}>
+                    <div className={`col-span-12 md:col-span-5 ${i % 2 === 0 ? 'md:text-right' : 'md:order-3'}`}>
+                      <span className="font-label text-primary-container text-sm">{step.num}. {step.label}</span>
+                      <h3 className="font-headline text-3xl mt-2">{step.h}</h3>
+                      <p className="font-body text-on-surface-variant mt-4">{step.b}</p>
                     </div>
-                  </div>
-                  <div className="col-span-12 md:col-span-5">
-                    <div className="bg-surface-container-high aspect-video overflow-hidden">
-                      <img
-                        alt="Data upload to secure cloud infrastructure"
-                        className="w-full h-full object-cover opacity-60"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbTQqLxhbje2aG2xA8U9DECKgio5BMlpIHILEHkzi5N68uyNzt1pE5xld2lFP4OiGOPGBqQ_g_G0y9VuujeO9M233kMeGYxBDaesFaT4MDmdIwkGHAhVVB0cfbCgG-A0AaRxauVToW9G2wUrqo7AV6BTvWZsjrTx0GY41gY1V20PDvHhsdnFaZTwf8fIDSinEpfsId8DEVzOb9O68anb1Aa9wrJorb3dLprPJhc8-wztOq0iUGYUiwcbQPyP47b653R6OZPeYqAyw"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 2 — Dissection */}
-                <div className="relative grid grid-cols-12 gap-8 items-center">
-                  <div className="col-span-12 md:col-span-5 order-2 md:order-1">
-                    <div className="bg-surface-container-high aspect-video overflow-hidden">
-                      <img
-                        alt="Data extraction and mapping visualization"
-                        className="w-full h-full object-cover opacity-60"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5KHV193ec6T1E1ouPWMuQWyCz2TdgGep_wRaT7JXrcPlLuec2Poim7ZXP547C4koCjQ1Ush0kOntfvMejCtb9VgA5HNDWBySrELq_6iPqVrkMln3WScdvlEVEZKlDWQAjmP4Is6g6T_HQqpM0NVaQZ1GAUVFhRIlggFmOPMdZTe0NLVP7ChWpNPeQSezRjcrXaxAcfa8FGXZ-oSTIDCNC7_L0CaladP4xLabWU_H9iRmjtU2qeFHYI3WKQSTfsruLA_VBVCp2cmQ"
-                      />
-                    </div>
-                  </div>
-                  <div className="hidden md:flex col-span-2 justify-center z-10 order-1 md:order-2">
-                    <div className="w-10 h-10 bg-surface-container-highest border border-primary flex items-center justify-center">
-                      <span className="material-symbols-outlined text-primary text-sm">analytics</span>
-                    </div>
-                  </div>
-                  <div className="col-span-12 md:col-span-5 order-3">
-                    <span className="font-label text-primary-container text-sm">02. DISSECTION</span>
-                    <h3 className="font-headline text-3xl mt-2">Core Requirement Mapping</h3>
-                    <p className="font-body text-on-surface-variant mt-4">ProposalIQ extracts 200+ data points, identifying hidden constraints and mandatory compliance nodes.</p>
-                  </div>
-                </div>
-
-                {/* Steps 3-9 summary */}
-                <div className="col-span-12 flex justify-center py-12">
-                  <div className="text-center max-w-lg">
-                    <span className="material-symbols-outlined text-primary-container text-4xl mb-6">more_vert</span>
-                    <p className="font-body text-on-surface-variant italic">The journey continues through Semantic Alignment, Competitive Benchmarking, Resource Optimization, and more...</p>
-                  </div>
-                </div>
-
-                {/* Step 10 — Manifestation */}
-                <div className="relative grid grid-cols-12 gap-8 items-center">
-                  <div className="col-span-12 md:col-span-5 md:text-right">
-                    <span className="font-label text-primary-container text-sm">10. MANIFESTATION</span>
-                    <h3 className="font-headline text-3xl mt-2">The ProposalIQ Draft</h3>
-                    <p className="font-body text-on-surface-variant mt-4">Receive a comprehensive, formatted, and ready-to-submit proposal that exceeds every stated requirement.</p>
-                  </div>
-                  <div className="hidden md:flex col-span-2 justify-center z-10">
-                    <div className="w-12 h-12 bg-primary flex items-center justify-center">
-                      <span className="material-symbols-outlined text-on-primary">auto_awesome</span>
-                    </div>
-                  </div>
-                  <div className="col-span-12 md:col-span-5">
-                    <div className="bg-surface-container-high p-8 flex flex-col items-center justify-center border border-primary/20">
-                      <span className="material-symbols-outlined text-primary text-5xl mb-4">description</span>
-                      <div className="w-full h-2 bg-primary/10 rounded-full overflow-hidden">
-                        <div className="w-full h-full bg-primary" />
+                    <div className={`hidden md:flex col-span-2 justify-center z-10 ${i % 2 === 0 ? '' : 'md:order-2'}`}>
+                      <div className="w-10 h-10 bg-surface-container-highest border border-primary flex items-center justify-center">
+                        <span className="material-symbols-outlined text-primary text-sm">{step.icon}</span>
                       </div>
-                      <span className="font-label text-xs mt-4 uppercase tracking-widest">Protocol 100% Complete</span>
+                    </div>
+                    <div className={`col-span-12 md:col-span-5 ${i % 2 === 0 ? '' : 'md:order-1'}`}>
+                      <div className="bg-surface-container-high p-8 flex flex-col justify-center border border-primary/10 aspect-video">
+                        <span className="material-symbols-outlined text-primary/40 text-6xl mb-4">{step.icon}</span>
+                        <span className="font-label text-[10px] text-on-surface-variant uppercase tracking-[0.2em]">Step {step.num} artefact</span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
           </section>
 
-          {/* ── TWO WAYS TO USE IT ───────────────────────────────────────── */}
+          {/* ── TWO MODES ────────────────────────────────────────────────── */}
           <section className="py-32 px-8 md:px-24 bg-surface">
             <div className="max-w-screen-xl mx-auto">
               <div className="text-center mb-24">
-                <h2 className="font-headline text-5xl mb-6">Choose Your Velocity</h2>
-                <p className="font-body text-on-surface-variant max-w-xl mx-auto">Two distinct operating modes designed for different scales of ambition.</p>
+                <h2 className="font-headline text-5xl mb-6">Pick the right depth for the moment</h2>
+                <p className="font-body text-on-surface-variant max-w-xl mx-auto">Two modes for two different jobs: the bid/no-bid triage call, and the bid you've decided to commit to.</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
-                {/* Quick Mode */}
+                {/* Quick scan */}
                 <div className="bg-surface-container-low p-16 flex flex-col justify-between group hover:bg-surface-container-high transition-all duration-500">
                   <div>
-                    <span className="font-label text-on-surface-variant/60 text-xs tracking-[0.2em] uppercase">Mode Alpha</span>
-                    <h3 className="font-headline text-4xl mt-8 mb-6">ProposalIQ Quick</h3>
+                    <span className="font-label text-on-surface-variant/60 text-xs tracking-[0.2em] uppercase">≈60 seconds</span>
+                    <h3 className="font-headline text-4xl mt-8 mb-6">Quick scan</h3>
                     <ul className="space-y-6 mb-12">
                       <li className="flex items-start gap-4">
                         <span className="material-symbols-outlined text-primary text-xl">bolt</span>
-                        <span className="font-body text-on-surface-variant">Instant response generation from minimal inputs.</span>
+                        <span className="font-body text-on-surface-variant">Verdict + confidence score in under a minute.</span>
                       </li>
                       <li className="flex items-start gap-4">
                         <span className="material-symbols-outlined text-primary text-xl">check_circle</span>
-                        <span className="font-body text-on-surface-variant">Standardized compliance checking.</span>
+                        <span className="font-body text-on-surface-variant">Top 5 matched proposals from your repository.</span>
                       </li>
                       <li className="flex items-start gap-4">
                         <span className="material-symbols-outlined text-primary text-xl">timer</span>
-                        <span className="font-body text-on-surface-variant">Best for turnarounds under 24 hours.</span>
+                        <span className="font-body text-on-surface-variant">Best for the bid/no-bid triage call.</span>
                       </li>
                     </ul>
                   </div>
-                  <button className="border border-outline/30 text-on-surface py-4 font-bold tracking-tight hover:border-primary hover:text-primary transition-all">Explore Alpha</button>
                 </div>
 
-                {/* Pro Mode */}
+                {/* Deep scan */}
                 <div className="bg-surface-container-lowest p-16 flex flex-col justify-between border-l border-outline-variant/10 group hover:bg-surface-container-low transition-all duration-500">
                   <div>
-                    <span className="font-label text-primary text-xs tracking-[0.2em] uppercase">Mode Omega</span>
-                    <h3 className="font-headline text-4xl mt-8 mb-6">ProposalIQ Pro</h3>
+                    <span className="font-label text-primary text-xs tracking-[0.2em] uppercase">≈3 minutes</span>
+                    <h3 className="font-headline text-4xl mt-8 mb-6">Deep scan</h3>
                     <ul className="space-y-6 mb-12">
                       <li className="flex items-start gap-4">
                         <span className="material-symbols-outlined text-primary text-xl">architecture</span>
-                        <span className="font-body text-on-surface-variant">Custom multi-stage strategic modeling.</span>
+                        <span className="font-body text-on-surface-variant">Opportunity gaps, win strategy, suggested approach with budget.</span>
                       </li>
                       <li className="flex items-start gap-4">
                         <span className="material-symbols-outlined text-primary text-xl">psychology</span>
-                        <span className="font-body text-on-surface-variant">Deep knowledge-base integration.</span>
+                        <span className="font-body text-on-surface-variant">Winning-language library mined from your past wins.</span>
                       </li>
                       <li className="flex items-start gap-4">
                         <span className="material-symbols-outlined text-primary text-xl">shield</span>
-                        <span className="font-body text-on-surface-variant">Advanced security and administrative controls.</span>
+                        <span className="font-body text-on-surface-variant">Suggested team + sanity-check on top matches.</span>
                       </li>
                     </ul>
                   </div>
-                  <button className="bg-primary text-on-primary py-4 font-bold tracking-tight hover:opacity-90 transition-all">Commission Omega</button>
                 </div>
               </div>
             </div>
@@ -209,28 +186,18 @@ export default function HowItWorks() {
             <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row gap-24">
               <div className="flex-1">
                 <h2 className="font-headline text-5xl mb-8 leading-tight">
-                  The Onboarding <br />
-                  <span className="font-headline italic">Constitution</span>
+                  Getting <br />
+                  <span className="font-headline italic">started</span>
                 </h2>
                 <p className="font-body text-on-surface-variant text-lg leading-relaxed mb-12">
-                  We do not simply provide software; we provide a partnership in excellence. Transitioning your bid operations to ProposalIQ is a measured, high-touch process.
+                  No multi-week implementation. The fastest way to evaluate ProposalIQ is to load your repository, scan a real RFP you've already submitted, and compare what the system flags vs what actually happened.
                 </p>
-                <div className="grid grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <span className="font-headline text-3xl text-primary">0%</span>
-                    <p className="font-label text-[10px] uppercase tracking-widest">Transition Friction</p>
-                  </div>
-                  <div className="space-y-2">
-                    <span className="font-headline text-3xl text-primary">24h</span>
-                    <p className="font-label text-[10px] uppercase tracking-widest">Setup Latency</p>
-                  </div>
-                </div>
               </div>
               <div className="flex-1 space-y-12">
                 {[
-                  { num: 'I.', h: 'Technical Alignment', b: 'A session with our architects to map your current workflows and secure document silos.' },
-                  { num: 'II.', h: 'Knowledge Harvest', b: 'Importing your successful past bids to train the intelligence on your specific voice and expertise.' },
-                  { num: 'III.', h: 'Pilot Execution', b: 'Running your first RFP through the protocol with a dedicated strategist overseeing the output.' },
+                  { num: 'I.', h: 'Upload your repository', b: 'Past proposals (won, lost, withdrawn), CVs, rate cards. We parse and tag each one automatically using a two-axis taxonomy; you correct anything that\'s wrong.' },
+                  { num: 'II.', h: 'Confirm what you offer', b: 'A quick website scan suggests your service offerings; you trim or add. This becomes the canonical filter for what counts as in-scope when an RFP arrives.' },
+                  { num: 'III.', h: 'First scan', b: 'Drop in a real RFP — ideally one you\'ve already submitted. Compare what ProposalIQ would have flagged against what actually happened. The honesty of the answer is the proof.' },
                 ].map(step => (
                   <div key={step.num} className="flex gap-8 group">
                     <div className="font-label text-outline-variant group-hover:text-primary transition-colors text-xl">{step.num}</div>
@@ -248,10 +215,10 @@ export default function HowItWorks() {
           <section className="py-32 px-8 flex justify-center bg-surface relative overflow-hidden">
             <div className="text-center z-10">
               <h2 className="font-headline text-6xl md:text-7xl tracking-tighter mb-12">
-                Command your <span className="font-headline italic">destiny.</span>
+                See it on your <span className="font-headline italic">archive.</span>
               </h2>
               <Link href="/get-access" className="inline-block bg-primary text-on-primary px-16 py-6 text-xl font-bold tracking-tight active:scale-95 duration-200">
-                Request Access to ProposalIQ
+                Get your first scan
               </Link>
             </div>
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent opacity-50" />
