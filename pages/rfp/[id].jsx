@@ -2071,14 +2071,9 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
       setFullProposal(d.proposal);
       setFullProposalText(d.proposal);
       setCoverageReport(d.coverage || null);
-      setFullProposalQa({
-        count: d.qa_adjustments_count || 0,
-        adjustments: d.qa_adjustments || [],
-        consistencyFlags: d.consistency_flags || [],
-      });
+      setFullProposalQa({ count: d.qa_adjustments_count || 0, adjustments: d.qa_adjustments || [] });
       const qaNote = d.qa_adjustments_count ? ` · ${d.qa_adjustments_count} QA adjustment${d.qa_adjustments_count === 1 ? '' : 's'} applied` : '';
-      const flagNote = (d.consistency_flags || []).length ? ` · ${d.consistency_flags.length} cross-section flag${d.consistency_flags.length === 1 ? '' : 's'} for review` : '';
-      onToast(`✓ Full proposal draft ready${qaNote}${flagNote}`);
+      onToast(`✓ Full proposal draft ready${qaNote}`);
     } catch (e) {
       onToast('Generation failed: ' + e.message);
     }
@@ -2623,33 +2618,6 @@ const ExecutiveBrief = memo(function ExecutiveBrief({ brief, bidScore, matches, 
           </div>
         </div>
       </section>
-
-      {/* ── SECOND OPINION (Wave 6 / Tier 1 #3) ───────────────────
-          Cross-model adversarial review of the verdict. Renders
-          only when Claude is configured AND disagrees / partially
-          disagrees with the primary brief. Agreement is silent. */}
-      {brief.second_opinion?.agreement && brief.second_opinion.agreement !== 'agree' && (
-        <section className="mb-12">
-          <div className="border-l-2 border-secondary bg-secondary/5 px-6 py-5">
-            <div className="flex items-baseline gap-3 mb-2 flex-wrap">
-              <span className="font-label text-[10px] uppercase tracking-widest text-secondary">
-                Second opinion · {brief.second_opinion.agreement === 'disagree' ? 'disagrees' : 'partially disagrees'}
-              </span>
-              {brief.second_opinion.model && (
-                <span className="font-label text-[10px] text-outline">{brief.second_opinion.model}</span>
-              )}
-            </div>
-            <p className="font-body text-sm text-on-surface leading-relaxed mb-3">
-              {brief.second_opinion.rationale}
-            </p>
-            {brief.second_opinion.underweighted_risk && brief.second_opinion.underweighted_risk !== 'null' && (
-              <p className="font-body text-xs text-on-surface-variant italic">
-                Underweighted risk: {brief.second_opinion.underweighted_risk}
-              </p>
-            )}
-          </div>
-        </section>
-      )}
 
       {/* ── WINNING THESIS + FIT ASSESSMENT ─────────────────────── */}
       {(brief.winning_thesis_one_liner || brief.are_we_a_strong_fit || brief.what_this_brief_is_really_asking_for) && (

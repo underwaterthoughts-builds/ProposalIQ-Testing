@@ -104,7 +104,6 @@ async function handler(req, res) {
   const finalProposal = result.text;
   const qaAdjustments = result.qa_adjustments || [];
   const qaCount = result.qa_adjustments_count || qaAdjustments.length;
-  const consistencyFlags = result.consistency_flags || [];
 
   logUsageEvent({
     scanId: id,
@@ -115,7 +114,6 @@ async function handler(req, res) {
       length: finalProposal.length,
       qa_adjustments_count: qaCount,
       sections: (result.sections || []).length,
-      consistency_flags_count: consistencyFlags.length,
     },
     userId: req.user?.id || null,
   }, db);
@@ -124,8 +122,6 @@ async function handler(req, res) {
     proposal: finalProposal,
     qa_adjustments_count: qaCount,
     qa_adjustments: qaAdjustments,
-    consistency_flags: consistencyFlags,
-    consistency_flags_count: consistencyFlags.length,
   });
 }
 
