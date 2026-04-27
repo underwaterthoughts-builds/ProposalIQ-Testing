@@ -751,12 +751,12 @@ function MemberModal({ member: m, onClose, onSaved, onToast }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(15,14,12,.65)', backdropFilter: 'blur(4px)' }}>
-      <div className="w-full max-w-lg bg-white rounded-xl overflow-hidden shadow-2xl flex flex-col" style={{ maxHeight: '90vh' }}>
-        <div className="px-6 py-4 border-b flex items-center justify-between flex-shrink-0" style={{ background: 'linear-gradient(135deg, #1e4a52, #2d6b78)' }}>
+      <div className="w-full max-w-lg bg-surface-container rounded-xl overflow-hidden shadow-2xl flex flex-col border border-outline-variant/20" style={{ maxHeight: '90vh' }}>
+        <div className="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between flex-shrink-0" style={{ background: 'linear-gradient(135deg, #1e4a52, #2d6b78)' }}>
           <h2 className="font-serif text-lg text-white">{m ? 'Edit Team Member' : 'Add Team Member'}</h2>
           <button onClick={onClose} className="w-7 h-7 rounded flex items-center justify-center text-white/60 hover:text-white text-sm">✕</button>
         </div>
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+        <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-surface-container">
           <div className="grid grid-cols-2 gap-3">
             <Input label="Full Name" required value={form.name} onChange={e => f('name', e.target.value)} />
             <Input label="Job Title" required value={form.title} onChange={e => f('title', e.target.value)} />
@@ -770,55 +770,55 @@ function MemberModal({ member: m, onClose, onSaved, onToast }) {
             {AVAILS.map(a => <option key={a}>{a}</option>)}
           </Select>
           <div>
-            <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{ color: '#6b6456' }}>Specialisms — Enter to add</label>
-            <div className="flex flex-wrap gap-1.5 p-2.5 border rounded-md min-h-[42px]" style={{ borderColor: '#ddd5c4' }}>
+            <label className="block text-[10px] font-label uppercase tracking-widest mb-2 text-on-surface-variant">Specialisms — Enter to add</label>
+            <div className="flex flex-wrap gap-1.5 p-2.5 border border-outline-variant/30 rounded-md min-h-[42px] bg-surface-container-lowest">
               {form.stated_specialisms.map(s => (
-                <span key={s} className="flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded" style={{ background: '#e8f2f4', color: '#1e4a52' }}>
+                <span key={s} className="flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded bg-primary/10 text-primary">
                   {s}<button type="button" onClick={() => f('stated_specialisms', form.stated_specialisms.filter(x => x !== s))} className="opacity-60 hover:opacity-100">✕</button>
                 </span>
               ))}
               <input value={specInput} onChange={e => setSpecInput(e.target.value)} onKeyDown={addSpec}
-                placeholder="Type a specialism…" className="flex-1 min-w-24 text-xs outline-none bg-transparent" />
+                placeholder="Type a specialism…" className="flex-1 min-w-24 text-xs outline-none bg-transparent text-on-surface placeholder:text-outline" />
             </div>
           </div>
           <Input label="Key Sectors" value={form.stated_sectors} onChange={e => f('stated_sectors', e.target.value)} />
           <Textarea label="Background / Bio" rows={2} value={form.bio} onChange={e => f('bio', e.target.value)} />
           <div>
-            <label className="block text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{ color: '#6b6456' }}>CV / Bio Document</label>
+            <label className="block text-[10px] font-label uppercase tracking-widest mb-2 text-on-surface-variant">CV / Bio Document</label>
             <input type="file" ref={cvRef} className="hidden" accept=".pdf,.docx,.doc,.txt" onChange={e => { if (e.target.files[0]) handleCvSelect(e.target.files[0]); }} />
-            <div className={`rounded-lg p-3 border ${cvResult || pendingCvFile ? 'border-teal/30' : 'border-[#ddd5c4]'}`} style={{ background: '#f8f6f2' }}>
+            <div className={`rounded-lg p-3 border bg-surface-container-lowest ${cvResult || pendingCvFile ? 'border-primary/30' : 'border-outline-variant/30'}`}>
               {uploadingCv ? (
-                <div className="flex items-center gap-2 text-sm"><Spinner size={14} /> Analysing CV…</div>
+                <div className="flex items-center gap-2 text-sm text-on-surface"><Spinner size={14} /> Analysing CV…</div>
               ) : cvResult && Object.keys(cvResult).length > 0 ? (
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold" style={{ color: '#1e4a52' }}>✓ CV Analysed</span>
-                    <button type="button" onClick={() => cvRef.current?.click()} className="text-[10px]" style={{ color: '#6b6456' }}>Replace</button>
+                    <span className="text-xs font-semibold text-primary">✓ CV Analysed</span>
+                    <button type="button" onClick={() => cvRef.current?.click()} className="text-[10px] text-on-surface-variant hover:text-on-surface">Replace</button>
                   </div>
-                  {cvResult.career_summary && <p className="text-xs mb-1" style={{ color: '#6b6456' }}>{cvResult.career_summary}</p>}
+                  {cvResult.career_summary && <p className="text-xs mb-1 text-on-surface-variant">{cvResult.career_summary}</p>}
                 </div>
               ) : pendingCvFile ? (
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-xs font-semibold" style={{ color: '#1e4a52' }}>◉ {pendingCvFile.name}</div>
-                    <div className="text-[10px]" style={{ color: '#6b6456' }}>Will be uploaded and analysed when you save</div>
+                    <div className="text-xs font-semibold text-primary">◉ {pendingCvFile.name}</div>
+                    <div className="text-[10px] text-on-surface-variant">Will be uploaded and analysed when you save</div>
                   </div>
-                  <button type="button" onClick={() => { setPendingCvFile(null); }} className="text-[10px]" style={{ color: '#6b6456' }}>Remove</button>
+                  <button type="button" onClick={() => { setPendingCvFile(null); }} className="text-[10px] text-on-surface-variant hover:text-on-surface">Remove</button>
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-xs font-medium mb-0.5">Upload CV or bio</div>
-                    <div className="text-[10px]" style={{ color: '#6b6456' }}>PDF or DOCX · skills extracted automatically</div>
+                    <div className="text-xs font-medium mb-0.5 text-on-surface">Upload CV or bio</div>
+                    <div className="text-[10px] text-on-surface-variant">PDF or DOCX · skills extracted automatically</div>
                   </div>
                   <Btn variant="ghost" size="sm" onClick={() => cvRef.current?.click()}>Browse</Btn>
                 </div>
               )}
             </div>
           </div>
-          {error && <p className="text-sm text-red-500 bg-red-50 rounded p-3">{error}</p>}
+          {error && <p className="text-sm text-error bg-error-container/20 border border-error-container/40 rounded p-3">{error}</p>}
         </div>
-        <div className="flex items-center justify-end gap-3 px-5 py-4 border-t flex-shrink-0" style={{ borderColor: '#ddd5c4' }}>
+        <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-outline-variant/20 flex-shrink-0 bg-surface-container">
           <Btn variant="ghost" onClick={onClose}>Cancel</Btn>
           <Btn variant="teal" onClick={save} disabled={saving}>{saving ? <><Spinner size={12} /> Saving…</> : m ? 'Save Changes' : 'Add Member'}</Btn>
         </div>
