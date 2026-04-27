@@ -169,9 +169,19 @@ async function handler(req, res) {
   };
 
   // ── Quality scores ──────────────────────────────────────────────────────
+  // overall_score is documented as 0-100 in the AI extraction schema, but
+  // older rows can have it stored as a string ("85") rather than a number.
+  // Without an explicit Number() cast, reduce((a,b) => a+b, 0) starts as
+  // 0 + "85" → "085" (string concat), and the running sum becomes a giant
+  // string. The final division coerces that to scientific notation
+  // (2.5e+29), which is what was rendered on the dashboard. Cast first;
+  // bounds-check 0-100 to defensively reject any malformed AI output too.
   const avgScore = (projects, key) => {
-    const vals = projects.map(p => p.ai_metadata?.[key]?.overall_score).filter(v => v > 0);
-    return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+    const vals = projects
+      .map(p => Number(p.ai_metadata?.[key]?.overall_score))
+      .filter(v => Number.isFinite(v) && v > 0 && v <= 100);
+    if (!vals.length) return null;
+    return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
   };
   const wonScores = won.length ? { writing: avgScore(won, 'writing_quality'), approach: avgScore(won, 'approach_quality'), credibility: avgScore(won, 'credibility_signals') } : null;
   const lostScores = lost.length ? { writing: avgScore(lost, 'writing_quality'), approach: avgScore(lost, 'approach_quality'), credibility: avgScore(lost, 'credibility_signals') } : null;

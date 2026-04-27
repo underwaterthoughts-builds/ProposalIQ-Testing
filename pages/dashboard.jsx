@@ -456,14 +456,9 @@ function IntelligenceMode({ projects, scans, patterns, winRate, won, lost }) {
         <div className="lg:col-span-8 bg-surface-container p-8 rounded-lg space-y-8">
           <div className="flex justify-between items-end border-b border-outline-variant/20 pb-4">
             <h3 className="font-headline text-3xl font-semibold">Win Patterns</h3>
-            <div className="flex gap-4">
-              <span className="flex items-center gap-1 text-[10px] font-label text-on-surface-variant">
-                <div className="w-2 h-2 bg-primary" /> Current
-              </span>
-              <span className="flex items-center gap-1 text-[10px] font-label text-on-surface-variant">
-                <div className="w-2 h-2 bg-outline" /> Benchmark
-              </span>
-            </div>
+            <span className="flex items-center gap-1 text-[10px] font-label text-on-surface-variant">
+              <div className="w-2 h-2 bg-primary" /> Current
+            </span>
           </div>
 
           {patternRows.length === 0 ? (
@@ -480,8 +475,7 @@ function IntelligenceMode({ projects, scans, patterns, winRate, won, lost }) {
             <div className="h-64 flex items-end justify-between gap-4">
               {patternRows.map(p => (
                 <div key={p.label} className="flex-1 space-y-2 group">
-                  <div className="relative h-60 flex flex-col justify-end gap-1">
-                    <div className="bg-outline/20 w-full rounded-t-sm" style={{ height: `${p.benchmark}%` }} />
+                  <div className="relative h-60 flex flex-col justify-end">
                     <div className="bg-primary w-full rounded-t-sm transition-all group-hover:bg-primary-container" style={{ height: `${p.current}%` }} />
                   </div>
                   <span className="font-label text-[9px] text-center block text-on-surface-variant uppercase truncate" title={p.label}>
