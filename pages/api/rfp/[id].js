@@ -75,7 +75,11 @@ function handler(req, res) {
     const rawMatches = safe(scan.matched_proposals, []).filter(p => !suppressed.has(p.id));
     // Wave 3 — load feedback stats once and stamp them on each match so
     // existing scans show "used in N winning bids" badges immediately.
-    const usageStats = getProjectUsageStats(db);
+    // Tenant-scoped: a member's "used in winning bids" badge counts only
+    // their own past scans, never another tenant's.
+    const { isAdmin } = require('../../../lib/tenancy');
+    const feedbackOwner = isAdmin(req.user) ? null : req.user.id;
+    const usageStats = getProjectUsageStats(db, feedbackOwner);
     const matchedProposals = rawMatches.map(p => {
       const tier = computeTier(p, rfpClient, rfpService);
       const stats = usageStats.get(p.id);
