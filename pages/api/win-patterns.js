@@ -2,6 +2,7 @@ import { getDb } from '../../lib/db';
 import { requireAuth } from '../../lib/auth';
 import { analyseWinPatterns } from '../../lib/gemini';
 import { safe } from '../../lib/embeddings';
+import { scope } from '../../lib/tenancy';
 import path from 'path';
 import fs from 'fs';
 
@@ -112,9 +113,10 @@ async function handler(req, res) {
 
   let allProjects = [];
   try {
+    const t = scope(req.user);
     allProjects = db.prepare(
-      "SELECT id, name, client, outcome, sector, contract_value, currency, user_rating, ai_metadata, kqs_composite, lh_status, service_industry, client_industry, date_submitted FROM projects WHERE indexing_status = 'complete'"
-    ).all().map(p => ({ ...p, ai_metadata: safe(p.ai_metadata, {}) }));
+      `SELECT id, name, client, outcome, sector, contract_value, currency, user_rating, ai_metadata, kqs_composite, lh_status, service_industry, client_industry, date_submitted FROM projects WHERE indexing_status = 'complete'${t.clause}`
+    ).all(...t.params).map(p => ({ ...p, ai_metadata: safe(p.ai_metadata, {}) }));
   } catch (e) {
     return res.status(200).json({ summary: { total: 0, won: 0, lost: 0, win_rate: 0 }, generated_at: new Date().toISOString(), scope });
   }
@@ -181,7 +183,8 @@ async function handler(req, res) {
   // signal to cluster obvious repeats without a second AI pass.
   let frequentGaps = [];
   try {
-    const scanRows = db.prepare("SELECT gaps FROM rfp_scans WHERE gaps IS NOT NULL AND gaps != '[]' AND status IN ('complete', 'fast_ready', 'deep_failed')").all();
+    const ts = scope(req.user);
+    const scanRows = db.prepare(`SELECT gaps FROM rfp_scans WHERE gaps IS NOT NULL AND gaps != '[]' AND status IN ('complete', 'fast_ready', 'deep_failed')${ts.clause}`).all(...ts.params);
     const gapFreq = {};
     for (const row of scanRows) {
       const gaps = safe(row.gaps, []);
@@ -227,14 +230,15 @@ async function handler(req, res) {
   try {
     const scopeFilter = workspaceIds ? ` AND p.id IN (${[...workspaceIds].map(() => '?').join(',')})` : '';
     const params = workspaceIds ? [...workspaceIds] : [];
+    const tt = scope(req.user, 'p.owner_user_id');
     const rows = db.prepare(`
       SELECT tm.id, tm.name, tm.title, p.outcome, COUNT(*) as appearances
       FROM project_team pt
       JOIN team_members tm ON tm.id = pt.member_id
       JOIN projects p ON p.id = pt.project_id
-      WHERE p.indexing_status = 'complete' AND p.outcome IN ('won', 'lost')${scopeFilter}
+      WHERE p.indexing_status = 'complete' AND p.outcome IN ('won', 'lost')${scopeFilter}${tt.clause}
       GROUP BY tm.id, p.outcome
-    `).all(...params);
+    `).all(...params, ...tt.params);
     const agg = {};
     for (const r of rows) {
       if (!agg[r.id]) agg[r.id] = { id: r.id, name: r.name, title: r.title, won: 0, lost: 0 };
