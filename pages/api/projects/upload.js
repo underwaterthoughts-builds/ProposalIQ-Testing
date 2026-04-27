@@ -253,6 +253,9 @@ async function handler(req, res) {
         db.prepare("UPDATE projects SET indexing_status = 'error' WHERE id = ?").run(projectId);
       }
     }
+  })().catch(err => {
+    console.error(`[upload ${projectId}] indexing IIFE outer error:`, err.message);
+    try { getDb().prepare("UPDATE projects SET indexing_status = 'error' WHERE id = ?").run(projectId); } catch {}
   });
 }
 
