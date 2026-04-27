@@ -41,8 +41,20 @@ export default function OnboardingProfile() {
   const [differentiators, setDifferentiators] = useState([]);
 
   const [newOfferingLabel, setNewOfferingLabel] = useState('');
+  const [newClientTypeLabel, setNewClientTypeLabel] = useState('');
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
+
+  function addClientType() {
+    const label = (newClientTypeLabel || '').trim();
+    if (!label) return;
+    if (clientTypes.some(c => (c.label || '').toLowerCase() === label.toLowerCase())) {
+      setNewClientTypeLabel('');
+      return;
+    }
+    setClientTypes(p => [...p, { label, canonical_taxonomy_match: null }]);
+    setNewClientTypeLabel('');
+  }
 
   // Load existing profile on mount
   useEffect(() => {
@@ -345,10 +357,12 @@ export default function OnboardingProfile() {
             </div>
           )}
 
-          {/* Client types */}
-          {clientTypes.length > 0 && (
-            <div className="bg-surface-container-low p-6 md:p-8 mb-5">
-              <div className="font-label text-[10px] uppercase tracking-widest mb-4 text-primary">Client types you serve</div>
+          {/* Client types — always rendered so the Add input is visible
+              even when the website scan returned no client types.
+              Mirrors the offerings block pattern for consistency. */}
+          <div className="bg-surface-container-low p-6 md:p-8 mb-5">
+            <div className="font-label text-[10px] uppercase tracking-widest mb-4 text-primary">Client types you serve</div>
+            {clientTypes.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {clientTypes.map((c, i) => (
                   <span
@@ -365,8 +379,28 @@ export default function OnboardingProfile() {
                   </span>
                 ))}
               </div>
+            ) : (
+              <p className="text-xs text-on-surface-variant">No client types yet — add one or two below so we can match RFPs to the audiences you actually serve.</p>
+            )}
+
+            <div className="flex gap-3 items-center mt-6 pt-6 border-t border-outline-variant/10">
+              <DebouncedInput
+                value={newClientTypeLabel}
+                onCommit={setNewClientTypeLabel}
+                delay={200}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addClientType(); } }}
+                placeholder="Add a client type (e.g. Defence Primes, NHS Trusts, Energy Majors)"
+                className="flex-1 bg-transparent border-0 border-b border-outline-variant/30 focus:border-primary focus:ring-0 focus:outline-none py-2 text-on-surface placeholder:text-outline transition-colors"
+              />
+              <button
+                onClick={addClientType}
+                disabled={!newClientTypeLabel.trim()}
+                className="px-4 py-2 border border-outline/30 text-on-surface-variant hover:text-primary hover:border-primary text-[10px] font-label uppercase tracking-widest disabled:opacity-40 transition-colors"
+              >
+                + Add
+              </button>
             </div>
-          )}
+          </div>
 
           {/* Positioning */}
           {positioningPhrases.length > 0 && (
