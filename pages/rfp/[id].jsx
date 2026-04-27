@@ -489,6 +489,8 @@ ${sectionHtml('Winning Language', languageHtml)}
   const executiveBrief = scan.executive_brief || null;
   const goodMatchCount = matches.filter(m => m.outcome === 'won').length;
 
+  const teamSuggestions = Array.isArray(scan.team_suggestions) ? scan.team_suggestions : [];
+
   const tabs = [
     { id:'brief', label:'Overview', badge: executiveBrief?.verdict?.decision ? '★' : null },
     { id:'matches', label:'Matched Proposals', count:matches.length },
@@ -496,6 +498,7 @@ ${sectionHtml('Winning Language', languageHtml)}
     { id:'writing', label:'Writing Insights', count:writingInsights.length },
     { id:'news', label:'Market Context', count:news.length },
     { id:'approach', label:'Suggested Approach', count:suggestedApproach?.suggested_phases?.length||0 },
+    { id:'team', label:'Suggested Team', count: teamSuggestions.length },
     { id:'strategy', label:'Win Strategy', badge: winStrategy ? '⚡' : null },
     { id:'language', label:'Winning Language', count:winningLanguage.length },
     { id:'narrative', label:'Narrative Advice', badge: narrativeText ? '✎' : null },
@@ -806,13 +809,14 @@ ${sectionHtml('Winning Language', languageHtml)}
                 // empty state — much clearer that the data is on its
                 // way and not missing.
                 const deepReady = scan.status === 'complete' || scan.status === 'deep_failed';
-                const deepPassTabs = ['gaps', 'writing', 'news', 'approach', 'strategy', 'language', 'narrative', 'assembly'];
+                const deepPassTabs = ['gaps', 'writing', 'news', 'approach', 'team', 'strategy', 'language', 'narrative', 'assembly'];
                 if (!deepReady && deepPassTabs.includes(activeTab)) {
                   const labels = {
                     gaps: 'Opportunity Gaps',
                     writing: 'Writing Insights',
                     news: 'Market Context',
                     approach: 'Suggested Approach',
+                    team: 'Suggested Team',
                     strategy: 'Win Strategy',
                     language: 'Winning Language',
                     narrative: 'Narrative Advice',
@@ -1158,6 +1162,74 @@ ${sectionHtml('Winning Language', languageHtml)}
                         </Card>
                       )}
                     </>
+                  )}
+                </div>
+              ) : activeTab === 'team' ? (
+                <div className="space-y-4">
+                  <div className="bg-surface-container-low p-5">
+                    <div className="font-label text-[10px] uppercase tracking-widest mb-2 text-primary">Suggested Team</div>
+                    <p className="text-sm text-on-surface-variant max-w-2xl">
+                      Members from your Team page ranked by fit to this RFP — combining specialism overlap, sector match, CV
+                      content, and past project history. Ratings flagged with{' '}
+                      <span className="text-secondary">low domain fit</span> are best-effort
+                      suggestions; confirm with the named person before submission.
+                    </p>
+                  </div>
+
+                  {teamSuggestions.length === 0 ? (
+                    <Card className="p-6 text-center">
+                      <p className="text-sm text-on-surface-variant">
+                        No team suggestions yet. {scan.status === 'complete' ? (
+                          <>Either no team members are on file, or none cleanly matched the service domain. Add members on the <a href="/team" className="text-primary underline">Team page</a> and rescan.</>
+                        ) : (
+                          <>Will populate when the deep pass finishes.</>
+                        )}
+                      </p>
+                    </Card>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {teamSuggestions.slice(0, 12).map((m, i) => {
+                        const specs = Array.isArray(m.stated_specialisms) ? m.stated_specialisms : [];
+                        const history = Array.isArray(m.project_history) ? m.project_history : [];
+                        const wonHistory = history.filter(h => h.outcome === 'won').length;
+                        const fit = m.fit_score || 0;
+                        const fitColour = fit >= 70 ? '#7bd07a' : fit >= 50 ? '#e4c366' : '#d0c5b0';
+                        return (
+                          <Card key={m.id || i} className="p-4">
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                              <div className="min-w-0 flex-1">
+                                <div className="font-headline text-base font-bold text-on-surface truncate">{m.name || '—'}</div>
+                                <div className="text-xs text-on-surface-variant truncate">
+                                  {m.title || 'role unknown'}
+                                  {m.years_experience ? ` · ${m.years_experience} yrs` : ''}
+                                </div>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-0.5">Fit</div>
+                                <div className="text-xl font-bold tabular-nums" style={{ color: fitColour }}>{fit}</div>
+                              </div>
+                            </div>
+                            {specs.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {specs.slice(0, 4).map(s => (
+                                  <span key={s} className="px-2 py-0.5 text-[10px] font-mono bg-primary/10 text-primary rounded">
+                                    {s}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            {(history.length > 0 || m.cv_filename) && (
+                              <div className="text-[10px] text-on-surface-variant mt-2 flex items-center gap-3">
+                                {history.length > 0 && (
+                                  <span>{wonHistory} won / {history.length} project{history.length !== 1 ? 's' : ''}</span>
+                                )}
+                                {m.cv_filename && <span className="text-primary">CV on file</span>}
+                              </div>
+                            )}
+                          </Card>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
               ) : activeTab === 'strategy' ? (
