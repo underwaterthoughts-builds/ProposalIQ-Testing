@@ -287,7 +287,7 @@ export default function Settings() {
                   <div className="font-label text-[10px] uppercase tracking-widest text-primary mt-6 mb-3">OpenAI — Deep analysis &amp; document scanning</div>
                   {[
                     ['API Key', info.has_openai ? 'Configured' : 'Not set — falls back to Gemini', info.has_openai ? '#6ab187' : '#e4c366'],
-                    ['Model', info.openai_model || 'gpt-4.5-preview', null],
+                    ['Model', info.openai_model || 'gpt-4o', null],
                   ].map(([l, v, dot]) => (
                     <div key={l} className="flex items-center justify-between py-3 text-sm">
                       <span className="text-on-surface-variant">{l}</span>
@@ -297,8 +297,26 @@ export default function Settings() {
                       </div>
                     </div>
                   ))}
+
+                  <div className="font-label text-[10px] uppercase tracking-widest text-primary mt-6 mb-3">Claude — Cross-model critic &amp; second opinion</div>
+                  {[
+                    ['API Key', info.has_claude ? 'Configured' : 'Not set — Claude integrations dormant', info.has_claude ? '#6ab187' : '#9b8e80'],
+                    ['Model', info.claude_model || 'claude-sonnet-4-5', null],
+                  ].map(([l, v, dot]) => (
+                    <div key={l} className="flex items-center justify-between py-3 text-sm">
+                      <span className="text-on-surface-variant">{l}</span>
+                      <div className="flex items-center gap-2">
+                        {dot && <div className="w-2 h-2 rounded-full" style={{ background: dot }} />}
+                        <span className="font-label text-xs text-on-surface">{v}</span>
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-[11px] mt-2 text-on-surface-variant/70 leading-relaxed">
+                    When set, Claude proposes section drafts, runs a cross-section consistency check on full proposals, and gives a second opinion on bid verdicts. Without it, scans run on OpenAI + Gemini exactly as before.
+                  </p>
+
                   <p className="text-xs mt-4 text-on-surface-variant/70 leading-relaxed">
-                    Set API keys in Railway → Variables tab. Use OPENAI_MODEL and GEMINI_MODEL variables to override model names.
+                    Set API keys in Railway → Variables tab. Use OPENAI_MODEL, GEMINI_MODEL, or CLAUDE_MODEL variables to override model names.
                   </p>
                 </div>
               </div>
