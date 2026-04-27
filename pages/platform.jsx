@@ -36,17 +36,17 @@ export default function Platform() {
           {/* ── HERO ─────────────────────────────────────────────────────── */}
           <section className="relative min-h-[819px] flex flex-col justify-center px-8 max-w-screen-2xl mx-auto py-24">
             <div className="max-w-4xl">
-              <span className="font-label text-primary tracking-[0.2em] text-xs uppercase mb-6 block">Foundation / Infrastructure</span>
+              <span className="font-label text-primary tracking-[0.2em] text-xs uppercase mb-6 block">What's inside ProposalIQ</span>
               <h1 className="font-headline text-7xl md:text-8xl leading-[1.1] text-on-surface mb-12 tracking-tight">
                 The intelligence engine behind better bids
               </h1>
               <div className="flex flex-col md:flex-row gap-12 items-start">
                 <p className="text-lg md:text-xl text-on-surface-variant max-w-xl leading-relaxed">
-                  ProposalIQ is not a template library. It is a high-fidelity reasoning layer designed to ingest complex procurement data and output strategic clarity.
+                  Most "AI for proposals" tools generate prose. ProposalIQ does the prior step: it reads your archive, matches it to the RFP in front of you, and tells you whether to bid and what evidence you actually have. The writing comes after — and only when there's something real to write from.
                 </p>
                 <div className="pt-2">
                   <div className="w-16 h-[1px] bg-primary mb-4" />
-                  <p className="font-label text-[10px] text-outline uppercase tracking-widest">System Status: Active<br />Latency: 42ms</p>
+                  <p className="font-label text-[10px] text-outline uppercase tracking-widest">Decision support<br />before drafting</p>
                 </div>
               </div>
             </div>
@@ -72,8 +72,8 @@ export default function Platform() {
                     <span className="material-symbols-outlined text-[14px]">bolt</span>
                     Quick Mode
                   </div>
-                  <h3 className="font-headline text-3xl mb-6">Velocity Intelligence</h3>
-                  <p className="text-on-surface-variant leading-relaxed mb-12">Designed for rapid-response RFPs where speed is the primary constraint. Extracts core requirements and generates compliant drafts in minutes using your established evidence base.</p>
+                  <h3 className="font-headline text-3xl mb-6">Quick scan (≈60 seconds)</h3>
+                  <p className="text-on-surface-variant leading-relaxed mb-12">A fast bid/no-bid verdict. Top matches from your repository, flagged risks, and a confidence score. Good enough for an opportunity-list triage call before you commit any real bid hours.</p>
                   <div className="w-0 group-hover:w-full h-1 bg-primary transition-all duration-500" />
                 </div>
                 <div className="bg-surface p-12 hover:bg-surface-container-high transition-colors group">
@@ -81,8 +81,8 @@ export default function Platform() {
                     <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>architecture</span>
                     Pro Mode
                   </div>
-                  <h3 className="font-headline text-3xl mb-6">Strategic Architecture</h3>
-                  <p className="text-on-surface-variant leading-relaxed mb-12">For high-stakes, multi-million dollar pursuits. Orchestrates deep competitive analysis, thematic consistency checks, and multi-layered executive summary reasoning.</p>
+                  <h3 className="font-headline text-3xl mb-6">Deep scan (≈3 minutes)</h3>
+                  <p className="text-on-surface-variant leading-relaxed mb-12">The full intelligence pack: opportunity gaps, win strategy, winning-language library, suggested team, suggested approach with budget breakdown, and a sanity-check pass on the matches. What you'd want before committing real bid hours.</p>
                   <div className="w-0 group-hover:w-full h-1 bg-primary transition-all duration-500" />
                 </div>
               </div>
@@ -95,21 +95,21 @@ export default function Platform() {
               <div className="grid grid-cols-1 md:grid-cols-12 gap-16">
                 <div className="md:col-span-5">
                   <div className="sticky top-32">
-                    <h2 className="font-headline text-5xl mb-8">Built for Sovereignty</h2>
-                    <p className="text-on-surface-variant text-lg leading-relaxed mb-12">We believe your competitive advantage should be your own. Our architectural choices prioritize your data integrity and strategic independence.</p>
+                    <h2 className="font-headline text-5xl mb-8">Built so you can trust the answer</h2>
+                    <p className="text-on-surface-variant text-lg leading-relaxed mb-12">A bid intelligence tool is only useful if you can defend its output to a partner or a panel. ProposalIQ is built around four hard rules that make every recommendation auditable, isolated to your data, and honest about uncertainty.</p>
                     <div className="p-8 bg-surface-container-high">
                       <span className="material-symbols-outlined text-primary text-4xl mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>verified_user</span>
-                      <h4 className="font-headline text-xl mb-2">Zero-Leakage Guarantee</h4>
-                      <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest">Your data never trains public models.</p>
+                      <h4 className="font-headline text-xl mb-2">Your data stays yours</h4>
+                      <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest">No tenant ever sees another tenant's repository.</p>
                     </div>
                   </div>
                 </div>
                 <div className="md:col-span-7 space-y-px bg-outline-variant/10">
                   {[
-                    { l: 'A', h: 'Your data, exclusively.', b: 'Unlike generic AI, ProposalIQ only reasons over your proprietary evidence base. We eliminate hallucinations by tethering every claim to your documented history.' },
-                    { l: 'B', h: 'Evidence not invention.', b: 'The system requires "ground truth" for every statement. If you haven\'t done it, we don\'t claim it. This creates defensible, audit-ready bid responses.' },
-                    { l: 'C', h: 'Decision support.', b: 'We don\'t just write; we evaluate. The platform provides a "Probability of Win" score based on alignment with RFP scoring criteria before you even start drafting.' },
-                    { l: 'D', h: 'Self-hosted option.', b: 'For government and high-security contractors, we offer private-cloud and on-premise deployments that never touch the public internet.' },
+                    { l: 'A', h: 'Your data, exclusively.', b: 'ProposalIQ reasons over your proposal archive — not a shared model trained on everyone\'s work. The multi-tenant architecture isolates each user\'s repository, scans, team, and clients; admin sees everything they own, members see only their own.' },
+                    { l: 'B', h: 'Evidence over invention.', b: 'A non-invention rule is wired into the AI prompts at the section-draft and credential-suggestion layers. Where there\'s no evidence in your repository, the system says so — it doesn\'t paper over the gap with plausible-sounding prose. Every claim you ship can be traced to a real past project.' },
+                    { l: 'C', h: 'Decision support before drafting.', b: 'Most "AI for proposals" tools can\'t say no to a brief. ProposalIQ can. The platform tells you not to bid when the evidence isn\'t there — and gives you the gap list so you know what would change that answer next time.' },
+                    { l: 'D', h: 'Self-hosted option.', b: 'For firms with strict confidentiality (government, regulated, defence subcontract), the entire stack runs on your own Railway / private-cloud / on-premise instance. No call home; no third-party SaaS dependency for your bid history.' },
                   ].map(d => (
                     <div key={d.l} className="bg-surface p-12">
                       <div className="flex gap-8">
@@ -136,10 +136,10 @@ export default function Platform() {
               />
             </div>
             <div className="relative z-10 max-w-2xl mx-auto">
-              <h2 className="font-headline text-6xl mb-12">Secure your advantage.</h2>
+              <h2 className="font-headline text-6xl mb-12">See it on your archive.</h2>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <Link href="/get-access" className="bg-primary text-on-primary px-10 py-4 font-bold text-lg hover:bg-primary/90 transition-all">Request Access</Link>
-                <Link href="/solutions" className="border border-outline/30 px-10 py-4 font-body text-on-surface hover:bg-surface-container-high transition-all">View Case Studies</Link>
+                <Link href="/get-access" className="bg-primary text-on-primary px-10 py-4 font-bold text-lg hover:bg-primary/90 transition-all">Get your first scan</Link>
+                <Link href="/get-access" className="border border-outline/30 px-10 py-4 font-body text-on-surface hover:bg-surface-container-high transition-all">Talk to us</Link>
               </div>
             </div>
           </section>
