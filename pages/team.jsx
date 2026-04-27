@@ -9,6 +9,19 @@ import { DebouncedInput, DebouncedTextarea } from '../lib/useDebounce';
 const AVAILS = ['Available — Full time','Available — Part time','Partially Available','On Project (available next quarter)','Unavailable'];
 const COLORS = ['#2d6b78','#3d5c3a','#8b3a5c','#5c4a2a','#4a2a5c','#2a4a3c','#7a3a1c','#1c3a7a'];
 
+// Surname-primary display for team members. With multiple "James" or
+// "Robert" people on a team, first-name primary makes the list useless
+// fast; surname-primary scales. Falls back gracefully on single-word
+// names. Returns { primary, forenames } so callers can choose how to
+// render the secondary part.
+function displayTeamName(fullName) {
+  const trimmed = String(fullName || '').trim();
+  if (!trimmed) return { primary: '—', forenames: '' };
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) return { primary: parts[0], forenames: '' };
+  return { primary: parts[parts.length - 1], forenames: parts.slice(0, -1).join(' ') };
+}
+
 export default function Team() {
   const { user, loading: authLoading } = useUser();
   const [members, setMembers] = useState([]);
@@ -361,6 +374,26 @@ export default function Team() {
                 </div>
               </div>
             ) : (
+              <>
+              {/* Action row — visible on desktop (mobile uses Layout's actions
+                  slot above). Restored after Wave 6 polish: the import button
+                  was previously only in the Layout actions slot, which only
+                  renders on mobile, so desktop users couldn't bulk-upload a
+                  team via spreadsheet. */}
+              <div className="hidden md:flex items-center justify-end gap-2 mb-3">
+                <label className="inline-flex items-center gap-2 px-4 py-2 border border-outline/30 text-on-surface text-xs font-label uppercase tracking-widest cursor-pointer hover:bg-surface-container-high transition-colors">
+                  <input type="file" accept=".xlsx,.xls,.csv,.docx,.doc,.txt" className="hidden" onChange={handleSpreadsheetSelect} />
+                  <span className="material-symbols-outlined text-sm">upload</span>
+                  {importLoading ? <><Spinner size={12} /> Reading…</> : 'Import from spreadsheet'}
+                </label>
+                <button
+                  onClick={() => { setEditMember(null); setShowAdd(true); }}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-on-primary text-xs font-label uppercase tracking-widest font-bold hover:brightness-110 transition-all"
+                >
+                  <span className="material-symbols-outlined text-sm">person_add</span>
+                  Add Member
+                </button>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {/* Recruit card — top-left */}
                 <button
@@ -395,14 +428,23 @@ export default function Team() {
                         {initials}
                       </div>
 
-                      {/* Main info */}
+                      {/* Main info — surname-primary so multiple Jameses
+                          / Roberts don't collapse into the same row. */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <h3 className="font-headline text-base font-bold text-on-surface truncate">{m.name}</h3>
-                          {m.cv_filename && (
-                            <span className="text-[9px] font-label px-1 py-0.5 bg-primary/10 text-primary flex-shrink-0">CV</span>
-                          )}
-                        </div>
+                        {(() => {
+                          const dn = displayTeamName(m.name);
+                          return (
+                            <div className="flex items-baseline gap-2 mb-0.5 truncate">
+                              <h3 className="font-headline text-base font-bold text-on-surface">{dn.primary}</h3>
+                              {dn.forenames && (
+                                <span className="font-headline text-sm font-normal text-on-surface-variant truncate">{dn.forenames}</span>
+                              )}
+                              {m.cv_filename && (
+                                <span className="text-[9px] font-label px-1 py-0.5 bg-primary/10 text-primary flex-shrink-0">CV</span>
+                              )}
+                            </div>
+                          );
+                        })()}
                         <p className="text-on-surface-variant text-xs truncate">
                           {m.title || '—'}
                           {m.years_experience ? ` · ${m.years_experience} yrs` : ''}
@@ -457,6 +499,7 @@ export default function Team() {
                 })}
 
               </div>
+              </>
             )}
             </>}
           {activeTab === 'ratecard' && (
