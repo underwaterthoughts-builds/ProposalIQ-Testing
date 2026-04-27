@@ -286,7 +286,10 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
           <span className="font-label text-[10px] text-outline uppercase tracking-widest mb-1">
             {p.sector || 'Untagged'}
           </span>
-          <h2 className="font-headline text-xl md:text-2xl font-medium leading-tight group-hover:text-primary transition-colors line-clamp-2">
+          <h2
+            title={p.name}
+            className="font-headline text-base md:text-lg font-medium leading-snug group-hover:text-primary transition-colors line-clamp-3 break-words"
+          >
             {p.name}
           </h2>
         </div>
@@ -352,12 +355,12 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
-          <div>
+        <div className="grid grid-cols-[1fr_auto] gap-4">
+          <div className="min-w-0">
             <span className="font-label text-[10px] text-outline block mb-1 uppercase">Client</span>
-            <ClientField project={p} onSaved={(name) => onUpdated?.(p.id, { client: name })} className="truncate block font-medium" />
+            <ClientField project={p} onSaved={(name) => onUpdated?.(p.id, { client: name })} className="truncate block font-medium max-w-full" />
           </div>
-          <div className="text-right">
+          <div className="text-right whitespace-nowrap">
             <span className="font-label text-[10px] text-outline block mb-1 uppercase">Year</span>
             <span className="text-sm">{p.date_submitted?.slice(0, 4) || '—'}</span>
           </div>
