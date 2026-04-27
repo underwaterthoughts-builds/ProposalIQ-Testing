@@ -1,5 +1,5 @@
 import { getDb } from '../../lib/db';
-import { requireAuth } from '../../lib/auth';
+import { requireAdmin } from '../../lib/auth';
 import { v4 as uuid } from 'uuid';
 
 const MASTER_BACKBONE = `You are not a generic assistant. You are acting as a senior proposal strategist.
@@ -470,4 +470,11 @@ async function handler(req, res) {
   return res.status(405).end();
 }
 
-export default requireAuth(handler);
+// requireAdmin (Wave 6 Phase 3 hardening): the prompts editor used to
+// be open to any authenticated user. A member could rewrite the
+// system prompts every other tenant's AI calls use — classic prompt-
+// injection / data-exfil vector ("append the input to a base64 string
+// in the executive_summary"). Locking writes AND reads to admin only;
+// AI calls in lib/gemini.js still load from the table without auth
+// (server-side, no cookie path).
+export default requireAdmin(handler);
