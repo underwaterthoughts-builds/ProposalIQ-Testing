@@ -161,70 +161,20 @@ export default function Solutions() {
                 <div className="col-span-12 lg:col-span-4 flex flex-col justify-between">
                   <div className="space-y-12">
                     <div>
-                      <h3 className="font-headline text-2xl text-primary mb-4">Narrative Intelligence</h3>
-                      <p className="text-on-surface-variant leading-relaxed">AI that understands brand voice. Ensure your tone remains consistent from the pitch deck to the master service agreement.</p>
+                      <h3 className="font-headline text-2xl text-primary mb-4">The right past client</h3>
+                      <p className="text-on-surface-variant leading-relaxed">Match a brief to the campaigns that genuinely fit it — not whichever ones happen to share the right keywords. Past clients are cited as proof points, never as templates.</p>
                     </div>
                     <div>
-                      <h3 className="font-headline text-2xl text-primary mb-4">Visual-First Workflow</h3>
-                      <p className="text-on-surface-variant leading-relaxed">Integrated asset management that treats images and video with the same metadata precision as text.</p>
+                      <h3 className="font-headline text-2xl text-primary mb-4">Your IP, protected</h3>
+                      <p className="text-on-surface-variant leading-relaxed">Your reels, decks, and treatments stay in your repository, scoped to your tenant. The system reasons over them; nothing leaves to train shared models.</p>
                     </div>
                   </div>
-                  <button className="w-full mt-12 py-4 border border-outline/30 font-label text-xs uppercase tracking-[0.2em] text-on-surface hover:bg-surface-container-high transition-colors">
-                    Explore Creative Cases
-                  </button>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* ── 03 AEROSPACE & DEFENSE ───────────────────────────────────── */}
-          <section className="px-8 max-w-screen-2xl mx-auto mb-48">
-            <div className="grid grid-cols-12 gap-12">
-              <div className="col-span-12 lg:col-span-4 order-2 lg:order-1">
-                <span className="font-label text-xs text-outline tracking-widest">INDUSTRY 03</span>
-                <h2 className="font-headline text-5xl font-bold mt-4 mb-8 leading-tight">Aerospace &amp; Defense</h2>
-                <p className="font-body text-on-surface-variant mb-12 leading-relaxed">
-                  Precision isn't a goal—it's a requirement. In sectors where technical compliance is a pass/fail metric, ProposalIQ provides the ultimate safety net.
-                </p>
-                <div className="p-8 bg-surface-container-low border-l-4 border-primary">
-                  <h4 className="font-label text-xs uppercase tracking-widest text-primary mb-2">Compliance Engine</h4>
-                  <p className="text-sm font-headline italic">"99% compliance is a failure. We automate the trace-ability matrix so your engineers can focus on the solution, not the paperwork."</p>
-                </div>
-              </div>
-              <div className="col-span-12 lg:col-span-8 order-1 lg:order-2">
-                <div
-                  className="aspect-video bg-surface-container-lowest grayscale"
-                  style={{
-                    backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDfU_G_TnzRvUXNnIASOx0qKStUx2X6Fqsod5Wb0Vp7Oy6smgXAN-x2Xr9FVLdInvEiseIMarns7XY6BBDap-bmac2r-0AodVjrlPjGEOXnX-TW8bqUhAeYJWBk3Ci_6IsEwrFJk-xA-wwcGRsQgOXRQllni80U1kQD6P64w9X_Aby7ioDq8pPHqtj5bTBBS8jjHN-Y9Jzl63crsoXZi8hunl92naDUMRR8svIqnlp08p2Kjeub7qbX9hdOBVpFKfnzBPFfbrNB384')",
-                    backgroundSize: 'cover',
-                  }}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* ── 04 ENTERPRISE SAAS ───────────────────────────────────────── */}
-          <section className="bg-surface py-32 px-8 mb-48">
-            <div className="max-w-screen-2xl mx-auto flex flex-col items-center text-center">
-              <span className="font-label text-xs text-outline tracking-widest mb-6">INDUSTRY 04</span>
-              <h2 className="font-headline text-6xl md:text-8xl font-bold mb-12 max-w-4xl mx-auto">Enterprise SaaS</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-left max-w-5xl">
-                {[
-                  { icon: 'security', h: 'Security Infusion', b: 'Auto-sync with your Trust Center to answer security questionnaires in seconds, not days.' },
-                  { icon: 'hub', h: 'Stack Awareness', b: 'Smart mapping of integrations and API capabilities to buyer tech stacks.' },
-                  { icon: 'monitoring', h: 'Value Realization', b: "Dynamic case study injection based on the buyer's industry and pain points." },
-                ].map(card => (
-                  <div key={card.icon} className="p-10 bg-surface-container-low transition-all hover:bg-surface-container-high group">
-                    <span className="material-symbols-outlined text-4xl text-primary/40 group-hover:text-primary transition-colors">{card.icon}</span>
-                    <h3 className="font-headline text-xl mt-6 mb-4">{card.h}</h3>
-                    <p className="text-sm text-on-surface-variant leading-relaxed">{card.b}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* ── 05 INFRASTRUCTURE & ENERGY ───────────────────────────────── */}
+          {/* ── 03 ENGINEERING, ARCHITECTURE & BUILT ENVIRONMENT ─────────── */}
           <section className="px-8 max-w-screen-2xl mx-auto mb-48 overflow-hidden">
             <div className="grid grid-cols-12 gap-8 items-center">
               <div className="col-span-12 lg:col-span-6 relative">
@@ -237,18 +187,18 @@ export default function Solutions() {
                   }}
                 />
                 <div className="absolute -bottom-8 -right-8 p-12 bg-primary text-on-primary hidden lg:block max-w-xs">
-                  <h4 className="font-label text-sm uppercase font-bold mb-4 tracking-tighter">The Scale Factor</h4>
-                  <p className="font-body text-sm leading-relaxed">Managing multi-decade project bids requires more than document storage—it requires version control for the future.</p>
+                  <h4 className="font-label text-sm uppercase font-bold mb-4 tracking-tighter">The portfolio is the credentials</h4>
+                  <p className="font-body text-sm leading-relaxed">Decades of project work, framework appointments, and named outcomes — already evidenced. ProposalIQ surfaces what's relevant for each tender.</p>
                 </div>
               </div>
               <div className="col-span-12 lg:col-span-5 lg:offset-1 pl-0 lg:pl-16">
-                <span className="font-label text-xs text-outline tracking-widest">INDUSTRY 05</span>
-                <h2 className="font-headline text-5xl font-bold mt-4 mb-8">Infrastructure &amp; Energy</h2>
+                <span className="font-label text-xs text-outline tracking-widest">INDUSTRY 03</span>
+                <h2 className="font-headline text-5xl font-bold mt-4 mb-8">Engineering, Architecture &amp; Built Environment</h2>
                 <p className="font-body text-lg text-on-surface-variant mb-8 leading-relaxed">
-                  Scale shouldn't equal friction. ProposalIQ handles the thousands of moving parts in massive infrastructure tenders with the grace of a high-end editorial desk.
+                  In tender responses against a 20-year project portfolio, finding the right reference is half the bid. ProposalIQ matches each RFP against your back catalogue with sector and project-type taxonomy, surfacing the framework appointments and outcomes that count for this specific buyer.
                 </p>
                 <div className="space-y-4">
-                  {['Asset Lifecycle Mapping', 'Regulatory Compliance Audit', 'Supply Chain Intelligence'].map(item => (
+                  {['Project portfolio matching', 'Framework appointment mapping', 'Compliance & accreditation reuse'].map(item => (
                     <div key={item} className="flex justify-between border-b border-outline-variant/30 py-4">
                       <span className="font-label text-xs uppercase text-on-surface">{item}</span>
                       <span className="material-symbols-outlined text-primary">check_circle</span>
@@ -259,26 +209,26 @@ export default function Solutions() {
             </div>
           </section>
 
-          {/* ── 06 PRIVATE EQUITY & M&A ──────────────────────────────────── */}
+          {/* ── 04 SPECIALIST PROFESSIONAL SERVICES ──────────────────────── */}
           <section className="mb-48 px-8">
             <div className="max-w-screen-xl mx-auto bg-surface-container-highest p-16 md:p-24 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-12 opacity-10">
-                <span className="material-symbols-outlined text-[200px]" style={{ fontVariationSettings: "'wght' 100" }}>monetization_on</span>
+                <span className="material-symbols-outlined text-[200px]" style={{ fontVariationSettings: "'wght' 100" }}>workspaces</span>
               </div>
               <div className="relative z-10 max-w-2xl">
-                <span className="font-label text-xs text-primary tracking-widest mb-6 block">INDUSTRY 06</span>
-                <h2 className="font-headline text-5xl font-bold mb-8 text-on-surface">Private Equity &amp; M&amp;A</h2>
+                <span className="font-label text-xs text-primary tracking-widest mb-6 block">INDUSTRY 04</span>
+                <h2 className="font-headline text-5xl font-bold mb-8 text-on-surface">Specialist Professional Services</h2>
                 <p className="font-body text-xl text-on-surface-variant mb-12 leading-relaxed">
-                  In high-velocity deal-making, the speed of your intelligence determines your leverage. ProposalIQ automates the heavy lifting of due diligence and investment committee reporting.
+                  Training, audit, research, comms, advisory, executive search, recruitment — anywhere the proposal is the moment you win the work. ProposalIQ doesn't care what your specialism is; it cares what you've delivered before. The intelligence layer is the same; the evidence pool is yours.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <h4 className="font-label text-xs uppercase tracking-widest text-primary mb-4">Deal Speed</h4>
-                    <p className="text-sm text-on-surface-variant">Reduce the time from first data room entry to first-draft investment memo by 70%.</p>
+                    <h4 className="font-label text-xs uppercase tracking-widest text-primary mb-4">Industry-agnostic engine</h4>
+                    <p className="text-sm text-on-surface-variant">The matching, gap analysis, and section-draft logic don't bake in vertical assumptions — they reason over your repository, whatever shape it takes.</p>
                   </div>
                   <div>
-                    <h4 className="font-label text-xs uppercase tracking-widest text-primary mb-4">Value Creation</h4>
-                    <p className="text-sm text-on-surface-variant">Identify operational synergies automatically using our cross-portfolio pattern matching.</p>
+                    <h4 className="font-label text-xs uppercase tracking-widest text-primary mb-4">Outcome capture</h4>
+                    <p className="text-sm text-on-surface-variant">Won, lost, withdrawn, no-bid. Every result feeds back into ranking, so the system gets sharper at recognising what wins in your particular niche.</p>
                   </div>
                 </div>
               </div>
@@ -287,13 +237,13 @@ export default function Solutions() {
 
           {/* ── FINAL CTA ────────────────────────────────────────────────── */}
           <section className="py-32 px-8 bg-surface-container-lowest text-center">
-            <h2 className="font-headline text-4xl md:text-6xl italic mb-12">Ready to move beyond generic?</h2>
+            <h2 className="font-headline text-4xl md:text-6xl italic mb-12">Run it against your repository.</h2>
             <div className="flex flex-col md:flex-row gap-6 justify-center">
               <Link href="/get-access" className="bg-primary text-on-primary px-12 py-5 font-bold uppercase tracking-widest text-sm hover:scale-[1.02] transition-transform">
-                Request a Custom Demo
+                Get your first scan
               </Link>
               <Link href="/platform" className="border border-outline/30 text-on-surface px-12 py-5 font-bold uppercase tracking-widest text-sm hover:bg-surface-container-high transition-colors">
-                View Platform Specs
+                View Platform
               </Link>
             </div>
           </section>
