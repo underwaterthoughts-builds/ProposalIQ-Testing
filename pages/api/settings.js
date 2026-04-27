@@ -15,9 +15,6 @@ async function handler(req, res) {
       has_api_key: !!process.env.GEMINI_API_KEY,
       has_openai: !!process.env.OPENAI_API_KEY,
       openai_model: process.env.OPENAI_MODEL || 'gpt-4o',
-      // Wave 6 Tier 1 — Claude as cross-model critic
-      has_claude: !!process.env.ANTHROPIC_API_KEY,
-      claude_model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-5',
     });
   }
   if (req.method === 'POST') {
