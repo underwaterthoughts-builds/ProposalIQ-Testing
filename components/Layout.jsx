@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useMode } from '../lib/useMode';
+import AssistantChat from './AssistantChat';
 
 // Primary nav (shown in topbar on desktop)
 const NAV = [
@@ -10,6 +11,7 @@ const NAV = [
   { href: '/rfp',        label: 'Intelligence' },
   { href: '/team',       label: 'Team' },
   { href: '/clients',    label: 'Clients' },
+  { href: '/assistant',  label: 'Assistant' },
   { href: '/settings',   label: 'Settings' },
   { href: '/users',      label: 'Users' },
 ];
@@ -35,6 +37,11 @@ export default function Layout({ children, title, subtitle, actions, user }) {
     else document.body.style.overflow = '';
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
+
+  // Floating assistant widget — accessible from every page except /assistant
+  // (where the full-page chat is already rendered, no point doubling up).
+  const [widgetOpen, setWidgetOpen] = useState(false);
+  const showAssistantTrigger = router.pathname !== '/assistant' && router.pathname !== '/login' && !router.pathname.startsWith('/onboarding');
 
   async function logout() {
     setLoggingOut(true);
@@ -272,6 +279,34 @@ export default function Layout({ children, title, subtitle, actions, user }) {
               </button>
             </div>
           </div>
+        </>
+      )}
+
+      {/* ── FLOATING ASSISTANT WIDGET ─────────────────────────────────── */}
+      {showAssistantTrigger && (
+        <>
+          {/* Trigger button — bottom-right, hidden when the panel is open */}
+          {!widgetOpen && (
+            <button
+              onClick={() => setWidgetOpen(true)}
+              className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-primary text-on-primary shadow-2xl flex items-center justify-center hover:scale-105 transition-transform"
+              title="Open ProposalIQ Assistant"
+              aria-label="Open assistant"
+            >
+              <span className="material-symbols-outlined">smart_toy</span>
+            </button>
+          )}
+
+          {/* Panel */}
+          {widgetOpen && (
+            <div className="fixed bottom-6 right-6 z-40 w-[380px] max-w-[calc(100vw-32px)] h-[600px] max-h-[calc(100vh-100px)] bg-surface border border-outline-variant/30 rounded-xl shadow-2xl overflow-hidden flex flex-col">
+              <AssistantChat
+                variant="widget"
+                onClose={() => setWidgetOpen(false)}
+                onOpenFull={() => { setWidgetOpen(false); router.push('/assistant'); }}
+              />
+            </div>
+          )}
         </>
       )}
     </div>
