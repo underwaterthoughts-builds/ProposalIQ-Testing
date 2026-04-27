@@ -153,15 +153,16 @@ const ScanTimestamp = memo(function ScanTimestamp({ indexedAt }) {
   );
 });
 
-// Three labelled rows — User / AI / System — each shown as 5 stars with
+// Two labelled rows — User / System — each shown as 5 stars with
 // fractional fill (derived from the underlying percentage) plus the raw
-// percentage on the right. Quiet when no numbers exist at all.
+// percentage on the right. The AI row was removed (Wave 6 Phase 3 UX
+// cleanup) because it confused the mental model; the AI input is
+// already baked into System.
 const RatingBreakdown = memo(function RatingBreakdown({ project }) {
   const sr = computeSystemRating(project);
   if (sr.system_pct === null) return null;
   const rows = [
     { label: 'User',   pct: sr.user_pct },
-    { label: 'AI',     pct: sr.ai_pct },
     { label: 'System', pct: sr.system_pct },
   ];
   return (
@@ -177,11 +178,6 @@ const RatingBreakdown = memo(function RatingBreakdown({ project }) {
           </span>
         </div>
       ))}
-      {sr.disagreement && (
-        <div className="flex justify-end text-[9px] text-outline" title={`${sr.disagreement.gap}pt gap — user rated ${sr.disagreement.user_higher ? 'higher' : 'lower'} than AI`}>
-          ⚠ {sr.disagreement.gap}pt user/AI gap
-        </div>
-      )}
     </div>
   );
 });

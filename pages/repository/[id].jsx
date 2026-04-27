@@ -284,15 +284,18 @@ const ProjectDetailsEditor = memo(function ProjectDetailsEditor({ project, onSav
 });
 
 // ── System-rating breakdown ───────────────────────────────────────────────
-// Three labelled rows — User / AI / System — rendered as 5 stars each
+// Two labelled rows — User / System — rendered as 5 stars each
 // (fractional fill based on the underlying percentage) plus the raw
-// percentage. Quiet when no numbers exist at all.
+// percentage. The AI row was removed (Wave 6 Phase 3 UX cleanup) because
+// it complicated the mental model — users only need to know their own
+// rating and the resulting blended system rating; the AI input is
+// already baked into System and is shown elsewhere as ai_metadata.
+// Quiet when no numbers exist at all.
 const DetailRatingBreakdown = memo(function DetailRatingBreakdown({ project }) {
   const sr = computeSystemRating(project);
   if (sr.system_pct === null) return null;
   const rows = [
     { label: 'User',   pct: sr.user_pct },
-    { label: 'AI',     pct: sr.ai_pct },
     { label: 'System', pct: sr.system_pct },
   ];
   return (
@@ -306,11 +309,6 @@ const DetailRatingBreakdown = memo(function DetailRatingBreakdown({ project }) {
           </span>
         </div>
       ))}
-      {sr.disagreement && (
-        <div className="text-[9px] text-outline text-right" title={`User rated ${sr.disagreement.user_higher ? 'higher than' : 'lower than'} the AI by ${sr.disagreement.gap} points`}>
-          ⚠ {sr.disagreement.gap}pt user/AI gap
-        </div>
-      )}
     </div>
   );
 });
