@@ -3,7 +3,7 @@ import { Spinner } from './ui';
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
-function Section({ label, children, color = '#6b6456' }) {
+function Section({ label, children, color = '#9b8e80' }) {
   return (
     <div className="mb-8">
       <div className="text-[10px] font-mono uppercase tracking-widest mb-4 flex items-center gap-2" style={{ color }}>
@@ -90,17 +90,17 @@ function QuickMatchCard({ match: m }) {
 
   return (
     <Link href={`/repository/${m.id}`}>
-      <div className="rounded-xl p-4 border flex gap-3 items-start cursor-pointer hover:shadow-md transition-all group" style={{ background: 'white', borderColor: '#ddd5c4' }}>
-        <div className="flex-shrink-0 w-2 self-stretch rounded-full" style={{ background: isWon ? '#6ab187' : '#ddd5c4' }} />
+      <div className="rounded-xl p-4 border flex gap-3 items-start cursor-pointer hover:shadow-md transition-all group" style={{ background: '#1c1b18', borderColor: '#4d4636' }}>
+        <div className="flex-shrink-0 w-2 self-stretch rounded-full" style={{ background: isWon ? '#6ab187' : '#4d4636' }} />
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="text-sm font-semibold leading-snug">{m.name}</div>
-            <span className="flex-shrink-0 text-[10px] font-mono px-2 py-0.5 rounded-full" style={{ background: isWon ? '#edf3ec' : '#f0ebe0', color: isWon ? '#3d5c3a' : '#6b6456' }}>
+            <span className="flex-shrink-0 text-[10px] font-mono px-2 py-0.5 rounded-full" style={{ background: isWon ? '#edf3ec' : '#4d4636', color: isWon ? '#3d5c3a' : '#9b8e80' }}>
               {isWon ? '✓ Won' : m.outcome}
             </span>
           </div>
           <div className="text-xs mb-2" style={{ color: '#9b8e80' }}>{m.client} · {m.date_submitted?.slice(0, 4)}</div>
-          {explanation && <p className="text-xs leading-relaxed" style={{ color: '#6b6456' }}>{explanation}</p>}
+          {explanation && <p className="text-xs leading-relaxed" style={{ color: '#9b8e80' }}>{explanation}</p>}
           {!explanation && (meta.key_themes || []).length > 0 && (
             <div className="flex flex-wrap gap-1">
               {(meta.key_themes || []).slice(0, 3).map((t, i) => (
@@ -118,19 +118,19 @@ function QuickMatchCard({ match: m }) {
 function StyleBlock({ style }) {
   if (!style) return null;
   return (
-    <div className="rounded-xl p-4 border" style={{ background: '#f8f6f2', borderColor: '#ddd5c4' }}>
+    <div className="rounded-xl p-4 border" style={{ background: '#211f1d', borderColor: '#4d4636' }}>
       <div className="flex items-center gap-3 mb-2">
         <span className="text-xs font-mono px-2.5 py-1 rounded-full" style={{ background: '#1e4a52', color: 'white' }}>
           {style.primary_style}
         </span>
-        <span className="text-xs font-mono" style={{ color: '#6b6456' }}>{style.tone}</span>
+        <span className="text-xs font-mono" style={{ color: '#9b8e80' }}>{style.tone}</span>
       </div>
       {style.style_description && <p className="text-sm leading-relaxed" style={{ color: '#3a3530' }}>{style.style_description}</p>}
-      {style.evidence_approach && <p className="text-xs mt-2" style={{ color: '#6b6456' }}>Evidence: {style.evidence_approach}</p>}
+      {style.evidence_approach && <p className="text-xs mt-2" style={{ color: '#9b8e80' }}>Evidence: {style.evidence_approach}</p>}
       {style.best_used_for?.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-3">
           {style.best_used_for.slice(0, 3).map((b, i) => (
-            <span key={i} className="text-[10px] px-2 py-0.5 rounded" style={{ background: '#f0ebe0', color: '#6b6456' }}>{b}</span>
+            <span key={i} className="text-[10px] px-2 py-0.5 rounded" style={{ background: '#4d4636', color: '#9b8e80' }}>{b}</span>
           ))}
         </div>
       )}
@@ -140,7 +140,7 @@ function StyleBlock({ style }) {
 
 function QuickNewsCard({ item: n }) {
   return (
-    <div className="rounded-xl border overflow-hidden flex flex-col" style={{ background: 'white', borderColor: '#ddd5c4' }}>
+    <div className="rounded-xl border overflow-hidden flex flex-col" style={{ background: '#1c1b18', borderColor: '#4d4636' }}>
       <div className="p-4 flex-1">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background: '#e8f2f4', color: '#1e4a52' }}>{n.source}</span>
@@ -154,7 +154,7 @@ function QuickNewsCard({ item: n }) {
       {n.url && (
         <a href={n.url} target="_blank" rel="noopener noreferrer"
           className="px-4 py-2 border-t text-xs flex items-center justify-between transition-colors hover:bg-gray-50"
-          style={{ borderColor: '#f0ebe0', color: '#1e4a52' }}>
+          style={{ borderColor: '#4d4636', color: '#1e4a52' }}>
           <span className="truncate">{n.url.replace(/^https?:\/\/(www\.)?/, '')}</span>
           <span className="flex-shrink-0 ml-2">↗</span>
         </a>
@@ -164,9 +164,9 @@ function QuickNewsCard({ item: n }) {
 }
 
 function WritingInsightRow({ w }) {
-  const scoreColor = (s) => !s ? '#ddd5c4' : s >= 75 ? '#3d5c3a' : s >= 55 ? '#b8962e' : '#b04030';
+  const scoreColor = (s) => !s ? '#4d4636' : s >= 75 ? '#3d5c3a' : s >= 55 ? '#b8962e' : '#b04030';
   return (
-    <div className="flex items-center gap-4 py-3 border-b last:border-0" style={{ borderColor: '#f0ebe0' }}>
+    <div className="flex items-center gap-4 py-3 border-b last:border-0" style={{ borderColor: '#4d4636' }}>
       <Link href={`/repository/${w.project_id}`} className="flex-1 min-w-0">
         <div className="text-sm font-medium truncate hover:text-teal transition-colors">{w.project_name}</div>
         <div className="text-xs mt-0.5" style={{ color: w.outcome === 'won' ? '#3d5c3a' : '#b04030' }}>{w.outcome} · {w.match_label}</div>
@@ -188,15 +188,15 @@ function UsefulLine({ snippet }) {
   if (!snippet) return null;
   const text = snippet.adapted || snippet.text;
   return (
-    <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#ddd5c4' }}>
+    <div className="rounded-xl border overflow-hidden" style={{ borderColor: '#4d4636' }}>
       <div className="p-4">
-        <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: snippet.adapted ? '#b8962e' : '#6b6456' }}>
+        <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: snippet.adapted ? '#b8962e' : '#9b8e80' }}>
           {snippet.adapted ? '✎ Adapted for this bid' : '✎ A line that worked'}
         </div>
         <blockquote className="text-sm italic leading-relaxed" style={{ color: '#1a1a1a', borderLeft: '3px solid #b8962e', paddingLeft: '12px' }}>
           "{text}"
         </blockquote>
-        {snippet.why_it_works && <p className="text-xs mt-2" style={{ color: '#6b6456' }}>{snippet.why_it_works}</p>}
+        {snippet.why_it_works && <p className="text-xs mt-2" style={{ color: '#9b8e80' }}>{snippet.why_it_works}</p>}
         <div className="flex items-center gap-2 mt-2">
           <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: '#e8f2f4', color: '#1e4a52' }}>{snippet.use_case}</span>
           {snippet.source_proposal && <span className="text-[10px]" style={{ color: '#9b8e80' }}>from: {snippet.source_proposal}</span>}
@@ -261,22 +261,22 @@ export default function QuickView({ scan, scanId, onExport, onTemplate, onDelete
 
   if (scan.status === 'processing') {
     return (
-      <div className="h-full flex items-center justify-center" style={{ background: '#faf7f2' }}>
+      <div className="h-full flex items-center justify-center" style={{ background: '#1c1b18' }}>
         <div className="text-center max-w-sm">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: '#1e4a52' }}>
             <Spinner size={24} color="white" />
           </div>
           <div className="font-serif text-xl mb-2">Analysing your brief…</div>
-          <p className="text-sm" style={{ color: '#6b6456' }}>ProposalIQ is cross-referencing your repository, identifying gaps, and building your intelligence brief. Usually 30–60 seconds.</p>
+          <p className="text-sm" style={{ color: '#9b8e80' }}>ProposalIQ is cross-referencing your repository, identifying gaps, and building your intelligence brief. Usually 30–60 seconds.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full overflow-y-auto" style={{ background: '#faf7f2' }}>
+    <div className="h-full overflow-y-auto" style={{ background: '#1c1b18' }}>
       {/* Hero / Brief header */}
-      <div className="px-4 md:px-8 pt-6 md:pt-8 pb-4 md:pb-6 border-b" style={{ borderColor: '#e8e0d0', background: 'white' }}>
+      <div className="px-4 md:px-8 pt-6 md:pt-8 pb-4 md:pb-6 border-b" style={{ borderColor: '#4d4636', background: '#1c1b18' }}>
         <div className="max-w-3xl mx-auto">
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="flex-1 min-w-0">
@@ -284,7 +284,7 @@ export default function QuickView({ scan, scanId, onExport, onTemplate, onDelete
                 Overview · Quick View
               </div>
               <h1 className="font-serif text-xl md:text-3xl leading-tight mb-1">{scan.name}</h1>
-              <div className="text-sm" style={{ color: '#6b6456' }}>
+              <div className="text-sm" style={{ color: '#9b8e80' }}>
                 {rfpData.client && <span>{rfpData.client}</span>}
                 {rfpData.sector && <span> · {rfpData.sector}</span>}
                 {rfpData.deadline && <span> · Deadline: {rfpData.deadline}</span>}
@@ -293,13 +293,13 @@ export default function QuickView({ scan, scanId, onExport, onTemplate, onDelete
             {/* Action buttons */}
             <div className="flex flex-col gap-1.5 flex-shrink-0">
               <button onClick={copyBriefing}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all hover:bg-cream"
-                style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all hover:bg-surface-container-high"
+                style={{ borderColor: '#4d4636', color: '#9b8e80' }}>
                 ⊡ Copy Brief
               </button>
               <button onClick={onExport} disabled={exporting}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all hover:bg-cream"
-                style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all hover:bg-surface-container-high"
+                style={{ borderColor: '#4d4636', color: '#9b8e80' }}>
                 {exporting ? 'Exporting…' : '↓ Full Export'}
               </button>
               <button onClick={onTemplate} disabled={generatingTemplate}
@@ -339,8 +339,8 @@ export default function QuickView({ scan, scanId, onExport, onTemplate, onDelete
 
         {/* Verdict headline (from the executive brief) */}
         {brief?.verdict?.headline && (
-          <div className="rounded-lg p-4 mb-4 border" style={{ background: '#faf7f2', borderColor: '#ddd5c4' }}>
-            <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#6b6456' }}>Bid Director Verdict</div>
+          <div className="rounded-lg p-4 mb-4 border" style={{ background: '#1c1b18', borderColor: '#4d4636' }}>
+            <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: '#9b8e80' }}>Bid Director Verdict</div>
             <p className="text-base font-serif leading-relaxed" style={{ color: '#1a1816' }}>{brief.verdict.headline}</p>
           </div>
         )}
@@ -397,9 +397,9 @@ export default function QuickView({ scan, scanId, onExport, onTemplate, onDelete
           <Section label="Past Assets to Reference" color="#3d5c3a">
             <div className="space-y-2">
               {brief.recommended_assets_to_use.slice(0, 4).map((a, i) => (
-                <div key={i} className="rounded-lg p-3 border" style={{ background: 'white', borderColor: '#ddd5c4' }}>
+                <div key={i} className="rounded-lg p-3 border" style={{ background: '#1c1b18', borderColor: '#4d4636' }}>
                   <div className="text-sm font-medium">{a.name}</div>
-                  {a.why && <div className="text-xs mt-0.5" style={{ color: '#6b6456' }}>{a.why}</div>}
+                  {a.why && <div className="text-xs mt-0.5" style={{ color: '#9b8e80' }}>{a.why}</div>}
                   {a.use_for && <div className="text-[10px] font-mono mt-1" style={{ color: '#9b8e80' }}>Use for: {a.use_for}</div>}
                 </div>
               ))}
@@ -412,7 +412,7 @@ export default function QuickView({ scan, scanId, onExport, onTemplate, onDelete
           <Section label="Do Not Waste Effort On" color="#6b6456">
             <ul className="space-y-1">
               {brief.what_to_deprioritise.map((d, i) => (
-                <li key={i} className="text-sm flex gap-2" style={{ color: '#6b6456' }}>
+                <li key={i} className="text-sm flex gap-2" style={{ color: '#9b8e80' }}>
                   <span className="flex-shrink-0">✕</span><span>{d}</span>
                 </li>
               ))}
@@ -445,15 +445,15 @@ export default function QuickView({ scan, scanId, onExport, onTemplate, onDelete
         )}
 
         {/* Quick actions */}
-        <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t" style={{ borderColor: '#e8e0d0' }}>
+        <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t" style={{ borderColor: '#4d4636' }}>
           <button onClick={copyBriefing}
-            className="px-4 py-2 rounded-lg text-xs font-medium border transition-all hover:bg-cream"
-            style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+            className="px-4 py-2 rounded-lg text-xs font-medium border transition-all hover:bg-surface-container-high"
+            style={{ borderColor: '#4d4636', color: '#9b8e80' }}>
             ⊡ Copy Brief
           </button>
           <button onClick={onExport} disabled={exporting}
-            className="px-4 py-2 rounded-lg text-xs font-medium border transition-all hover:bg-cream"
-            style={{ borderColor: '#ddd5c4', color: '#6b6456' }}>
+            className="px-4 py-2 rounded-lg text-xs font-medium border transition-all hover:bg-surface-container-high"
+            style={{ borderColor: '#4d4636', color: '#9b8e80' }}>
             {exporting ? 'Exporting…' : '↓ Export Briefing'}
           </button>
           <button onClick={onTemplate} disabled={generatingTemplate}

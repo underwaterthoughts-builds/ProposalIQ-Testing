@@ -609,7 +609,7 @@ ${sectionHtml('Winning Language', languageHtml)}
               <div className="flex items-center gap-3 px-5 py-3 text-xs border-b" style={{
                 background: outcome.outcome === 'won' ? 'rgba(61,92,58,.15)' : outcome.outcome === 'lost' ? 'rgba(176,64,48,.12)' : '#211f1d',
                 borderColor: outcome.outcome === 'won' ? 'rgba(61,92,58,.25)' : outcome.outcome === 'lost' ? 'rgba(176,64,48,.25)' : '#4d4636',
-                color: outcome.outcome === 'won' ? '#3d5c3a' : outcome.outcome === 'lost' ? '#b04030' : '#6b6456',
+                color: outcome.outcome === 'won' ? '#3d5c3a' : outcome.outcome === 'lost' ? '#b04030' : '#9b8e80',
               }}>
                 <span style={{ fontSize: 14 }}>
                   {outcome.outcome === 'won' ? '★' : outcome.outcome === 'lost' ? '✕' : '◌'}
@@ -908,7 +908,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">
                                   <span className="font-mono text-[10px] flex-shrink-0 uppercase"
-                                    style={{ color: item.priority === 'must' ? '#b04030' : '#6b6456' }}>
+                                    style={{ color: item.priority === 'must' ? '#b04030' : '#9b8e80' }}>
                                     [{item.priority}]
                                   </span>
                                   <span style={{ color: '#e6e2de' }}>{item.requirement}</span>
@@ -1814,7 +1814,7 @@ const OutcomeCaptureModal = memo(function OutcomeCaptureModal({ existing, usageS
                   style={{
                     borderColor: outcome === opt.val ? opt.color : '#4d4636',
                     background: outcome === opt.val ? opt.color + '14' : 'white',
-                    color: outcome === opt.val ? opt.color : '#6b6456',
+                    color: outcome === opt.val ? opt.color : '#9b8e80',
                     fontWeight: outcome === opt.val ? 600 : 400,
                   }}>
                   {opt.label}
@@ -2288,7 +2288,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
                     <span className="flex-shrink-0 font-bold mt-0.5" style={{ color: statusColor }}>{statusIcon}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] flex-shrink-0" style={{ color: r.priority === 'must' ? '#b04030' : '#6b6456' }}>
+                        <span className="font-mono text-[10px] flex-shrink-0" style={{ color: r.priority === 'must' ? '#b04030' : '#9b8e80' }}>
                           [{r.priority?.toUpperCase()}]
                         </span>
                         <span className="truncate" style={{ color: '#e6e2de' }}>{r.text}</span>
@@ -3218,8 +3218,8 @@ const GapCard = memo(function GapCard({ gap: g }) {
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="text-sm font-semibold">{g.title}</div>
             <div className="flex gap-1.5 flex-shrink-0">
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:(PRIORITY_COLOR[g.priority]||'#4d4636')+'18', color:PRIORITY_COLOR[g.priority]||'#6b6456' }}>{g.type}</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:(PRIORITY_COLOR[g.priority]||'#4d4636')+'18', color:PRIORITY_COLOR[g.priority]||'#6b6456' }}>{g.priority}</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:(PRIORITY_COLOR[g.priority]||'#4d4636')+'18', color:PRIORITY_COLOR[g.priority]||'#9b8e80' }}>{g.type}</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:(PRIORITY_COLOR[g.priority]||'#4d4636')+'18', color:PRIORITY_COLOR[g.priority]||'#9b8e80' }}>{g.priority}</span>
             </div>
           </div>
           <p className="text-xs leading-relaxed mb-1" style={{ color:'#d0c5b0' }}>{g.description}</p>

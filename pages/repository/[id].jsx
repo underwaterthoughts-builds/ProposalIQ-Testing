@@ -1291,7 +1291,7 @@ export default function ProjectDetail() {
                 {[['Writing', wq.overall_score], ['Approach', aq.overall_score], ['Credibility', cq.overall_score]].filter(([, v]) => v).map(([k, v]) => (
                   <div key={k} className="mb-2">
                     <div className="flex justify-between text-xs mb-1"><span style={{ color: '#d0c5b0' }}>{k}</span><span className="font-label font-medium" style={{ color: v >= 75 ? '#3d5c3a' : v >= 55 ? '#b8962e' : '#b04030' }}>{v}/100</span></div>
-                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#e8e0d0' }}>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#4d4636' }}>
                       <div className="h-full rounded-full" style={{ width: `${v}%`, background: v >= 75 ? '#3d5c3a' : v >= 55 ? '#b8962e' : '#b04030' }} />
                     </div>
                   </div>
@@ -1304,7 +1304,7 @@ export default function ProjectDetail() {
               {[['Recency', project.kqs_recency], ['Outcome', project.kqs_outcome_quality], ['Specificity', project.kqs_specificity]].map(([k, v]) => (
                 <div key={k} className="mb-2">
                   <div className="flex justify-between text-xs mb-0.5"><span style={{ color: '#d0c5b0' }}>{k}</span><span className="font-label">{Math.round((v || 0) * 100)}%</span></div>
-                  <div className="h-1 rounded-full overflow-hidden" style={{ background: '#e8e0d0' }}>
+                  <div className="h-1 rounded-full overflow-hidden" style={{ background: '#4d4636' }}>
                     <div className="h-full rounded-full" style={{ width: `${(v || 0) * 100}%`, background: '#e8c357' }} />
                   </div>
                 </div>

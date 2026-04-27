@@ -56,7 +56,7 @@ export default function Clients() {
     load();
   }
 
-  const STATUS_COLORS = { active: '#3d5c3a', prospect: '#b8962e', inactive: '#6b6456', lost: '#b04030' };
+  const STATUS_COLORS = { active: '#3d5c3a', prospect: '#b8962e', inactive: '#9b8e80', lost: '#b04030' };
   const allNames = [...clients.map(c => c.name), ...unprofiled.map(c => c.name)];
   const filtered = allNames.filter(n => !search || n.toLowerCase().includes(search.toLowerCase()));
 

@@ -229,7 +229,7 @@ export default function Team() {
                   <input type="checkbox"
                     checked={selectedIds.size === members.length && members.length > 0}
                     onChange={e => setSelectedIds(e.target.checked ? new Set(members.map(m=>m.id)) : new Set())} />
-                  <span style={{color:'#6b6456'}}>{selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select all'}</span>
+                  <span style={{color:'#9b8e80'}}>{selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select all'}</span>
                 </label>
                 {selectedIds.size > 0 && (
                   <Btn variant="danger" onClick={deleteSelected}>✕ Remove {selectedIds.size}</Btn>
@@ -238,7 +238,7 @@ export default function Team() {
               </>
             ) : (
               <>
-                <label className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12.5px] font-medium rounded-md border border-[#ddd5c4] hover:bg-cream cursor-pointer transition-all">
+                <label className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12.5px] font-medium rounded-md border border-outline-variant/30 text-on-surface hover:bg-surface-container-high cursor-pointer transition-all">
                   <input type="file" accept=".xlsx,.xls,.csv,.docx,.doc,.txt" className="hidden"
                     ref={spreadsheetRef}
                     onChange={handleSpreadsheetSelect} />
@@ -247,7 +247,7 @@ export default function Team() {
                 {members.length > 0 && (
                   <button onClick={() => setSelectMode(true)}
                     className="text-xs px-3 py-1.5 rounded-md border transition-all hover:bg-gray-50"
-                    style={{borderColor:'#ddd5c4',color:'#6b6456'}}>
+                    style={{borderColor:'#4d4636',color:'#9b8e80'}}>
                     ☐ Select
                   </button>
                 )}
@@ -298,8 +298,8 @@ export default function Team() {
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h2 className="font-serif text-base">Review Import</h2>
-                    <p className="text-xs mt-0.5" style={{ color: '#6b6456' }}>{importRows.length} rows found — review and edit, then click Import Selected.</p>
+                    <h2 className="font-headline text-lg text-on-surface">Review Import</h2>
+                    <p className="text-xs mt-0.5 text-on-surface-variant">{importRows.length} rows found — review and edit, then click Import Selected.</p>
                   </div>
                   <div className="flex gap-2">
                     <Btn variant="ghost" onClick={() => { setShowImport(false); setImportRows([]); }}>Cancel</Btn>
@@ -311,8 +311,8 @@ export default function Team() {
 
                 <Card className="overflow-auto">
                   {/* Header */}
-                  <div className="grid text-[10px] font-mono uppercase tracking-widest px-3 py-2 border-b sticky top-0 bg-white z-10"
-                    style={{ gridTemplateColumns: '32px 1.2fr 1fr 1fr 90px 90px 70px', borderColor: '#f0ebe0', color: '#6b6456' }}>
+                  <div className="grid text-[10px] font-mono uppercase tracking-widest px-3 py-2 border-b sticky top-0 bg-surface-container z-10 text-on-surface-variant"
+                    style={{ gridTemplateColumns: '32px 1.2fr 1fr 1fr 90px 90px 70px', borderColor: '#4d4636' }}>
                     <span>
                       <input type="checkbox" checked={importRows.every(r => r.selected)}
                         onChange={e => setImportRows(rows => rows.map(r => ({ ...r, selected: e.target.checked })))} />
@@ -323,35 +323,35 @@ export default function Team() {
 
                   {importRows.map((row, i) => (
                     <div key={i} className={`grid items-center px-3 py-2 border-b text-xs ${row.selected ? '' : 'opacity-40'}`}
-                      style={{ gridTemplateColumns: '32px 1.2fr 1fr 1fr 90px 90px 70px', borderColor: '#f0ebe0' }}>
+                      style={{ gridTemplateColumns: '32px 1.2fr 1fr 1fr 90px 90px 70px', borderColor: '#4d4636' }}>
                       <input type="checkbox" checked={row.selected} onChange={e => updateRow(i, 'selected', e.target.checked)} />
                       <input value={row.name || ''} onChange={e => updateRow(i, 'name', e.target.value)}
-                        className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none focus:border-[#1e4a52]" style={{ borderColor: row.name ? '#ddd5c4' : '#f4a0a0' }} />
+                        className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none focus:border-primary bg-[#211f1d] text-on-surface" style={{ borderColor: row.name ? '#4d4636' : '#b04030' }} />
                       <input value={row.title || ''} onChange={e => updateRow(i, 'title', e.target.value)}
                         placeholder="Add title…"
-                        className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none focus:border-[#1e4a52]" style={{ borderColor: '#ddd5c4' }} />
+                        className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none focus:border-primary bg-[#211f1d] text-on-surface placeholder:text-outline" style={{ borderColor: '#4d4636' }} />
                       <input value={Array.isArray(row.stated_specialisms) ? row.stated_specialisms.join(', ') : (row.stated_specialisms || '')}
                         onChange={e => updateRow(i, 'stated_specialisms', e.target.value.split(',').map(s=>s.trim()).filter(Boolean))}
                         placeholder="e.g. Agile, PMO…"
-                        className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none" style={{ borderColor: '#ddd5c4' }} />
+                        className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none focus:border-primary bg-[#211f1d] text-on-surface placeholder:text-outline" style={{ borderColor: '#4d4636' }} />
                       <input value={row.day_rate_client || ''} onChange={e => updateRow(i, 'day_rate_client', e.target.value)}
-                        className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none" style={{ borderColor: '#ddd5c4' }} />
+                        className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none focus:border-primary bg-[#211f1d] text-on-surface" style={{ borderColor: '#4d4636' }} />
                       <input value={row.day_rate_cost || ''} onChange={e => updateRow(i, 'day_rate_cost', e.target.value)}
-                        className="w-full px-2 py-1 border rounded text-xs outline-none" style={{ borderColor: '#ddd5c4' }} />
+                        className="w-full px-2 py-1 border rounded text-xs outline-none focus:border-primary bg-[#211f1d] text-on-surface" style={{ borderColor: '#4d4636' }} />
                       <input value={row.years_experience || ''} onChange={e => updateRow(i, 'years_experience', e.target.value)}
-                        className="w-full px-2 py-1 border rounded text-xs outline-none" style={{ borderColor: '#ddd5c4' }} />
+                        className="w-full px-2 py-1 border rounded text-xs outline-none focus:border-primary bg-[#211f1d] text-on-surface" style={{ borderColor: '#4d4636' }} />
                     </div>
                   ))}
                 </Card>
 
-                <p className="text-xs mt-2" style={{ color: '#6b6456' }}>
+                <p className="text-xs mt-2 text-on-surface-variant">
                   ✓ Check the box to include a row. Edit any field inline — names highlighted in red need attention. Comma-separate multiple specialisms. Bio and CV can be added after import.
                 </p>
               </div>
             )}
 
             {loading ? (
-              <div className="flex items-center gap-2 py-12 justify-center" style={{ color: '#6b6456' }}><Spinner /> Loading team…</div>
+              <div className="flex items-center gap-2 py-12 justify-center text-on-surface-variant"><Spinner /> Loading team…</div>
             ) : members.length === 0 && !showImport ? (
               <div className="text-center py-24">
                 <span className="material-symbols-outlined text-6xl text-outline opacity-40">groups</span>
@@ -520,27 +520,27 @@ export default function Team() {
                     </div>
                   </div>
                   <Card className="overflow-auto">
-                    <div className="grid text-[10px] font-mono uppercase tracking-widest px-3 py-2 border-b sticky top-0 bg-white"
-                      style={{gridTemplateColumns:'32px 1.5fr 100px 120px 100px 100px 80px',borderColor:'#f0ebe0',color:'#6b6456'}}>
+                    <div className="grid text-[10px] font-mono uppercase tracking-widest px-3 py-2 border-b sticky top-0 bg-surface-container z-10 text-on-surface-variant"
+                      style={{gridTemplateColumns:'32px 1.5fr 100px 120px 100px 100px 80px',borderColor:'#4d4636'}}>
                       <span><input type="checkbox" checked={roleImportRows.every(r=>r.selected)} onChange={e=>setRoleImportRows(rows=>rows.map(r=>({...r,selected:e.target.checked})))}/></span>
                       <span>Role Name</span><span>Grade</span><span>Category</span><span>Client £/d</span><span>Cost £/d</span><span>Currency</span>
                     </div>
                     {roleImportRows.map((row,i)=>(
                       <div key={i} className={`grid items-center px-3 py-2 border-b text-xs ${row.selected?'':'opacity-40'}`}
-                        style={{gridTemplateColumns:'32px 1.5fr 100px 120px 100px 100px 80px',borderColor:'#f0ebe0'}}>
+                        style={{gridTemplateColumns:'32px 1.5fr 100px 120px 100px 100px 80px',borderColor:'#4d4636'}}>
                         <input type="checkbox" checked={row.selected} onChange={e=>setRoleImportRows(rows=>rows.map((r,idx)=>idx===i?{...r,selected:e.target.checked}:r))}/>
                         <input value={row.role_name||''} onChange={e=>setRoleImportRows(rows=>rows.map((r,idx)=>idx===i?{...r,role_name:e.target.value}:r))}
-                          className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none" style={{borderColor:'#ddd5c4'}}/>
+                          className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none focus:border-primary bg-[#211f1d] text-on-surface" style={{borderColor:'#4d4636'}}/>
                         <input value={row.grade||''} onChange={e=>setRoleImportRows(rows=>rows.map((r,idx)=>idx===i?{...r,grade:e.target.value}:r))}
-                          className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none" style={{borderColor:'#ddd5c4'}}/>
+                          className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none focus:border-primary bg-[#211f1d] text-on-surface" style={{borderColor:'#4d4636'}}/>
                         <input value={row.category||''} onChange={e=>setRoleImportRows(rows=>rows.map((r,idx)=>idx===i?{...r,category:e.target.value}:r))}
-                          className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none" style={{borderColor:'#ddd5c4'}}/>
+                          className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none focus:border-primary bg-[#211f1d] text-on-surface" style={{borderColor:'#4d4636'}}/>
                         <input value={row.day_rate_client||''} onChange={e=>setRoleImportRows(rows=>rows.map((r,idx)=>idx===i?{...r,day_rate_client:e.target.value}:r))}
-                          className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none" style={{borderColor:'#ddd5c4'}}/>
+                          className="w-full px-2 py-1 border rounded text-xs mr-1 outline-none focus:border-primary bg-[#211f1d] text-on-surface" style={{borderColor:'#4d4636'}}/>
                         <input value={row.day_rate_cost||''} onChange={e=>setRoleImportRows(rows=>rows.map((r,idx)=>idx===i?{...r,day_rate_cost:e.target.value}:r))}
-                          className="w-full px-2 py-1 border rounded text-xs outline-none" style={{borderColor:'#ddd5c4'}}/>
+                          className="w-full px-2 py-1 border rounded text-xs outline-none focus:border-primary bg-[#211f1d] text-on-surface" style={{borderColor:'#4d4636'}}/>
                         <select value={row.currency||'GBP'} onChange={e=>setRoleImportRows(rows=>rows.map((r,idx)=>idx===i?{...r,currency:e.target.value}:r))}
-                          className="w-full px-1 py-1 border rounded text-xs outline-none" style={{borderColor:'#ddd5c4'}}>
+                          className="w-full px-1 py-1 border rounded text-xs outline-none focus:border-primary bg-[#211f1d] text-on-surface" style={{borderColor:'#4d4636'}}>
                           {['GBP','USD','EUR','AED','AUD','CAD'].map(c=><option key={c}>{c}</option>)}
                         </select>
                       </div>
@@ -555,7 +555,7 @@ export default function Team() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h2 className="font-serif text-base">Rate Card</h2>
-                      <p className="text-xs mt-0.5" style={{color:'#6b6456'}}>Standard job roles and day rates used for budget modelling.</p>
+                      <p className="text-xs mt-0.5" style={{color:'#9b8e80'}}>Standard job roles and day rates used for budget modelling.</p>
                     </div>
                     <div className="flex gap-2">
                       {roleSelectMode ? (
@@ -563,7 +563,7 @@ export default function Team() {
                           <label className="flex items-center gap-2 text-xs cursor-pointer">
                             <input type="checkbox" checked={selectedRoleIds.size===roles.length&&roles.length>0}
                               onChange={e=>setSelectedRoleIds(e.target.checked?new Set(roles.map(r=>r.id)):new Set())}/>
-                            <span style={{color:'#6b6456'}}>{selectedRoleIds.size>0?`${selectedRoleIds.size} selected`:'Select all'}</span>
+                            <span style={{color:'#9b8e80'}}>{selectedRoleIds.size>0?`${selectedRoleIds.size} selected`:'Select all'}</span>
                           </label>
                           {selectedRoleIds.size>0&&<Btn variant="danger" onClick={deleteSelectedRoles}>✕ Delete {selectedRoleIds.size}</Btn>}
                           <Btn variant="ghost" onClick={()=>{setRoleSelectMode(false);setSelectedRoleIds(new Set());}}>Cancel</Btn>
@@ -585,7 +585,7 @@ export default function Team() {
                   </div>
 
                   {rolesLoading ? (
-                    <div className="flex items-center gap-2 py-12 justify-center" style={{color:'#6b6456'}}><Spinner/> Loading…</div>
+                    <div className="flex items-center gap-2 py-12 justify-center" style={{color:'#9b8e80'}}><Spinner/> Loading…</div>
                   ) : roles.length === 0 ? (
                     <div className="text-center py-16">
                       <span className="material-symbols-outlined text-5xl text-outline opacity-40">price_change</span>
@@ -602,10 +602,10 @@ export default function Team() {
                         acc[cat].push(r); return acc;
                       },{})).map(([cat,catRoles])=>(
                         <div key={cat} className="mb-6">
-                          <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{color:'#6b6456'}}>{cat}</div>
+                          <div className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{color:'#9b8e80'}}>{cat}</div>
                           <Card className="overflow-hidden">
                             <div className="grid text-[10px] font-mono uppercase tracking-widest px-4 py-2 border-b"
-                              style={{gridTemplateColumns:roleSelectMode?'32px 1.5fr 100px 120px 120px 80px':'1.5fr 100px 120px 120px 80px',background:'#f8f6f2',borderColor:'#f0ebe0',color:'#6b6456'}}>
+                              style={{gridTemplateColumns:roleSelectMode?'32px 1.5fr 100px 120px 120px 80px':'1.5fr 100px 120px 120px 80px',background:'#2b2a27',borderColor:'#4d4636',color:'#9b8e80'}}>
                               {roleSelectMode&&<span/>}
                               <span>Role</span><span>Grade</span><span>Client £/day</span><span>Cost £/day</span><span>Margin</span>
                             </div>
@@ -615,7 +615,7 @@ export default function Team() {
                               return (
                                 <div key={role.id}
                                   className={`grid items-center px-4 py-2.5 border-b last:border-0 text-sm transition-all ${roleSelectMode&&selectedRoleIds.has(role.id)?'bg-[#e8f2f4]':''}`}
-                                  style={{gridTemplateColumns:roleSelectMode?'32px 1.5fr 100px 120px 120px 80px':'1.5fr 100px 120px 120px 80px',borderColor:'#f0ebe0'}}>
+                                  style={{gridTemplateColumns:roleSelectMode?'32px 1.5fr 100px 120px 120px 80px':'1.5fr 100px 120px 120px 80px',borderColor:'#4d4636'}}>
                                   {roleSelectMode&&(
                                     <input type="checkbox" checked={selectedRoleIds.has(role.id)}
                                       onChange={()=>setSelectedRoleIds(prev=>{const n=new Set(prev);n.has(role.id)?n.delete(role.id):n.add(role.id);return n;})}
@@ -625,28 +625,28 @@ export default function Team() {
                                     <>
                                       <input autoFocus defaultValue={role.role_name}
                                         onChange={e=>setEditingRoleField(f=>({...f,role_name:e.target.value}))}
-                                        className="px-2 py-1 border rounded text-xs outline-none focus:border-[#1e4a52]" style={{borderColor:'#ddd5c4'}}/>
+                                        className="px-2 py-1 border rounded text-xs outline-none focus:border-primary" style={{borderColor:'#4d4636'}}/>
                                       <input defaultValue={role.grade}
                                         onChange={e=>setEditingRoleField(f=>({...f,grade:e.target.value}))}
-                                        className="px-2 py-1 border rounded text-xs outline-none" style={{borderColor:'#ddd5c4'}}/>
+                                        className="px-2 py-1 border rounded text-xs outline-none" style={{borderColor:'#4d4636'}}/>
                                       <input defaultValue={role.day_rate_client}
                                         onChange={e=>setEditingRoleField(f=>({...f,day_rate_client:parseFloat(e.target.value)||0}))}
-                                        className="px-2 py-1 border rounded text-xs outline-none" style={{borderColor:'#ddd5c4'}}/>
+                                        className="px-2 py-1 border rounded text-xs outline-none" style={{borderColor:'#4d4636'}}/>
                                       <input defaultValue={role.day_rate_cost}
                                         onChange={e=>setEditingRoleField(f=>({...f,day_rate_cost:parseFloat(e.target.value)||0}))}
-                                        className="px-2 py-1 border rounded text-xs outline-none" style={{borderColor:'#ddd5c4'}}/>
+                                        className="px-2 py-1 border rounded text-xs outline-none" style={{borderColor:'#4d4636'}}/>
                                       <div className="flex gap-1">
                                         <button onClick={()=>saveRoleEdit(role.id)} className="text-[10px] px-2 py-1 rounded text-white" style={{background:'#1e4a52'}}>✓</button>
-                                        <button onClick={()=>{setEditingRoleId(null);setEditingRoleField({});}} className="text-[10px] px-2 py-1 rounded border" style={{borderColor:'#ddd5c4',color:'#6b6456'}}>✕</button>
+                                        <button onClick={()=>{setEditingRoleId(null);setEditingRoleField({});}} className="text-[10px] px-2 py-1 rounded border" style={{borderColor:'#4d4636',color:'#9b8e80'}}>✕</button>
                                       </div>
                                     </>
                                   ) : (
                                     <>
                                       <button onClick={()=>{if(!roleSelectMode){setEditingRoleId(role.id);setEditingRoleField({role_name:role.role_name,grade:role.grade,day_rate_client:role.day_rate_client,day_rate_cost:role.day_rate_cost});}}}
                                         className="text-left hover:text-teal transition-colors font-medium text-sm">{role.role_name}</button>
-                                      <span className="text-xs font-mono" style={{color:'#6b6456'}}>{role.grade}</span>
+                                      <span className="text-xs font-mono" style={{color:'#9b8e80'}}>{role.grade}</span>
                                       <span className="font-mono text-sm">{currencySymbol(role.currency)}{(role.day_rate_client||0).toLocaleString()}</span>
-                                      <span className="font-mono text-sm" style={{color:'#6b6456'}}>{currencySymbol(role.currency)}{(role.day_rate_cost||0).toLocaleString()}</span>
+                                      <span className="font-mono text-sm" style={{color:'#9b8e80'}}>{currencySymbol(role.currency)}{(role.day_rate_cost||0).toLocaleString()}</span>
                                       <span className="font-mono text-sm font-medium" style={{color:margin>=40?'#3d5c3a':margin>=20?'#b8962e':'#b04030'}}>{margin}%</span>
                                     </>
                                   )}
