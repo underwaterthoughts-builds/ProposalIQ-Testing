@@ -689,6 +689,31 @@ function MemberModal({ member: m, onClose, onSaved, onToast }) {
   const cvRef = useRef();
   const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
+  // Canonical sector + specialism autocomplete (Wave 6 polish: #9, #12).
+  // Free-text inputs were causing 'Oil & Gas' / 'Oil and Gas' / 'O&G'
+  // disaggregation. Now we suggest from the taxonomy table — users
+  // can still type a custom value, but the dropdown nudges them to
+  // pick the canonical version.
+  const [sectorOptions, setSectorOptions] = useState([]);
+  const [specOptions, setSpecOptions] = useState([]);
+  useEffect(() => {
+    fetch('/api/taxonomy').then(r => r.json()).then(d => {
+      const items = d.items || [];
+      // Sector list: any taxonomy_items with category 'Sector' (both
+      // service and client side) — same vocabulary either way.
+      setSectorOptions(Array.from(new Set(
+        items.filter(t => /sector/i.test(t.category || '')).map(t => t.name)
+      )).sort());
+      // Specialism list: service-industry items + sector items together.
+      // Most specialisms map to a service axis; sectors are useful too
+      // because some practitioners are domain specialists.
+      setSpecOptions(Array.from(new Set(
+        items.filter(t => /service|industry|specialism/i.test(t.category || ''))
+             .map(t => t.name)
+      )).sort());
+    }).catch(() => {});
+  }, []);
+
   function addSpec(e) {
     if ((e.key === 'Enter' || e.key === ',') && specInput.trim()) {
       e.preventDefault();
@@ -778,10 +803,28 @@ function MemberModal({ member: m, onClose, onSaved, onToast }) {
                 </span>
               ))}
               <input value={specInput} onChange={e => setSpecInput(e.target.value)} onKeyDown={addSpec}
-                placeholder="Type a specialism…" className="flex-1 min-w-24 text-xs outline-none bg-transparent text-on-surface placeholder:text-outline" />
+                list="member-specialism-options"
+                placeholder="Type or pick a specialism…" className="flex-1 min-w-24 text-xs outline-none bg-transparent text-on-surface placeholder:text-outline" />
+              <datalist id="member-specialism-options">
+                {specOptions.map(o => <option key={o} value={o} />)}
+              </datalist>
             </div>
+            <p className="text-[10px] text-on-surface-variant mt-1">Suggestions come from the canonical taxonomy. You can type a new one if it's missing.</p>
           </div>
-          <Input label="Key Sectors" value={form.stated_sectors} onChange={e => f('stated_sectors', e.target.value)} />
+          <div>
+            <label className="block text-[10px] font-label uppercase tracking-widest mb-2 text-on-surface-variant">Key Sectors</label>
+            <input
+              value={form.stated_sectors}
+              onChange={e => f('stated_sectors', e.target.value)}
+              list="member-sector-options"
+              placeholder="e.g. Oil & Gas, Healthcare — pick from the list"
+              className="w-full bg-transparent border-0 border-b border-outline-variant/30 py-2 px-0 text-on-surface placeholder:text-outline focus:ring-0 focus:outline-none focus:border-primary transition-colors"
+            />
+            <datalist id="member-sector-options">
+              {sectorOptions.map(o => <option key={o} value={o} />)}
+            </datalist>
+            <p className="text-[10px] text-on-surface-variant mt-1">Pick from the list to keep sector names consistent. Free text allowed but consistency helps matching.</p>
+          </div>
           <Textarea label="Background / Bio" rows={2} value={form.bio} onChange={e => f('bio', e.target.value)} />
           <div>
             <label className="block text-[10px] font-label uppercase tracking-widest mb-2 text-on-surface-variant">CV / Bio Document</label>
