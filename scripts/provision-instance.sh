@@ -36,10 +36,24 @@ if [[ -z "$LABEL" || -z "$ADMIN_EMAIL" ]]; then
   exit 1
 fi
 
+# API keys: prefer values from the local shell; fall back to whatever is
+# already set on the linked Railway service (the common case when the
+# service was created via "Duplicate Service" so keys carried over).
+service_vars_json="$(railway variables --json 2>/dev/null || echo '{}')"
+read_service_var() {
+  printf '%s' "$service_vars_json" | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{const j=JSON.parse(d);process.stdout.write(j['$1']||'')}catch{process.stdout.write('')}});"
+}
+
 for key in OPENAI_API_KEY GEMINI_API_KEY ANTHROPIC_API_KEY; do
   if [[ -z "${!key:-}" ]]; then
-    echo "ERROR: \$$key not set in your shell — export it before running." >&2
-    exit 1
+    existing="$(read_service_var "$key")"
+    if [[ -n "$existing" ]]; then
+      export "$key=$existing"
+      echo "   (using existing $key from linked service)"
+    else
+      echo "ERROR: \$$key not in shell and not on linked service — export it before running." >&2
+      exit 1
+    fi
   fi
 done
 
