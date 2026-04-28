@@ -90,24 +90,34 @@ railway variables \
 echo ">> Triggering redeploy…"
 railway redeploy --yes >/dev/null || railway up --detach >/dev/null
 
-echo ">> Waiting for deployment SUCCESS (this can take a few minutes)…"
-for i in $(seq 1 60); do
-  status="$(railway status --json 2>/dev/null | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{const j=JSON.parse(d);console.log(j?.deployments?.[0]?.status||j?.latestDeployment?.status||'UNKNOWN')}catch{console.log('UNKNOWN')}})" || echo UNKNOWN)"
-  echo "   [$i] status=$status"
-  if [[ "$status" == "SUCCESS" ]]; then break; fi
-  if [[ "$status" == "FAILED" || "$status" == "CRASHED" ]]; then
-    echo "ERROR: deploy ended in $status — check Railway logs." >&2
-    exit 1
-  fi
-  sleep 10
-done
+echo ">> Waiting for deployment to come online (the seed step retries until it succeeds)…"
+sleep 60
 
-echo ">> Seeding users via railway ssh…"
+echo ">> Seeding users via railway ssh (with retries)…"
 SEED_CMD="node scripts/seed-admin.js '$ADMIN_EMAIL' '$ADMIN_PASS'"
 if [[ -n "$MEMBER_EMAIL" ]]; then
   SEED_CMD="$SEED_CMD '$MEMBER_EMAIL' '$MEMBER_PASS'"
 fi
-railway ssh "$SEED_CMD"
+
+# Retry: deploys can take up to ~5min and the first SSH connection on a
+# new Mac may drop while the host key is being negotiated. seed-admin.js
+# is idempotent (skips users that exist) so retrying is safe.
+seeded=0
+for attempt in 1 2 3 4 5 6; do
+  echo "   attempt $attempt/6…"
+  if railway ssh "$SEED_CMD"; then
+    seeded=1
+    break
+  fi
+  echo "   (failed; waiting 30s before retry)"
+  sleep 30
+done
+
+if [[ "$seeded" -ne 1 ]]; then
+  echo "ERROR: railway ssh failed after 6 attempts. Check the Railway dashboard for deploy status, then run manually:" >&2
+  echo "  railway ssh \"$SEED_CMD\"" >&2
+  exit 1
+fi
 
 cat <<EOF
 
