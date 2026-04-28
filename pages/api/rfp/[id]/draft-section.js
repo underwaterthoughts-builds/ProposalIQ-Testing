@@ -93,9 +93,17 @@ async function handler(req, res) {
     const contract = getSectionContract(body.section_id) || null;
     // Real team records — used so the Team section can use real names
     // instead of [TBC] placeholders, and any phase owner can resolve.
-    const teamRecords = db.prepare(
-      'SELECT id, name, title, stated_specialisms, stated_sectors FROM team_members'
-    ).all().map(m => ({ ...m, stated_specialisms: safe(m.stated_specialisms, []) }));
+    // Tenant-scope to the scan's owner (admin bypass) — Wave 6 Phase 2
+    // miss; the unscoped query previously surfaced every tenant's team
+    // members on a member's section drafts.
+    const teamOwnerRow = scan.owner_user_id ? db.prepare('SELECT role FROM users WHERE id = ?').get(scan.owner_user_id) : null;
+    const teamIsAdminOwned = teamOwnerRow?.role === 'admin';
+    const teamSql = teamIsAdminOwned || !scan.owner_user_id
+      ? 'SELECT id, name, title, stated_specialisms, stated_sectors FROM team_members'
+      : 'SELECT id, name, title, stated_specialisms, stated_sectors FROM team_members WHERE owner_user_id = ?';
+    const teamParams = teamIsAdminOwned || !scan.owner_user_id ? [] : [scan.owner_user_id];
+    const teamRecords = db.prepare(teamSql).all(...teamParams)
+      .map(m => ({ ...m, stated_specialisms: safe(m.stated_specialisms, []) }));
     draft = await generateSectionDraft(
       body.section_name,
       body.section_description || '',
@@ -123,7 +131,15 @@ async function handler(req, res) {
   let qaAdjustments = [];
   let qaCount = 0;
   try {
-    const team = db.prepare('SELECT id, name, title, stated_specialisms FROM team_members').all()
+    // Same tenant-scope rule as the section-draft team query above —
+    // QA shouldn't see a different team pool than the drafter.
+    const qaTeamOwnerRow = scan.owner_user_id ? db.prepare('SELECT role FROM users WHERE id = ?').get(scan.owner_user_id) : null;
+    const qaTeamIsAdminOwned = qaTeamOwnerRow?.role === 'admin';
+    const qaTeamSql = qaTeamIsAdminOwned || !scan.owner_user_id
+      ? 'SELECT id, name, title, stated_specialisms FROM team_members'
+      : 'SELECT id, name, title, stated_specialisms FROM team_members WHERE owner_user_id = ?';
+    const qaTeamParams = qaTeamIsAdminOwned || !scan.owner_user_id ? [] : [scan.owner_user_id];
+    const team = db.prepare(qaTeamSql).all(...qaTeamParams)
       .map(m => ({ ...m, stated_specialisms: safe(m.stated_specialisms, []) }));
     const finalised = await qaFinaliseDraft({
       draftText: draft.draft,

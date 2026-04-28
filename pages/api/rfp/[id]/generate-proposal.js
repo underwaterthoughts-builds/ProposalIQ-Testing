@@ -41,10 +41,41 @@ async function handler(req, res) {
   const suggestedApproach = safe(scan.suggested_approach, null);
   const executiveBrief = safe(scan.executive_brief, null);
 
+  // Mirror the single-section endpoint's upstream-data guards. Without
+  // matches or winning-language/strategy, drafts are forced to invent
+  // content — the non-invention rule then redacts most of it as
+  // [EVIDENCE NEEDED] markers and the user gets a hollow proposal.
+  // Fail loud at the API boundary instead.
+  if (!matches.length) {
+    return res.status(400).json({
+      error: 'No matched proposals available for this scan — full proposal drafts must be source-linked.',
+      hint: 'Re-scan the RFP after uploading at least one relevant past proposal to your repository.',
+    });
+  }
+  if (!winningLanguage.length && !winStrategy) {
+    return res.status(400).json({
+      error: 'No winning language or strategy available for this scan — re-run the scan first to generate them.',
+      hint: 'A scan stuck in "fast_ready" hasn\'t generated these yet. Click Rescan to complete the deep pass.',
+    });
+  }
+
+  // narrative_advice may be a plain string or a JSON object
+  // { text, writing_insights, proposal_structure }. Extract both
+  // so the full-proposal generator gets the same rich writing-insights
+  // context the single-section endpoint receives — without this the two
+  // code paths fed generateSectionDraft different (and weaker)
+  // writingInsights, producing visibly lower-quality full proposals
+  // even though the per-section drafts on their own were strong.
   let narrativeAdvice = '';
+  let writingInsights = [];
   try {
     const parsed = JSON.parse(scan.narrative_advice);
-    narrativeAdvice = typeof parsed === 'string' ? parsed : (parsed?.text || '');
+    if (parsed && typeof parsed === 'object') {
+      narrativeAdvice = parsed.text || '';
+      writingInsights = Array.isArray(parsed.writing_insights) ? parsed.writing_insights : [];
+    } else {
+      narrativeAdvice = parsed || scan.narrative_advice || '';
+    }
   } catch { narrativeAdvice = scan.narrative_advice || ''; }
 
   const proposalStructure = (() => {
@@ -89,7 +120,7 @@ async function handler(req, res) {
       rfpData,
       rfpText: scan.rfp_text || '',
       matches, gaps, winStrategy, winningLanguage,
-      narrativeAdvice, suggestedApproach, proposalStructure,
+      narrativeAdvice, writingInsights, suggestedApproach, proposalStructure,
       executiveBrief, orgProfile, teamSuggestions, team,
     });
   } catch (e) {
