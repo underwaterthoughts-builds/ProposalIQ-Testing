@@ -3266,7 +3266,7 @@ const MarketContext = memo(function MarketContext({ news }) {
         <div className="text-3xl mb-3 opacity-25">◆</div>
         <p className="text-sm" style={{ color: '#d0c5b0' }}>No relevant market context found.</p>
         <p className="text-xs mt-2 max-w-md mx-auto" style={{ color: '#99907d' }}>
-          We searched for news tied to specific programmes, frameworks, regulators and competitors — none scored above the relevance threshold. Better empty than misleading.
+          We searched trade press for news tied to this client, their industry, and the brief's themes — none scored above the relevance threshold. Better empty than misleading.
         </p>
       </div>
     );
