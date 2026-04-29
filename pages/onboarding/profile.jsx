@@ -167,9 +167,9 @@ export default function OnboardingProfile() {
       });
       if (!r.ok) { setToast('Save failed'); setSaving(false); return; }
       setToast('✓ Profile saved — it will now inform future RFP scans');
-      // If user was being held at onboarding (onboarded_at NULL), send
-      // them into the app now that their profile exists.
-      if (user && !user.onboarded_at && user.role !== 'admin') {
+      // If user was being held at onboarding (empty profile), send them
+      // into the app now that org_name + offerings are saved.
+      if (user?.needs_onboarding) {
         setTimeout(() => { window.location.href = '/dashboard'; }, 800);
       }
     } catch (e) {
