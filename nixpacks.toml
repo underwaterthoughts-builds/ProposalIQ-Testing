@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs_22", "python3", "gcc", "gnumake"]
+nixPkgs = ["nodejs_22", "python3", "gcc", "gnumake", "poppler_utils"]
 
 [phases.install]
 cmds = ["npm install --ignore-scripts", "npm rebuild better-sqlite3 --build-from-source"]
