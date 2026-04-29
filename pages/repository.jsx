@@ -61,8 +61,14 @@ const FieldTextarea = memo(function FieldTextarea({ label, value, onChange, rows
 
 const AddNewInline = memo(function AddNewInline({ field, label, placeholder, showParent, active, onActivate, onSave, onCancel, value, onValueChange, parentValue, onParentChange, rootFolders, saving }) {
   if (!active) return (
-    <button type="button" onClick={onActivate} className="text-xs flex items-center gap-1 mt-1" style={{color:'#7fb4bc'}}>
-      <span>⊕</span> Add new {label||field}
+    <button
+      type="button"
+      onClick={onActivate}
+      className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded border transition-colors hover:bg-[rgba(127,180,188,0.12)]"
+      style={{ color: '#7fb4bc', borderColor: '#7fb4bc' }}
+    >
+      <span className="text-sm leading-none">+</span>
+      <span>Add new {label || field}</span>
     </button>
   );
   return (
@@ -1463,6 +1469,23 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
   const [folders] = useState(initialFolders);
   const leafFolders = folders.filter(fl=>!folders.find(p=>p.parent_id===fl.id));
 
+  // Add-new state (sector/currency/type) for the currently-displayed file.
+  // The button-then-input pattern matches the single upload modal so users
+  // see one consistent affordance everywhere.
+  const [addingField, setAddingField] = useState(null);
+  const [newValue, setNewValue] = useState('');
+  const activateAdd = useCallback((field) => { setAddingField(field); setNewValue(''); }, []);
+  const cancelAdd = useCallback(() => { setAddingField(null); setNewValue(''); }, []);
+  const saveAdd = useCallback(() => {
+    const v = newValue.trim();
+    if (!v || currentIdx == null) return;
+    if (addingField === 'sector') { addSector(v); upd(currentIdx, 'sector', v); }
+    else if (addingField === 'currency') { const u = addCurrency(v); upd(currentIdx, 'currency', u); }
+    else if (addingField === 'type') { addType(v); upd(currentIdx, 'project_type', v); }
+    cancelAdd();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addingField, newValue, currentIdx, addSector, addCurrency, addType, cancelAdd]);
+
   // Delay between sequential AI-backed calls (prescan, upload) so we don't
   // hammer the Gemini/OpenAI API rate limits in rapid succession. 3 seconds
   // empirically clears the "too many concurrent" failure mode we were seeing
@@ -1640,11 +1663,25 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Value</label><input value={item.form.contract_value} onChange={e=>upd(currentIdx,'contract_value',e.target.value)} inputMode="decimal" className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none focus:border-[#1e4a52]"/></div>
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Currency</label><select value={item.form.currency} onChange={e=>upd(currentIdx,'currency',e.target.value)} className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none">{currencies.map(c=><option key={c}>{c}</option>)}</select></div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Currency</label>
+                    <select value={item.form.currency} onChange={e=>upd(currentIdx,'currency',e.target.value)} className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none">{currencies.map(c=><option key={c}>{c}</option>)}</select>
+                    <AddNewInline field="currency" label="currency" placeholder="e.g. NOK"
+                      active={addingField==='currency'} onActivate={()=>activateAdd('currency')}
+                      value={newValue} onValueChange={setNewValue}
+                      onSave={saveAdd} onCancel={cancelAdd} />
+                  </div>
                   <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Outcome</label><select value={item.form.outcome} onChange={e=>upd(currentIdx,'outcome',e.target.value)} className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none">{OUTCOMES.map(o=><option key={o}>{o}</option>)}</select></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Sector</label><select value={item.form.sector} onChange={e=>upd(currentIdx,'sector',e.target.value)} className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none"><option value="">Select…</option>{sectors.map(s=><option key={s}>{s}</option>)}</select></div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Sector</label>
+                    <select value={item.form.sector} onChange={e=>upd(currentIdx,'sector',e.target.value)} className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none"><option value="">Select…</option>{sectors.map(s=><option key={s}>{s}</option>)}</select>
+                    <AddNewInline field="sector" placeholder="e.g. Energy & Utilities"
+                      active={addingField==='sector'} onActivate={()=>activateAdd('sector')}
+                      value={newValue} onValueChange={setNewValue}
+                      onSave={saveAdd} onCancel={cancelAdd} />
+                  </div>
                   <div><label className="block text-[10px] font-mono uppercase tracking-widest mb-1" style={{color:'#d0c5b0'}}>Folder</label><select value={item.form.folder_id} onChange={e=>upd(currentIdx,'folder_id',e.target.value)} className="w-full px-3 py-2 border border-[#4d4636] bg-[#211f1d] text-on-surface rounded-md text-sm outline-none"><option value="">Choose…</option>{leafFolders.map(fl=><option key={fl.id} value={fl.id}>{fl.name}</option>)}</select></div>
                 </div>
                 <div>

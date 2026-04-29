@@ -26,14 +26,22 @@ async function handler(req, res) {
 
   let text = '';
   try { text = await parseDocument(uploaded.filepath); } catch(e) { console.error('Prescan parse:',e.message); }
-  try { fs.unlinkSync(uploaded.filepath); } catch {}
+  // NB: the temp file is intentionally NOT deleted yet — the vision
+  // fallback inside prescanDocument needs it on disk to render pages
+  // via pdftoppm. Cleanup happens after.
 
   if (!text||text.trim().length<50) {
+    try { fs.unlinkSync(uploaded.filepath); } catch {}
     return res.status(200).json({ extracted:{}, confidence:'low', note:'Could not extract enough text. Please fill in details manually.' });
   }
 
   const filenameHint = uploaded.originalFilename || uploaded.filepath || '';
-  const result = await prescanDocument(text, filenameHint, uploaded.filepath || null);
+  let result;
+  try {
+    result = await prescanDocument(text, filenameHint, uploaded.filepath || null);
+  } finally {
+    try { fs.unlinkSync(uploaded.filepath); } catch {}
+  }
   return res.status(200).json({ ...result, text_length:text.length });
 }
 
