@@ -135,7 +135,7 @@ async function handler(req, res) {
       if (textToAnalyse.length > 200) {
         try {
           const analysed = await Promise.race([
-            analyseProposal(textToAnalyse, rating, notes),
+            analyseProposal(textToAnalyse, rating, notes, { sector: f('sector') }),
             new Promise((_, reject) => setTimeout(() => reject(new Error('Analysis timeout')), 90000))
           ]);
           if (analysed && analysed.executive_summary) {

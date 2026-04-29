@@ -72,7 +72,10 @@ async function handler(req, res) {
       if (text.trim().length > 200) {
         try {
           metadata = await withTimeout(
-            analyseProposal(text, project.user_rating, notes),
+            analyseProposal(text, project.user_rating, notes, {
+              sector: project.sector,
+              service_industry: project.service_industry,
+            }),
             90000, // 90s timeout for OpenAI
             'analyseProposal'
           );
