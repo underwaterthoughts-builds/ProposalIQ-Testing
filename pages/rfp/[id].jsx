@@ -1206,7 +1206,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                               </div>
                               <div className="text-right flex-shrink-0">
                                 <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-0.5">Fit</div>
-                                <div className="text-xl font-bold tabular-nums" style={{ color: fitColour }}>{fit}</div>
+                                <div className="text-xl font-bold tabular-nums" style={{ color: fitColour }}>{fit}<span className="text-sm font-normal opacity-60">/100</span></div>
                               </div>
                             </div>
                             {specs.length > 0 && (
