@@ -3,6 +3,7 @@ import fs from 'fs';
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
 import { canAccess } from '../../../../lib/tenancy';
+import { contentDisposition } from '../../../../lib/headers';
 
 // GET /api/rfp/[id]/download — serves the original uploaded RFP file
 async function handler(req, res) {
@@ -31,7 +32,7 @@ async function handler(req, res) {
   const fileName = scan.rfp_original_name || scan.rfp_filename;
 
   res.setHeader('Content-Type', contentType);
-  res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
+  res.setHeader('Content-Disposition', contentDisposition('inline', fileName));
   const stream = fs.createReadStream(filePath);
   stream.pipe(res);
 }

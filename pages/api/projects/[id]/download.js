@@ -3,6 +3,7 @@ import fs from 'fs';
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
 import { canAccess } from '../../../../lib/tenancy';
+import { contentDisposition } from '../../../../lib/headers';
 
 async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end();
@@ -44,7 +45,7 @@ async function handler(req, res) {
 
   res.setHeader('Content-Type', contentType);
   const disposition = req.query?.inline ? 'inline' : 'attachment';
-  res.setHeader('Content-Disposition', `${disposition}; filename="${filename}"`);
+  res.setHeader('Content-Disposition', contentDisposition(disposition, filename));
   const stream = fs.createReadStream(file.path);
   stream.on('error', () => res.status(500).end());
   stream.pipe(res);
