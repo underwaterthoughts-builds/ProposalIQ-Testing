@@ -104,7 +104,16 @@ async function handler(req, res) {
     })
     .catch(e => {
       console.error(`[scan ${scanId}] outer catch:`, e.message);
-      try { db.prepare("UPDATE rfp_scans SET status='error' WHERE id=?").run(scanId); } catch {}
+      try {
+        db.prepare("UPDATE rfp_scans SET status='error' WHERE id=?").run(scanId);
+        // If a proposal was attached, flip its status too — otherwise the
+        // proposal-fit tab spins on "Analysing…" forever waiting for a
+        // pipeline that never finishes.
+        if (proposalSavedName) {
+          db.prepare("UPDATE rfp_scans SET proposal_analysis_status='error', proposal_analysis_progress=? WHERE id=?")
+            .run('RFP scan failed before requirements were extracted', scanId);
+        }
+      } catch {}
     });
 }
 

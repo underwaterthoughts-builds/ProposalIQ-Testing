@@ -194,6 +194,9 @@ export default function ProposalFitTab({ scanId }) {
   const overall = data.overall || scores.overall || 0;
   const overallColour = overall >= 70 ? '#7bd07a' : overall >= 50 ? '#e4c366' : '#d0c5b0';
   const coverage = data.coverage || [];
+  const partialAssessment = meta._partial_assessment;
+  const dimsUsed = Array.isArray(meta._dimensions_used) ? meta._dimensions_used : [];
+  const missingDims = meta._missing_dimensions || {};
 
   const addressed = coverage.filter(r => r.status === 'addressed').length;
   const partial   = coverage.filter(r => r.status === 'partial').length;
@@ -247,6 +250,19 @@ export default function ProposalFitTab({ scanId }) {
           <ScoreChip label="Criteria" score={scores.criteria} />
           <ScoreChip label="Pricing" score={scores.pricing} />
         </div>
+        {partialAssessment && dimsUsed.length > 0 && (
+          <div className="mt-4 p-3 rounded border-l-2 border-amber-400/60 bg-amber-400/5">
+            <p className="text-xs text-on-surface-variant">
+              <span className="font-bold text-on-surface">Partial assessment.</span>{' '}
+              {missingDims.requirements && 'The RFP did not yield extractable requirements, '}
+              {missingDims.criteria && !missingDims.requirements && 'No evaluation criteria were found in the RFP, '}
+              {missingDims.criteria && missingDims.requirements && 'and no evaluation criteria either, '}
+              {missingDims.pricing && 'and pricing alignment is not assessable. '}
+              The score above blends only: <span className="font-mono">{dimsUsed.join(' + ')}</span>.
+              {missingDims.requirements && ' Re-extract the RFP if it parsed thinly.'}
+            </p>
+          </div>
+        )}
       </Card>
 
       {/* ── At-a-glance counts ──────────────────────────────────────── */}
