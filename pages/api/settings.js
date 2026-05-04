@@ -1,6 +1,12 @@
 import { getDb } from '../../lib/db';
 import { requireAuth } from '../../lib/auth';
+import { isAdmin } from '../../lib/tenancy';
 
+// Workspace-global settings (org_name, target_margin, default_currency).
+// In the per-tenant Railway model the whole instance is one workspace, so
+// these are deliberately shared across all members. Reads are open to any
+// signed-in member; writes are admin-only to prevent a member from changing
+// the workspace's commercial defaults.
 async function handler(req, res) {
   const db = getDb();
   if (req.method === 'GET') {
@@ -23,6 +29,7 @@ async function handler(req, res) {
     });
   }
   if (req.method === 'POST') {
+    if (!isAdmin(req.user)) return res.status(403).json({ error: 'Admin only' });
     const body = typeof req.body==='string'?JSON.parse(req.body):req.body;
     const upsert = db.prepare('INSERT INTO settings (key,value,updated_at) VALUES (?,?,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP');
     const allowed = ['org_name','target_margin','default_currency'];

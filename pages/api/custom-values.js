@@ -1,5 +1,6 @@
 import { getDb } from '../../lib/db';
 import { requireAuth } from '../../lib/auth';
+import { ownerId } from '../../lib/tenancy';
 import { v4 as uuid } from 'uuid';
 
 // Default built-in values — always shown even if not in DB
@@ -11,12 +12,13 @@ const DEFAULTS = {
 
 function handler(req, res) {
   const db = getDb();
+  const owner = ownerId(req.user);
 
   if (req.method === 'GET') {
     const { category } = req.query;
     const rows = category
-      ? db.prepare('SELECT value FROM custom_values WHERE category = ? ORDER BY created_at').all(category)
-      : db.prepare('SELECT category, value FROM custom_values ORDER BY category, created_at').all();
+      ? db.prepare('SELECT value FROM custom_values WHERE category = ? AND owner_user_id = ? ORDER BY created_at').all(category, owner)
+      : db.prepare('SELECT category, value FROM custom_values WHERE owner_user_id = ? ORDER BY category, created_at').all(owner);
 
     if (category) {
       const customs = rows.map(r => r.value);
@@ -49,8 +51,8 @@ function handler(req, res) {
     const defs = DEFAULTS[category] || [];
     if (!defs.includes(value)) {
       try {
-        db.prepare('INSERT OR IGNORE INTO custom_values (id, category, value) VALUES (?, ?, ?)')
-          .run(uuid(), category, value.trim());
+        db.prepare('INSERT OR IGNORE INTO custom_values (id, category, value, owner_user_id) VALUES (?, ?, ?, ?)')
+          .run(uuid(), category, value.trim(), owner);
       } catch (e) {
         // UNIQUE constraint — already exists, that's fine
       }
@@ -62,7 +64,7 @@ function handler(req, res) {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const { category, value } = body;
     if (!category || !value) return res.status(400).json({ error: 'category and value required' });
-    db.prepare('DELETE FROM custom_values WHERE category = ? AND value = ?').run(category, value);
+    db.prepare('DELETE FROM custom_values WHERE category = ? AND value = ? AND owner_user_id = ?').run(category, value, owner);
     return res.status(200).json({ ok: true });
   }
 

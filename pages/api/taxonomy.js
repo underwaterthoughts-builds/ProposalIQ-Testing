@@ -1,7 +1,12 @@
 import { getDb } from '../../lib/db';
 import { requireAuth } from '../../lib/auth';
+import { isAdmin } from '../../lib/tenancy';
 import { v4 as uuid } from 'uuid';
 
+// Taxonomy is workspace-global reference data (sectors, service offerings,
+// client industries). In the per-tenant Railway model the whole instance is
+// one workspace, so writes are admin-gated rather than per-user-scoped.
+// Reads are open to any signed-in member.
 async function handler(req, res) {
   const db = getDb();
 
@@ -9,6 +14,9 @@ async function handler(req, res) {
     const items = db.prepare('SELECT * FROM taxonomy_items ORDER BY category, sort_order, name').all();
     return res.status(200).json({ items });
   }
+
+  // Writes are admin-only — taxonomy changes affect every member of the workspace.
+  if (!isAdmin(req.user)) return res.status(403).json({ error: 'Admin only' });
 
   if (req.method === 'POST') {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;

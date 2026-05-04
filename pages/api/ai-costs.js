@@ -1,5 +1,5 @@
 import { getDb } from '../../lib/db';
-import { requireAuth } from '../../lib/auth';
+import { requireAdmin } from '../../lib/auth';
 
 // GET /api/ai-costs — returns aggregated AI spending breakdown
 async function handler(req, res) {
@@ -89,4 +89,4 @@ async function handler(req, res) {
   });
 }
 
-export default requireAuth(handler);
+export default requireAdmin(handler);
