@@ -56,7 +56,7 @@ export default function RFPIndex() {
       const r = await fetch('/api/rfp/scan');
       const d = await r.json();
       setScans(d.scans || []);
-    } catch {}
+    } catch (e) { console.error('[rfp] loadScans failed:', e.message); }
   }
 
   async function startScan() {

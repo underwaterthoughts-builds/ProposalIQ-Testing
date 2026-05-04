@@ -711,7 +711,7 @@ function MemberModal({ member: m, onClose, onSaved, onToast }) {
         items.filter(t => /service|industry|specialism/i.test(t.category || ''))
              .map(t => t.name)
       )).sort());
-    }).catch(() => {});
+    }).catch(e => console.error('[team] /api/taxonomy failed:', e.message));
   }, []);
 
   function addSpec(e) {
@@ -763,7 +763,7 @@ function MemberModal({ member: m, onClose, onSaved, onToast }) {
           if (newId) {
             await uploadCvToMember(newId, pendingCvFile);
           }
-        } catch {}
+        } catch (e) { console.error('[team] CV upload after create failed:', e.message); }
       }
       setSaving(false);
       onSaved();

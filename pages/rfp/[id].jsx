@@ -26,7 +26,7 @@ const RfpTaxonomyBar = memo(function RfpTaxonomyBar({ scan, rfpData, scanId }) {
   const [taxItems, setTaxItems] = useState(null);
   useEffect(() => {
     if (editing && !taxItems) {
-      fetch('/api/taxonomy').then(r => r.json()).then(d => setTaxItems(d.items || [])).catch(() => {});
+      fetch('/api/taxonomy').then(r => r.json()).then(d => setTaxItems(d.items || [])).catch(e => console.error('[rfp] /api/taxonomy failed:', e.message));
     }
   }, [editing, taxItems]);
 
@@ -40,7 +40,7 @@ const RfpTaxonomyBar = memo(function RfpTaxonomyBar({ scan, rfpData, scanId }) {
       });
       // Reload to pick up the change
       window.location.reload();
-    } catch {}
+    } catch (e) { console.error('[rfp] saveTaxonomy failed:', e.message); }
     setSaving(false);
     setEditing(null);
   }
@@ -170,7 +170,7 @@ export default function RFPResults() {
     fetch(`/api/clients?name=${encodeURIComponent(scan.rfp_data.client)}`)
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.client || d?.projects?.length) setClientIntel(d); })
-      .catch(() => {});
+      .catch(e => console.error('[rfp] client intel fetch failed:', e.message));
   }, [scan?.rfp_data?.client]);
 
   // Wave 3 — load existing outcome + usage summary once scan is complete
@@ -184,7 +184,7 @@ export default function RFPResults() {
           setUsageSummary(d.usage_summary || {});
         }
       })
-      .catch(() => {});
+      .catch(e => console.error('[rfp] outcome fetch failed:', e.message));
   }, [id, scan?.status]);
 
   // Wave 3 — fire-and-forget usage event logger. Used by passive hooks.
@@ -199,7 +199,7 @@ export default function RFPResults() {
         target_id: opts.target_id || null,
         payload: opts.payload || null,
       }),
-    }).catch(() => {});
+    }).catch(e => console.error('[rfp] usage log failed:', e.message));
   }
 
   async function saveOutcome(form) {
@@ -1932,7 +1932,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
           setDrafts(map);
         }
       })
-      .catch(() => {});
+      .catch(e => console.error('[rfp] drafts fetch failed:', e.message));
   }, [scan?.id]);
 
   async function generateDraft(section, force = false) {

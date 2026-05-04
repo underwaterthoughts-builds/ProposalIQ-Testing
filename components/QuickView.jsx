@@ -26,7 +26,7 @@ function SignalBlock({ decision, score, confidence, rationale, conditions }) {
     <div className="rounded-2xl p-4 md:p-6 mb-6 md:mb-8 flex items-start gap-4 md:gap-6" style={{ background: p.bg, border: `1.5px solid ${p.border}30` }}>
       <div className="flex-shrink-0 text-center">
         <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ background: p.dot, boxShadow: `0 0 8px ${p.dot}60` }} />
-        <div className="font-serif font-bold text-3xl leading-none" style={{ color: p.accent }}>{score}</div>
+        <div className="font-serif font-bold text-3xl leading-none" style={{ color: p.accent }}>{score}<span className="text-base font-normal opacity-60">/100</span></div>
         <div className="text-[10px] font-mono uppercase tracking-widest mt-1" style={{ color: p.accent }}>Fit Score</div>
       </div>
       <div className="w-px self-stretch" style={{ background: p.border + '30' }} />

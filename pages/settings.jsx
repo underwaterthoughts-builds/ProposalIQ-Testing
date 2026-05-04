@@ -31,7 +31,7 @@ export default function Settings() {
     fetch('/api/settings').then(r => r.json()).then(d => {
       setForm({ org_name: d.org_name || '', target_margin: d.target_margin || '30', default_currency: d.default_currency || 'GBP' });
       setInfo({ gemini_model: d.gemini_model, has_api_key: d.has_api_key, has_openai: d.has_openai, openai_model: d.openai_model });
-    }).catch(() => {});
+    }).catch(e => console.error('[settings] /api/settings failed:', e.message));
   }, []);
 
   useEffect(() => {

@@ -84,15 +84,15 @@ export default function Dashboard() {
         setNeedsSeed(p.length === 0);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(e => { console.error('[dashboard] /api/projects failed:', e.message); setLoading(false); });
     fetch('/api/rfp/scan')
       .then(r => r.json())
       .then(d => setScans(d.scans || []))
-      .catch(() => {});
+      .catch(e => console.error('[dashboard] /api/rfp/scan failed:', e.message));
     fetch('/api/win-patterns')
       .then(r => r.json())
       .then(d => setPatterns(d))
-      .catch(() => {});
+      .catch(e => console.error('[dashboard] /api/win-patterns failed:', e.message));
   }, []);
 
   async function runSeed() {
@@ -102,7 +102,9 @@ export default function Dashboard() {
       const d = await fetch('/api/projects').then(r => r.json());
       setProjects(d.projects || []);
       setNeedsSeed(false);
-    } catch {}
+    } catch (e) {
+      console.error('[dashboard] runSeed failed:', e.message);
+    }
     setSeeding(false);
   }
 
