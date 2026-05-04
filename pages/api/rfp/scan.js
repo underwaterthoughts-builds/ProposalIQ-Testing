@@ -6,6 +6,7 @@ import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { ensureDir } from '../../../lib/storage';
 import { runRfpScanPipeline } from '../../../lib/rfp-pipeline';
+import { analyseProposalAgainstRfp } from '../../../lib/proposal-fit';
 import { scope, ownerId } from '../../../lib/tenancy';
 
 export const config = { api: { bodyParser: false } };
@@ -48,19 +49,63 @@ async function handler(req, res) {
   const newPath = path.join(uploadDir, newName);
   fs.renameSync(rfpFile.filepath, newPath);
 
-  db.prepare('INSERT INTO rfp_scans (id,name,rfp_filename,rfp_original_name,status,owner_user_id) VALUES (?,?,?,?,?,?)').run(
-    scanId, f('name') || rfpFile.originalFilename || 'RFP Scan', newName, rfpFile.originalFilename || newName, 'processing', ownerId(req.user)
+  // Optional companion proposal — user can attach their draft response
+  // alongside the RFP at scan creation. Validated and stored here; the
+  // proposal-fit pass kicks off after the main scan is up.
+  const ALLOWED_PROPOSAL_EXT = new Set(['.pdf', '.docx', '.doc', '.txt', '.md']);
+  const propArr = files['proposal'];
+  const propFile = Array.isArray(propArr) ? propArr[0] : propArr;
+  let proposalSavedName = null;
+  let proposalOriginalName = null;
+  if (propFile?.filepath) {
+    const propExt = path.extname(propFile.originalFilename || propFile.filepath).toLowerCase();
+    if (ALLOWED_PROPOSAL_EXT.has(propExt)) {
+      proposalSavedName = `proposal_${scanId}_${uuid()}${propExt}`;
+      const propPath = path.join(uploadDir, proposalSavedName);
+      try {
+        fs.renameSync(propFile.filepath, propPath);
+        proposalOriginalName = propFile.originalFilename || proposalSavedName;
+      } catch {
+        proposalSavedName = null;
+        proposalOriginalName = null;
+      }
+    } else {
+      try { fs.unlinkSync(propFile.filepath); } catch {}
+    }
+  }
+
+  db.prepare(
+    `INSERT INTO rfp_scans (
+      id, name, rfp_filename, rfp_original_name, status, owner_user_id,
+      proposal_filename, proposal_original_name, proposal_uploaded_at, proposal_analysis_status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ${proposalSavedName ? 'CURRENT_TIMESTAMP' : 'NULL'}, ?)`
+  ).run(
+    scanId, f('name') || rfpFile.originalFilename || 'RFP Scan', newName, rfpFile.originalFilename || newName, 'processing', ownerId(req.user),
+    proposalSavedName, proposalOriginalName, proposalSavedName ? 'pending' : null
   );
 
   res.status(202).json({ scanId, message: 'Processing started' });
 
-  // Fire-and-forget the pipeline so the user can poll for status.
-  // Pass userId so the pipeline can filter by workspace.
+  // Fire-and-forget the main RFP pipeline. When a companion proposal is
+  // attached, the proposal-fit pass runs after the RFP scan finishes so
+  // it has rfp_data.requirements available to score against.
   const userId = req.user?.id || null;
-  runRfpScanPipeline(scanId, newPath, userId).catch(e => {
-    console.error(`[scan ${scanId}] outer catch:`, e.message);
-    try { db.prepare("UPDATE rfp_scans SET status='error' WHERE id=?").run(scanId); } catch {}
-  });
+  runRfpScanPipeline(scanId, newPath, userId)
+    .then(() => {
+      if (proposalSavedName) {
+        return analyseProposalAgainstRfp(scanId).catch(e => {
+          console.error(`[proposal-fit ${scanId}] post-scan catch:`, e.message);
+          try {
+            db.prepare("UPDATE rfp_scans SET proposal_analysis_status='error', proposal_analysis_progress = ? WHERE id=?")
+              .run(e.message?.slice(0, 200) || 'unknown error', scanId);
+          } catch {}
+        });
+      }
+    })
+    .catch(e => {
+      console.error(`[scan ${scanId}] outer catch:`, e.message);
+      try { db.prepare("UPDATE rfp_scans SET status='error' WHERE id=?").run(scanId); } catch {}
+    });
 }
 
 export default requireAuth(handler);

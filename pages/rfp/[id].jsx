@@ -8,6 +8,7 @@ import { useMode } from '../../lib/useMode';
 import { useUser } from '../../lib/useUser';
 import { formatMoney, currencySymbol } from '../../lib/format';
 import { DebouncedInput, DebouncedTextarea, DebouncedSearch } from '../../lib/useDebounce';
+import ProposalFitTab from '../../components/ProposalFitTab';
 
 const PRIORITY_COLOR = { high:'#b04030', med:'#b8962e', low:'#2d6b78' };
 
@@ -499,6 +500,7 @@ ${sectionHtml('Winning Language', languageHtml)}
     { id:'news', label:'Market Context', count:news.length },
     { id:'approach', label:'Suggested Approach', count:suggestedApproach?.suggested_phases?.length||0 },
     { id:'team', label:'Suggested Team', count: teamSuggestions.length },
+    { id:'proposal_fit', label:'Your Proposal', badge: scan.proposal_filename ? '✓' : '+' },
     { id:'strategy', label:'Win Strategy', badge: winStrategy ? '⚡' : null },
     { id:'language', label:'Winning Language', count:winningLanguage.length },
     { id:'narrative', label:'Narrative Advice', badge: narrativeText ? '✎' : null },
@@ -1232,6 +1234,8 @@ ${sectionHtml('Winning Language', languageHtml)}
                     </div>
                   )}
                 </div>
+              ) : activeTab === 'proposal_fit' ? (
+                <ProposalFitTab scanId={id} />
               ) : activeTab === 'strategy' ? (
                 <div className="space-y-4">
                   {isPro && (

@@ -42,12 +42,14 @@ export default function RFPIndex() {
   const { user, loading: authLoading } = useUser();
   const [scans, setScans] = useState([]);
   const [file, setFile] = useState(null);
+  const [proposalFile, setProposalFile] = useState(null);
   const [scanName, setScanName] = useState('');
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState('');
   const [deletingId, setDeletingId] = useState(null);
   const [showLimit, setShowLimit] = useState(5);
   const fileRef = useRef();
+  const proposalRef = useRef();
 
   useEffect(() => { loadScans(); }, []);
 
@@ -71,11 +73,23 @@ export default function RFPIndex() {
       setToast('File too large — maximum is 50MB');
       return;
     }
+    if (proposalFile) {
+      const pext = (proposalFile.name.split('.').pop() || '').toLowerCase();
+      if (!allowedExt.includes(pext)) {
+        setToast(`Proposal: unsupported file type ".${pext}"`);
+        return;
+      }
+      if (proposalFile.size > 50 * 1024 * 1024) {
+        setToast('Proposal file too large — maximum is 50MB');
+        return;
+      }
+    }
     setUploading(true);
     try {
       const fd = new FormData();
       fd.append('rfp', file);
       fd.append('name', scanName || file.name.replace(/\.[^.]+$/, ''));
+      if (proposalFile) fd.append('proposal', proposalFile);
       const r = await fetch('/api/rfp/scan', { method: 'POST', body: fd });
       if (r.ok) {
         const d = await r.json();
@@ -165,6 +179,37 @@ export default function RFPIndex() {
                   accept=".pdf,.docx,.doc,.txt"
                   onChange={e => { if (e.target.files[0]) setFile(e.target.files[0]); }}
                 />
+                <input
+                  type="file"
+                  ref={proposalRef}
+                  className="hidden"
+                  accept=".pdf,.docx,.doc,.txt,.md"
+                  onChange={e => { if (e.target.files[0]) setProposalFile(e.target.files[0]); }}
+                />
+
+                {/* Optional companion proposal */}
+                {file && (
+                  <div className="w-full max-w-sm mb-4 mt-2 p-3 rounded-md border border-outline-variant/30 bg-surface-container-lowest/60 text-left">
+                    <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Optional</p>
+                    <p className="text-xs text-on-surface mb-2">
+                      Have a draft response? Add it to score your proposal against this RFP.
+                    </p>
+                    {proposalFile ? (
+                      <div className="flex items-center justify-between gap-2 text-xs">
+                        <span className="truncate text-on-surface-variant">{proposalFile.name} · {(proposalFile.size / 1024).toFixed(0)} KB</span>
+                        <button onClick={() => setProposalFile(null)} className="text-on-surface-variant hover:text-error opacity-70" aria-label="Remove proposal">✕</button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => proposalRef.current.click()}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        + Attach proposal (PDF / DOCX)
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 <div className="flex flex-wrap justify-center gap-3">
                   <button
