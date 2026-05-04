@@ -534,7 +534,13 @@ function IntelligenceMode({ projects, scans, patterns, winRate, won, lost }) {
           <div className="flex-1 bg-surface-container-lowest p-6 border border-outline-variant/5">
             <h4 className="font-label text-[11px] uppercase tracking-widest text-on-surface-variant mb-6">Recent Projects</h4>
             {recent.length === 0 ? (
-              <p className="text-sm text-on-surface-variant">No projects yet.</p>
+              <div className="py-6">
+                <p className="text-sm text-on-surface-variant mb-3">No projects yet.</p>
+                <Link href="/repository" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+                  <span className="material-symbols-outlined text-base">add</span>
+                  Add your first project
+                </Link>
+              </div>
             ) : (
               <ul className="space-y-4">
                 {recent.map(p => {

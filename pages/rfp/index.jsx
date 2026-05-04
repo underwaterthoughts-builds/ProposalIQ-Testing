@@ -61,6 +61,16 @@ export default function RFPIndex() {
 
   async function startScan() {
     if (!file) { setToast('Please select an RFP file first'); return; }
+    const allowedExt = ['pdf', 'docx', 'doc', 'txt', 'md'];
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (!allowedExt.includes(ext)) {
+      setToast(`Unsupported file type ".${ext}" — use PDF, DOCX, DOC, TXT, or MD`);
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      setToast('File too large — maximum is 50MB');
+      return;
+    }
     setUploading(true);
     try {
       const fd = new FormData();

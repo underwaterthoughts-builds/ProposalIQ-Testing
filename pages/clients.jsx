@@ -347,7 +347,13 @@ export default function Clients() {
                     <div className="col-span-12 md:col-span-8">
                       <h3 className="font-headline text-2xl text-on-surface mb-8">Proposal History</h3>
                       {selectedProjects.length === 0 ? (
-                        <p className="text-sm text-on-surface-variant italic">No projects found for this client yet.</p>
+                        <div>
+                          <p className="text-sm text-on-surface-variant italic mb-3">No projects found for this client yet.</p>
+                          <Link href="/repository" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+                            <span className="material-symbols-outlined text-base">add</span>
+                            Add a project for this client
+                          </Link>
+                        </div>
                       ) : (
                         <div className="bg-surface-container-lowest overflow-hidden border border-outline-variant/10">
                           <table className="w-full text-left">

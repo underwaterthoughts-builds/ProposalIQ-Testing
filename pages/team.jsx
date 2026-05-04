@@ -779,7 +779,7 @@ function MemberModal({ member: m, onClose, onSaved, onToast }) {
       <div className="w-full max-w-lg bg-surface-container rounded-xl overflow-hidden shadow-2xl flex flex-col border border-outline-variant/20" style={{ maxHeight: '90vh' }}>
         <div className="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between flex-shrink-0" style={{ background: 'linear-gradient(135deg, #1e4a52, #2d6b78)' }}>
           <h2 className="font-serif text-lg text-white">{m ? 'Edit Team Member' : 'Add Team Member'}</h2>
-          <button onClick={onClose} className="w-7 h-7 rounded flex items-center justify-center text-white/60 hover:text-white text-sm">✕</button>
+          <button onClick={onClose} aria-label="Close dialog" className="w-7 h-7 rounded flex items-center justify-center text-white/60 hover:text-white text-sm">✕</button>
         </div>
         <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-surface-container">
           <div className="grid grid-cols-2 gap-3">
@@ -799,7 +799,7 @@ function MemberModal({ member: m, onClose, onSaved, onToast }) {
             <div className="flex flex-wrap gap-1.5 p-2.5 border border-outline-variant/30 rounded-md min-h-[42px] bg-surface-container-lowest">
               {form.stated_specialisms.map(s => (
                 <span key={s} className="flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded bg-primary/10 text-primary">
-                  {s}<button type="button" onClick={() => f('stated_specialisms', form.stated_specialisms.filter(x => x !== s))} className="opacity-60 hover:opacity-100">✕</button>
+                  {s}<button type="button" aria-label={`Remove specialism ${s}`} onClick={() => f('stated_specialisms', form.stated_specialisms.filter(x => x !== s))} className="opacity-60 hover:opacity-100">✕</button>
                 </span>
               ))}
               <input value={specInput} onChange={e => setSpecInput(e.target.value)} onKeyDown={addSpec}
