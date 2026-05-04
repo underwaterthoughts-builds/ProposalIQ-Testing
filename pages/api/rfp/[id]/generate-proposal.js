@@ -1,7 +1,7 @@
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
 import { canAccess } from '../../../../lib/tenancy';
-import { safe } from '../../../../lib/embeddings';
+import { parseJsonField } from '../../../../lib/embeddings';
 import {
   generateFullProposal, checkRequirementsCoverage,
   conformToWritingStyle, hasOpenAI, setCostContext,
@@ -33,13 +33,13 @@ async function handler(req, res) {
     });
   }
 
-  const rfpData = safe(scan.rfp_data, {});
-  const matches = safe(scan.matched_proposals, []);
-  const gaps = safe(scan.gaps, []);
-  const winStrategy = safe(scan.win_strategy, null);
-  const winningLanguage = safe(scan.winning_language, []);
-  const suggestedApproach = safe(scan.suggested_approach, null);
-  const executiveBrief = safe(scan.executive_brief, null);
+  const rfpData = parseJsonField(scan.rfp_data, {});
+  const matches = parseJsonField(scan.matched_proposals, []);
+  const gaps = parseJsonField(scan.gaps, []);
+  const winStrategy = parseJsonField(scan.win_strategy, null);
+  const winningLanguage = parseJsonField(scan.winning_language, []);
+  const suggestedApproach = parseJsonField(scan.suggested_approach, null);
+  const executiveBrief = parseJsonField(scan.executive_brief, null);
 
   // Mirror the single-section endpoint's upstream-data guards. Without
   // matches or winning-language/strategy, drafts are forced to invent
@@ -85,12 +85,12 @@ async function handler(req, res) {
     } catch { return null; }
   })();
 
-  const teamSuggestions = safe(scan.team_suggestions, []);
+  const teamSuggestions = parseJsonField(scan.team_suggestions, []);
 
   let orgProfile = null;
   try {
     const row = db.prepare("SELECT * FROM organisation_profile WHERE user_id = ?").get(req.user.id);
-    if (row) orgProfile = { ...row, confirmed_profile: safe(row.confirmed_profile, {}) };
+    if (row) orgProfile = { ...row, confirmed_profile: parseJsonField(row.confirmed_profile, {}) };
   } catch {}
 
   setCostContext({ category: 'proposal_generation', scanId: id, projectId: null });
@@ -106,7 +106,7 @@ async function handler(req, res) {
     : 'SELECT id, name, title, stated_specialisms, stated_sectors FROM team_members WHERE owner_user_id = ?';
   const teamParams = teamIsAdminOwned || !scan.owner_user_id ? [] : [scan.owner_user_id];
   const team = db.prepare(teamSql).all(...teamParams)
-    .map(m => ({ ...m, stated_specialisms: safe(m.stated_specialisms, []) }));
+    .map(m => ({ ...m, stated_specialisms: parseJsonField(m.stated_specialisms, []) }));
 
   // Generate. QA now runs PER SECTION inside generateFullProposal with each
   // section's own depth contract — previously we ran one full-document QA

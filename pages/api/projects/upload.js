@@ -8,6 +8,7 @@ import { ownerId } from '../../../lib/tenancy';
 import { projectDir } from '../../../lib/storage';
 import { parseDocument } from '../../../lib/parser';
 import { embed, analyseProposal, extractPricingFromImages, setCostContext, hasOpenAI } from '../../../lib/gemini';
+import { AI_ANALYSIS_TIMEOUT_MS, VISION_TIMEOUT_MS } from '../../../lib/timeouts';
 
 export const config = { api: { bodyParser: false } };
 
@@ -136,7 +137,7 @@ async function handler(req, res) {
         try {
           const analysed = await Promise.race([
             analyseProposal(textToAnalyse, rating, notes, { sector: f('sector') }),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Analysis timeout')), 90000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Analysis timeout')), AI_ANALYSIS_TIMEOUT_MS))
           ]);
           if (analysed && analysed.executive_summary) {
             metadata = analysed;
@@ -168,7 +169,7 @@ async function handler(req, res) {
         try {
           const visionResult = await Promise.race([
             extractPricingFromImages(proposalFilePath),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 20000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), VISION_TIMEOUT_MS))
           ]);
           if (visionResult?.contract_value) {
             const numVal = parseFloat(String(visionResult.contract_value).replace(/[^0-9.]/g, '')) || 0;

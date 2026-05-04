@@ -2,7 +2,7 @@ import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { canAccess } from '../../../lib/tenancy';
 import { embed, analyseCv } from '../../../lib/gemini';
-import { safe } from '../../../lib/embeddings';
+import { parseJsonField } from '../../../lib/embeddings';
 import { parseDocument } from '../../../lib/parser';
 import formidable from 'formidable';
 import path from 'path';
@@ -26,7 +26,7 @@ async function handler(req, res) {
     const m = db.prepare('SELECT * FROM team_members WHERE id=?').get(id);
     if (!m) return res.status(404).json({ error:'Not found' });
     const history = db.prepare(`SELECT pt.*,p.name as project_name,p.outcome,p.user_rating,p.sector,p.date_submitted FROM project_team pt JOIN projects p ON p.id=pt.project_id WHERE pt.member_id=?`).all(id);
-    return res.status(200).json({ member:{ ...m,stated_specialisms:safe(m.stated_specialisms,[]),cv_extracted:safe(m.cv_extracted,{}) }, history });
+    return res.status(200).json({ member:{ ...m,stated_specialisms:parseJsonField(m.stated_specialisms,[]),cv_extracted:parseJsonField(m.cv_extracted,{}) }, history });
   }
 
   if (req.method === 'PATCH') {
@@ -59,7 +59,7 @@ async function handler(req, res) {
       // Re-embed with CV data
       const current = db.prepare('SELECT * FROM team_members WHERE id=?').get(id);
       if (current) {
-        const specs = safe(current.stated_specialisms,[]);
+        const specs = parseJsonField(current.stated_specialisms,[]);
         const cvSectors = cvExtracted.sectors||[];
         const cvTech = cvExtracted.technologies||[];
         const embText = [current.name,current.title,...specs,...cvSectors,...cvTech,current.stated_sectors||'',current.bio||'',cvExtracted.career_summary||''].join(' ');
@@ -87,8 +87,8 @@ async function handler(req, res) {
     const current = db.prepare('SELECT * FROM team_members WHERE id=?').get(id);
     if (current) {
       const merged = { ...current, ...body };
-      const specs = Array.isArray(merged.stated_specialisms)?merged.stated_specialisms:safe(merged.stated_specialisms,[]);
-      const cvExtracted = safe(current.cv_extracted,{});
+      const specs = Array.isArray(merged.stated_specialisms)?merged.stated_specialisms:parseJsonField(merged.stated_specialisms,[]);
+      const cvExtracted = parseJsonField(current.cv_extracted,{});
       const embText = [merged.name,merged.title,...specs,...(cvExtracted.sectors||[]),...(cvExtracted.technologies||[]),merged.stated_sectors||'',merged.bio||''].join(' ');
       try { updates.push('embedding=?'); vals.push(JSON.stringify(await embed(embText))); } catch {}
     }

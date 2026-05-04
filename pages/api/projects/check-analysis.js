@@ -1,7 +1,8 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { scope, canAccess } from '../../../lib/tenancy';
-import { safe } from '../../../lib/embeddings';
+import { parseJsonField } from '../../../lib/embeddings';
+import { BATCH_STAGGER_MS } from '../../../lib/timeouts';
 
 // ── Analysis-health endpoint ──────────────────────────────────────────────
 // Classifies every project in the repository into a health bucket so the
@@ -34,7 +35,7 @@ function classify(project) {
   }
   if (status !== 'complete') return 'unindexed';
 
-  const meta = safe(project.ai_metadata, {}) || {};
+  const meta = parseJsonField(project.ai_metadata, {}) || {};
   const writing = meta.writing_quality?.overall_score || 0;
   const approach = meta.approach_quality?.overall_score || 0;
   const credibility = meta.credibility_signals?.overall_score || 0;
@@ -132,7 +133,7 @@ async function handler(req, res) {
         }
         // 3s stagger matches batch import + rescan-all — keeps the
         // server-side OpenAI queue from piling up too many jobs.
-        await new Promise(r => setTimeout(r, 3000));
+        await new Promise(r => setTimeout(r, BATCH_STAGGER_MS));
       }
     })().catch(e => console.error('[check-analysis] outer catch:', e.message));
   }

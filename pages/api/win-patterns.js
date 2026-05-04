@@ -1,7 +1,7 @@
 import { getDb } from '../../lib/db';
 import { requireAuth } from '../../lib/auth';
 import { analyseWinPatterns } from '../../lib/gemini';
-import { safe } from '../../lib/embeddings';
+import { parseJsonField } from '../../lib/embeddings';
 // Import aliased — the handler uses a local `let scope = 'workspace'|'repository'`
 // string that previously shadowed this import, causing tenantScope(req.user) to
 // throw TypeError ("scope is not a function") which was silently caught and
@@ -132,7 +132,7 @@ async function handler(req, res) {
     const t = tenantScope(req.user);
     allProjects = db.prepare(
       `SELECT id, name, client, outcome, sector, contract_value, currency, user_rating, ai_metadata, kqs_composite, lh_status, service_industry, client_industry, date_submitted FROM projects WHERE indexing_status = 'complete'${t.clause}`
-    ).all(...t.params).map(p => ({ ...p, ai_metadata: safe(p.ai_metadata, {}) }));
+    ).all(...t.params).map(p => ({ ...p, ai_metadata: parseJsonField(p.ai_metadata, {}) }));
   } catch (e) {
     return res.status(200).json({ summary: { total: 0, won: 0, lost: 0, win_rate: 0 }, generated_at: new Date().toISOString(), scope });
   }
@@ -213,7 +213,7 @@ async function handler(req, res) {
     const scanRows = db.prepare(`SELECT gaps FROM rfp_scans WHERE gaps IS NOT NULL AND gaps != '[]' AND status IN ('complete', 'fast_ready', 'deep_failed')${ts.clause}`).all(...ts.params);
     const gapFreq = {};
     for (const row of scanRows) {
-      const gaps = safe(row.gaps, []);
+      const gaps = parseJsonField(row.gaps, []);
       const seen = new Set();
       for (const g of Array.isArray(gaps) ? gaps : []) {
         const cat = (g?.category || g?.title || '').toLowerCase().trim();

@@ -1,7 +1,7 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { embed } from '../../../lib/gemini';
-import { safe } from '../../../lib/embeddings';
+import { parseJsonField } from '../../../lib/embeddings';
 import { scope, ownerId } from '../../../lib/tenancy';
 import { v4 as uuid } from 'uuid';
 
@@ -16,8 +16,8 @@ async function handler(req, res) {
     return res.status(200).json({
       members: members.map(m => ({
         ...m,
-        stated_specialisms: safe(m.stated_specialisms, []),
-        cv_extracted: safe(m.cv_extracted, {}),
+        stated_specialisms: parseJsonField(m.stated_specialisms, []),
+        cv_extracted: parseJsonField(m.cv_extracted, {}),
       })),
       history,
     });

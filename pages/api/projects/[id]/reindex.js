@@ -5,6 +5,7 @@ import { requireAuth } from '../../../../lib/auth';
 import { canAccess } from '../../../../lib/tenancy';
 import { parseDocument } from '../../../../lib/parser';
 import { embed, analyseProposal, extractPricingFromImages, hasOpenAI } from '../../../../lib/gemini';
+import { AI_ANALYSIS_TIMEOUT_MS, PARSE_TIMEOUT_MS, EMBED_TIMEOUT_MS, VISION_TIMEOUT_MS } from '../../../../lib/timeouts';
 
 // Wrap any promise with a timeout
 function withTimeout(promise, ms, label) {
@@ -54,7 +55,7 @@ async function handler(req, res) {
         for (const f of files) {
           if (!fs.existsSync(f.path)) continue;
           try {
-            const parsed = await withTimeout(parseDocument(f.path), 30000, 'parseDocument');
+            const parsed = await withTimeout(parseDocument(f.path), PARSE_TIMEOUT_MS, 'parseDocument');
             if (parsed && parsed.trim().length > text.trim().length) {
               text += `\n\n=== ${f.file_type.toUpperCase()} ===\n${parsed}`;
             }
@@ -76,7 +77,7 @@ async function handler(req, res) {
               sector: project.sector,
               service_industry: project.service_industry,
             }),
-            90000, // 90s timeout for OpenAI
+            AI_ANALYSIS_TIMEOUT_MS, // 90s timeout for OpenAI
             'analyseProposal'
           );
         } catch (e) {
@@ -103,7 +104,7 @@ async function handler(req, res) {
 
       let vec;
       try {
-        vec = await withTimeout(embed(embParts.join(' ')), 30000, 'embed');
+        vec = await withTimeout(embed(embParts.join(' ')), EMBED_TIMEOUT_MS, 'embed');
       } catch (e) {
         console.error('Embedding failed for', id, ':', e.message);
         // Keep existing embedding if we have one, rather than nulling it
@@ -164,7 +165,7 @@ async function handler(req, res) {
           if (pdfFile && fs.existsSync(pdfFile.path)) {
             const visionResult = await withTimeout(
               extractPricingFromImages(pdfFile.path),
-              20000, 'visionPricing'
+              VISION_TIMEOUT_MS, 'visionPricing'
             );
             if (visionResult?.contract_value) {
               const numVal = parseFloat(String(visionResult.contract_value).replace(/[^0-9.]/g, '')) || 0;

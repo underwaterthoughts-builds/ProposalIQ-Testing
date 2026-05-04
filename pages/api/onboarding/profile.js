@@ -1,6 +1,6 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
-import { safe } from '../../../lib/embeddings';
+import { parseJsonField } from '../../../lib/embeddings';
 import crypto from 'crypto';
 
 // GET  /api/onboarding/profile → current user's confirmed profile (or null)
@@ -22,8 +22,8 @@ async function handler(req, res) {
     return res.status(200).json({
       profile: {
         ...row,
-        extracted_snapshot: safe(row.extracted_snapshot, {}),
-        confirmed_profile: safe(row.confirmed_profile, {}),
+        extracted_snapshot: parseJsonField(row.extracted_snapshot, {}),
+        confirmed_profile: parseJsonField(row.confirmed_profile, {}),
       },
     });
   }

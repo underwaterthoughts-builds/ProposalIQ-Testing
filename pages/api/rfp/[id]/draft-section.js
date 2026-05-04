@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
 import { canAccess } from '../../../../lib/tenancy';
-import { safe } from '../../../../lib/embeddings';
+import { parseJsonField } from '../../../../lib/embeddings';
 import { generateSectionDraft, qaFinaliseDraft, getSectionContract } from '../../../../lib/gemini';
 import { logUsageEvent } from '../../../../lib/feedback';
 
@@ -34,13 +34,13 @@ async function handler(req, res) {
     });
   }
 
-  const rfpData = safe(scan.rfp_data, {});
-  const matches = safe(scan.matched_proposals, []);
-  const winStrategy = safe(scan.win_strategy, null);
-  const winningLanguage = safe(scan.winning_language, []);
-  const executiveBrief = safe(scan.executive_brief, null);
-  const gaps = safe(scan.gaps, []);
-  const suggestedApproach = safe(scan.suggested_approach, null);
+  const rfpData = parseJsonField(scan.rfp_data, {});
+  const matches = parseJsonField(scan.matched_proposals, []);
+  const winStrategy = parseJsonField(scan.win_strategy, null);
+  const winningLanguage = parseJsonField(scan.winning_language, []);
+  const executiveBrief = parseJsonField(scan.executive_brief, null);
+  const gaps = parseJsonField(scan.gaps, []);
+  const suggestedApproach = parseJsonField(scan.suggested_approach, null);
   // narrative_advice may be a plain string or a JSON { text, writing_insights }
   let narrativeAdvice = '';
   let writingInsights = [];
@@ -61,7 +61,7 @@ async function handler(req, res) {
   try {
     const row = db.prepare("SELECT * FROM organisation_profile WHERE user_id = ?").get(req.user.id);
     if (row) {
-      orgProfile = { ...row, confirmed_profile: safe(row.confirmed_profile, {}) };
+      orgProfile = { ...row, confirmed_profile: parseJsonField(row.confirmed_profile, {}) };
     }
   } catch {}
 
@@ -103,7 +103,7 @@ async function handler(req, res) {
       : 'SELECT id, name, title, stated_specialisms, stated_sectors FROM team_members WHERE owner_user_id = ?';
     const teamParams = teamIsAdminOwned || !scan.owner_user_id ? [] : [scan.owner_user_id];
     const teamRecords = db.prepare(teamSql).all(...teamParams)
-      .map(m => ({ ...m, stated_specialisms: safe(m.stated_specialisms, []) }));
+      .map(m => ({ ...m, stated_specialisms: parseJsonField(m.stated_specialisms, []) }));
     draft = await generateSectionDraft(
       body.section_name,
       body.section_description || '',
@@ -140,7 +140,7 @@ async function handler(req, res) {
       : 'SELECT id, name, title, stated_specialisms FROM team_members WHERE owner_user_id = ?';
     const qaTeamParams = qaTeamIsAdminOwned || !scan.owner_user_id ? [] : [scan.owner_user_id];
     const team = db.prepare(qaTeamSql).all(...qaTeamParams)
-      .map(m => ({ ...m, stated_specialisms: safe(m.stated_specialisms, []) }));
+      .map(m => ({ ...m, stated_specialisms: parseJsonField(m.stated_specialisms, []) }));
     const finalised = await qaFinaliseDraft({
       draftText: draft.draft,
       rfpText: scan.rfp_text || '',

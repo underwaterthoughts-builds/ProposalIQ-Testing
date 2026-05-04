@@ -1,6 +1,6 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
-import { safe, cosine } from '../../../lib/embeddings';
+import { parseJsonField, cosine } from '../../../lib/embeddings';
 import { embed } from '../../../lib/gemini';
 import { scope } from '../../../lib/tenancy';
 
@@ -61,10 +61,10 @@ async function handler(req, res) {
       const { embedding, ...rest } = p;
       return {
         ...rest,
-        ai_metadata: safe(p.ai_metadata, {}),
-        taxonomy: safe(p.taxonomy, {}),
-        service_sectors: safe(p.service_sectors, []),
-        client_sectors: safe(p.client_sectors, []),
+        ai_metadata: parseJsonField(p.ai_metadata, {}),
+        taxonomy: parseJsonField(p.taxonomy, {}),
+        service_sectors: parseJsonField(p.service_sectors, []),
+        client_sectors: parseJsonField(p.client_sectors, []),
         file_types: p.file_types ? p.file_types.split(',') : [],
       };
     });

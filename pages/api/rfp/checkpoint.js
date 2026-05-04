@@ -1,7 +1,7 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { canAccess } from '../../../lib/tenancy';
-import { safe } from '../../../lib/embeddings';
+import { parseJsonField } from '../../../lib/embeddings';
 
 async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();

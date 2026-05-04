@@ -1,7 +1,7 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { canAccess } from '../../../lib/tenancy';
-import { safe } from '../../../lib/embeddings';
+import { parseJsonField } from '../../../lib/embeddings';
 import { snapIndustry, snapSectors } from '../../../lib/taxonomy';
 
 function handler(req, res) {
@@ -25,14 +25,14 @@ function handler(req, res) {
     return res.status(200).json({
       project: {
         ...p,
-        ai_metadata: safe(p.ai_metadata, {}),
-        taxonomy: safe(p.taxonomy, {}),
-        lh_pricing_accuracy: safe(p.lh_pricing_accuracy, {}),
-        service_sectors: safe(p.service_sectors, []),
-        client_sectors: safe(p.client_sectors, []),
+        ai_metadata: parseJsonField(p.ai_metadata, {}),
+        taxonomy: parseJsonField(p.taxonomy, {}),
+        lh_pricing_accuracy: parseJsonField(p.lh_pricing_accuracy, {}),
+        service_sectors: parseJsonField(p.service_sectors, []),
+        client_sectors: parseJsonField(p.client_sectors, []),
       },
       files,
-      team: team.map(m => ({ ...m, stated_specialisms: safe(m.stated_specialisms, []) })),
+      team: team.map(m => ({ ...m, stated_specialisms: parseJsonField(m.stated_specialisms, []) })),
     });
   }
 

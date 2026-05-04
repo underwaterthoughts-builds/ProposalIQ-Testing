@@ -8,11 +8,11 @@
 // reports it and exits 0 without touching the row.
 
 const path = require('path');
-const bcrypt = require('bcryptjs');
 const { v4: uuid } = require('uuid');
 
 process.chdir(path.resolve(__dirname, '..'));
 const { getDb } = require('../lib/db');
+const { hashPassword } = require('../lib/auth');
 
 async function seedUser(db, email, password, role) {
   const lower = email.toLowerCase();
@@ -21,7 +21,7 @@ async function seedUser(db, email, password, role) {
     console.log(`  - ${lower} already exists (role=${existing.role}) — skipped`);
     return existing.id;
   }
-  const hash = await bcrypt.hash(password, 12);
+  const hash = await hashPassword(password);
   const id = uuid();
   const onboardedAt = role === 'admin'
     ? new Date().toISOString().slice(0, 19).replace('T', ' ')

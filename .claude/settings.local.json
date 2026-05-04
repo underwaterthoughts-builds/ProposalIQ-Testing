@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/Users/jameshorsman/ProposalIQ-020426-01/**)",
+      "Edit(/Users/jameshorsman/ProposalIQ-020426-01/**)",
+      "Write(/Users/jameshorsman/ProposalIQ-020426-01/**)",
+
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(wc:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(awk:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(node --check:*)",
+
+      "Bash(npx next build)",
+      "Bash(npx next build:*)",
+      "Bash(npm run build)",
+
+      "Bash(git status)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git branch:*)",
+      "Bash(git blame:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)",
+      "Bash(git push:*)"
+    ]
+  }
+}

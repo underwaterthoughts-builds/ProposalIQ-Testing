@@ -1,6 +1,6 @@
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
-import { safe } from '../../../../lib/embeddings';
+import { parseJsonField } from '../../../../lib/embeddings';
 import { logUsageEvent } from '../../../../lib/feedback';
 
 // CRUD for section drafts on a scan.
@@ -18,10 +18,10 @@ async function handler(req, res) {
     ).all(id);
     const drafts = rows.map(r => ({
       ...r,
-      cited_match_ids: safe(r.cited_match_ids, []),
-      cited_language_ids: safe(r.cited_language_ids, []),
-      evidence_needed: safe(r.evidence_needed, []),
-      qa_adjustments: safe(r.qa_adjustments, []),
+      cited_match_ids: parseJsonField(r.cited_match_ids, []),
+      cited_language_ids: parseJsonField(r.cited_language_ids, []),
+      evidence_needed: parseJsonField(r.evidence_needed, []),
+      qa_adjustments: parseJsonField(r.qa_adjustments, []),
       qa_adjustments_count: r.qa_adjustments_count || 0,
     }));
     return res.status(200).json({ drafts });

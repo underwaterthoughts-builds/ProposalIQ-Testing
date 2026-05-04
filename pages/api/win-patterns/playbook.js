@@ -1,7 +1,7 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { generateInsightPlaybook } from '../../../lib/gemini';
-import { safe } from '../../../lib/embeddings';
+import { parseJsonField } from '../../../lib/embeddings';
 import { systemPct } from '../../../lib/rating';
 // Aliased — the handler uses a local `let scope = 'workspace'|'repository'`
 // string that shadowed this import, causing TypeError silently caught.
@@ -64,7 +64,7 @@ async function handler(req, res) {
     const t = tenantScope(req.user);
     wonProjects = db.prepare(
       `SELECT id, name, client, sector, contract_value, user_rating, ai_metadata, service_industry, client_industry, description FROM projects WHERE outcome = 'won' AND indexing_status = 'complete'${t.clause}`
-    ).all(...t.params).map(p => ({ ...p, ai_metadata: safe(p.ai_metadata, {}) }));
+    ).all(...t.params).map(p => ({ ...p, ai_metadata: parseJsonField(p.ai_metadata, {}) }));
   } catch (e) {
     return res.status(500).json({ error: 'Failed to load projects: ' + e.message });
   }
@@ -93,7 +93,7 @@ async function handler(req, res) {
       `SELECT winning_language FROM rfp_scans WHERE winning_language IS NOT NULL AND winning_language != '[]'${ts.clause} ORDER BY created_at DESC LIMIT 20`
     ).all(...ts.params);
     for (const row of rows) {
-      const arr = safe(row.winning_language, []);
+      const arr = parseJsonField(row.winning_language, []);
       for (const l of Array.isArray(arr) ? arr : []) {
         if (winningLanguage.length >= 20) break;
         const src = l?.source_project_id || l?.project_id;

@@ -1,7 +1,7 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { canAccess } from '../../../lib/tenancy';
-import { safe } from '../../../lib/embeddings';
+import { parseJsonField } from '../../../lib/embeddings';
 import { generateSectionDraft } from '../../../lib/gemini';
 import { currencySymbol } from '../../../lib/format';
 import path from 'path';
@@ -19,12 +19,12 @@ async function handler(req, res) {
   const scan = db.prepare('SELECT * FROM rfp_scans WHERE id = ?').get(id);
   if (!scan || !canAccess(req.user, scan)) return res.status(404).json({ error: 'Scan not found' });
 
-  const rfpData = safe(scan.rfp_data, {});
-  const gaps = safe(scan.gaps, []);
-  const winStrategy = safe(scan.win_strategy, null);
-  const suggestedApproach = safe(scan.suggested_approach, null);
-  const winningLanguage = safe(scan.winning_language, []);
-  const matches = safe(scan.matched_proposals, []).filter(m => m.match_label === 'Strong' || m.match_label === 'Good').slice(0, 4);
+  const rfpData = parseJsonField(scan.rfp_data, {});
+  const gaps = parseJsonField(scan.gaps, []);
+  const winStrategy = parseJsonField(scan.win_strategy, null);
+  const suggestedApproach = parseJsonField(scan.suggested_approach, null);
+  const winningLanguage = parseJsonField(scan.winning_language, []);
+  const matches = parseJsonField(scan.matched_proposals, []).filter(m => m.match_label === 'Strong' || m.match_label === 'Good').slice(0, 4);
 
   // Generate draft content before building sections (so placeholders can use it)
   const drafts = {};
@@ -131,7 +131,7 @@ async function handler(req, res) {
   // generated template). When no team records exist, fall back to a
   // generic placeholder.
   try {
-    const { safe: safeParse } = require('../../../lib/embeddings');
+    const { parseJsonField: safeParse } = require('../../../lib/embeddings');
     const teamMembers = db.prepare('SELECT * FROM team_members LIMIT 8').all();
     if (teamMembers.length > 0) {
       sections.push({

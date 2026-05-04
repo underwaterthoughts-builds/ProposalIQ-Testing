@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { canAccess } from '../../../lib/tenancy';
-import { safe } from '../../../lib/embeddings';
+import { parseJsonField } from '../../../lib/embeddings';
 import { inferTaxonomyFromProposal } from '../../../lib/taxonomy';
 import { getProjectUsageStats } from '../../../lib/feedback';
 
@@ -72,7 +72,7 @@ function handler(req, res) {
     // match data or is inferred from text on the fly.
     const rfpClient = scan.client_industry || null;
     const rfpService = scan.service_industry || null;
-    const rawMatches = safe(scan.matched_proposals, []).filter(p => !suppressed.has(p.id));
+    const rawMatches = parseJsonField(scan.matched_proposals, []).filter(p => !suppressed.has(p.id));
     // Wave 3 — load feedback stats once and stamp them on each match so
     // existing scans show "used in N winning bids" badges immediately.
     // Tenant-scoped: a member's "used in winning bids" badge counts only
@@ -102,23 +102,23 @@ function handler(req, res) {
     return res.status(200).json({
       scan: {
         ...scan,
-        rfp_data: safe(scan.rfp_data, {}),
+        rfp_data: parseJsonField(scan.rfp_data, {}),
         matched_proposals: matchedProposals,
-        gaps: safe(scan.gaps, []),
-        news: safe(scan.news, []),
-        team_suggestions: safe(scan.team_suggestions, []),
-        financial_model: safe(scan.financial_model, {}),
-        coverage: safe(scan.coverage, {}),
+        gaps: parseJsonField(scan.gaps, []),
+        news: parseJsonField(scan.news, []),
+        team_suggestions: parseJsonField(scan.team_suggestions, []),
+        financial_model: parseJsonField(scan.financial_model, {}),
+        coverage: parseJsonField(scan.coverage, {}),
         narrative_advice: narrativeText,
         writing_insights: writingInsights,
         suppressed_ids: [...suppressed],
         annotations,
-        suggested_approach: safe(scan.suggested_approach, null),
-        win_strategy: safe(scan.win_strategy, null),
-        winning_language: safe(scan.winning_language, []),
-        bid_score: safe(scan.bid_score, null),
-        executive_brief: safe(scan.executive_brief, null),
-        coverage_map: safe(scan.coverage_map, null),
+        suggested_approach: parseJsonField(scan.suggested_approach, null),
+        win_strategy: parseJsonField(scan.win_strategy, null),
+        winning_language: parseJsonField(scan.winning_language, []),
+        bid_score: parseJsonField(scan.bid_score, null),
+        executive_brief: parseJsonField(scan.executive_brief, null),
+        coverage_map: parseJsonField(scan.coverage_map, null),
       },
     });
   }
