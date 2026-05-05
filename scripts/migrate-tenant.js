@@ -36,13 +36,24 @@ const fs = require('fs');
 const Database = require('better-sqlite3');
 
 const args = process.argv.slice(2);
-if (args.length !== 1) {
-  console.error('Usage: node scripts/migrate-tenant.js <source-data-dir>');
-  console.error('  e.g. node scripts/migrate-tenant.js /tmp/rupert-data');
+let sourceDirArg = null;
+const skipTables = new Set();
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--skip' && args[i + 1]) {
+    args[i + 1].split(',').forEach(t => skipTables.add(t.trim()));
+    i++;
+  } else if (!sourceDirArg) {
+    sourceDirArg = args[i];
+  }
+}
+if (!sourceDirArg) {
+  console.error('Usage: node scripts/migrate-tenant.js <source-data-dir> [--skip table1,table2]');
+  console.error('  e.g. node scripts/migrate-tenant.js /tmp/joseph-data');
+  console.error('       node scripts/migrate-tenant.js /tmp/james-data --skip rfp_scans,proposal_coverage');
   process.exit(1);
 }
 
-const sourceDir = path.resolve(args[0]);
+const sourceDir = path.resolve(sourceDirArg);
 if (!fs.existsSync(sourceDir)) {
   console.error(`source dir does not exist: ${sourceDir}`);
   process.exit(1);
@@ -128,6 +139,7 @@ const ownerScopedTables = [
 
 console.log('2. Owner-scoped tables');
 for (const tbl of ownerScopedTables) {
+  if (skipTables.has(tbl)) { console.log(`   ${tbl}: SKIPPED (--skip)`); continue; }
   const cols = dst.prepare(`PRAGMA table_info(${tbl})`).all().map(c => c.name);
   const rows = src.prepare(`SELECT * FROM ${tbl}`).all();
   let inserted = 0;
@@ -181,6 +193,7 @@ const dependentTables = [
 ];
 console.log('4. Dependent tables');
 for (const tbl of dependentTables) {
+  if (skipTables.has(tbl)) { console.log(`   ${tbl}: SKIPPED (--skip)`); continue; }
   // Some of these tables may not exist in older schemas; tolerate that.
   let cols;
   try {
