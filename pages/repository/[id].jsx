@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, memo } from 'react';
+import { useEffect, useState, useCallback, memo, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -468,6 +468,99 @@ const TaxonomyEditor = memo(function TaxonomyEditor({ project, taxItems, onSave 
     </Card>
   );
 });
+
+// Documents inventory card — multi-doc submission view + attach/remove.
+// Per-file subtype chip surfaces what AI classified each as so the user
+// can see at a glance what's in the project bundle. "Attach files" calls
+// the new POST /api/projects/[id]/files endpoint which kicks off a
+// background classify + analyse + re-synthesise.
+const SUBTYPE_LABEL = {
+  main_proposal: 'Main proposal',
+  technical_proposal: 'Technical',
+  commercial_proposal: 'Commercial',
+  pricing_schedule: 'Pricing',
+  cv: 'CV',
+  case_study: 'Case study',
+  methodology: 'Methodology',
+  compliance: 'Compliance',
+  cover_letter: 'Cover letter',
+  rfp: 'RFP / brief',
+  unknown: 'Unclassified',
+};
+function ProjectDocumentsCard({ projectId, projectCode, files = [], onChanged }) {
+  const inputRef = useRef();
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
+  async function attach(picked) {
+    if (!picked?.length) return;
+    setErr(null); setBusy(true);
+    try {
+      const fd = new FormData();
+      for (const f of picked) fd.append('files', f);
+      const r = await fetch(`/api/projects/${projectId}/files`, { method: 'POST', body: fd });
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.error || `Upload failed (${r.status})`);
+      }
+      // Background analysis runs server-side; refetch so the user sees the
+      // file row land immediately. The subtype + analysis populate when the
+      // re-synthesis completes (UI reflects on next loadProject).
+      if (onChanged) await onChanged();
+    } catch (e) { setErr(e.message); }
+    setBusy(false);
+  }
+  async function remove(fileId) {
+    if (!confirm('Remove this file from the project? This cannot be undone.')) return;
+    try {
+      const r = await fetch(`/api/projects/${projectId}/files?fileId=${fileId}`, { method: 'DELETE' });
+      if (!r.ok) { const body = await r.json().catch(() => ({})); throw new Error(body.error || 'Remove failed'); }
+      if (onChanged) await onChanged();
+    } catch (e) { setErr(e.message); }
+  }
+  return (
+    <Card className="p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-[10px] font-label uppercase tracking-widest" style={{ color: '#d0c5b0' }}>
+          Documents ({files.length})
+          {projectCode && <span className="ml-3 font-mono normal-case tracking-normal" style={{ color: '#7fb4bc' }}>· {projectCode}</span>}
+        </div>
+        <div className="flex items-center gap-2">
+          <input ref={inputRef} type="file" multiple className="hidden"
+            accept=".pdf,.docx,.doc,.xlsx,.csv,.txt,.md"
+            onChange={e => { attach(Array.from(e.target.files || [])); e.target.value = ''; }} />
+          <button type="button" onClick={() => inputRef.current?.click()} disabled={busy}
+            className="text-xs px-3 py-1.5 rounded border border-outline-variant hover:bg-surface-container-high disabled:opacity-40">
+            {busy ? 'Uploading…' : '+ Attach files'}
+          </button>
+        </div>
+      </div>
+      {files.length === 0 ? (
+        <p className="text-xs text-on-surface-variant italic">No files attached yet.</p>
+      ) : (
+        <ul className="space-y-1.5">
+          {files.map(f => {
+            const label = SUBTYPE_LABEL[f.subtype] || (f.subtype ? f.subtype.replace(/_/g, ' ') : '—');
+            const conf = f.classification_confidence != null ? Math.round(f.classification_confidence * 100) : null;
+            return (
+              <li key={f.id} className="flex items-center justify-between gap-3 p-2 rounded" style={{ background: '#1d1b19' }}>
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded flex-shrink-0"
+                    style={{ background: 'rgba(127,180,188,0.12)', color: '#7fb4bc' }}>
+                    {label}{conf != null && conf > 0 ? ` ${conf}%` : ''}
+                  </span>
+                  <span className="text-xs truncate" style={{ color: '#d0c5b0' }}>{f.original_name || f.filename}</span>
+                </div>
+                <button type="button" aria-label={`Remove ${f.original_name || f.filename}`} onClick={() => remove(f.id)}
+                  className="text-xs opacity-50 hover:opacity-100 hover:text-red-400">✕</button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {err && <p className="mt-2 text-xs text-red-400">{err}</p>}
+    </Card>
+  );
+}
 
 export default function ProjectDetail() {
   const router = useRouter();
@@ -944,6 +1037,49 @@ export default function ProjectDetail() {
                         </div>
                       )}
                     </div>
+                  </Card>
+                )}
+
+                {/* Documents — multi-doc submission inventory + attach more */}
+                <ProjectDocumentsCard
+                  projectId={id}
+                  projectCode={project.project_code}
+                  files={files}
+                  onChanged={loadProject}
+                />
+
+                {/* Assumptions — rolled up across all per-doc analyses */}
+                {Array.isArray(meta.assumptions) && meta.assumptions.length > 0 && (
+                  <Card className="p-4">
+                    <div className="text-[10px] font-label uppercase tracking-widest mb-3" style={{ color: '#e8c357' }}>Assumptions ({meta.assumptions.length})</div>
+                    <ul className="space-y-2">
+                      {meta.assumptions.map((a, i) => {
+                        const riskColour = a.risk_level === 'hi' ? '#b04030' : a.risk_level === 'med' ? '#e8c357' : '#7fb4bc';
+                        return (
+                          <li key={i} className="border-l-2 pl-3 py-1" style={{ borderColor: riskColour + '60' }}>
+                            <div className="text-xs text-on-surface">{a.text}</div>
+                            <div className="text-[10px] font-mono uppercase tracking-widest mt-0.5" style={{ color: '#d0c5b0' }}>
+                              {a.category || 'other'} · {a.risk_level || 'lo'} risk{a.source_subtype ? ` · ${a.source_subtype}` : ''}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </Card>
+                )}
+
+                {/* Synthesis conflicts — pricing / structure mismatches across docs */}
+                {Array.isArray(meta.synthesis_conflicts) && meta.synthesis_conflicts.length > 0 && (
+                  <Card className="p-4 border-l-2" style={{ borderColor: '#b04030' }}>
+                    <div className="text-[10px] font-label uppercase tracking-widest mb-3" style={{ color: '#b04030' }}>Conflicts between documents</div>
+                    <ul className="space-y-2">
+                      {meta.synthesis_conflicts.map((c, i) => (
+                        <li key={i} className="text-xs">
+                          <span className="font-bold" style={{ color: '#b04030' }}>{c.kind?.replace(/_/g, ' ')}</span>
+                          <span className="text-on-surface-variant ml-2">{c.detail}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </Card>
                 )}
 
