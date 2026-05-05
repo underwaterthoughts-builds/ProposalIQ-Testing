@@ -898,6 +898,24 @@ export default function ProjectDetail() {
                     </div>
                   )}
 
+                  {/* Main-proposal analysis failed silently. Both OpenAI and
+                      Gemini paths returned the empty fallback shape (likely
+                      timeout on a large document or rate-limit). Surface this
+                      so the user knows why scores are missing — instead of
+                      seeing a thin silent page. */}
+                  {project.indexing_status === 'complete' && meta._main_analysis_failed && (
+                    <div className="flex items-start gap-2 text-xs text-error bg-error/5 px-4 py-3 border-l-2 border-error">
+                      <span className="material-symbols-outlined text-base flex-shrink-0">warning</span>
+                      <span>
+                        <strong className="text-on-surface">AI analysis incomplete{meta._main_analysis_filename ? ` for ${meta._main_analysis_filename}` : ''}.</strong>{' '}
+                        Both OpenAI and Gemini paths failed (most often a timeout on a large document or
+                        a rate-limit). Other documents in this project analysed normally — only the main
+                        proposal scoring is missing. Click <strong>Re-analyse</strong> to retry, or check
+                        Railway logs for the underlying error.
+                      </span>
+                    </div>
+                  )}
+
                   <h1 className="text-4xl md:text-6xl lg:text-7xl font-headline font-light tracking-tight leading-[1.1] text-on-surface">
                     {project.name}
                   </h1>
