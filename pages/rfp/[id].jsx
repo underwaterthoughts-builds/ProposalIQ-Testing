@@ -694,7 +694,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                       </span>
                     </div>
                   )}
-                  {scan.status === 'complete' && scan.analysis_model !== 'gpt' && (
+                  {scan.status === 'complete' && scan.analysis_model === 'gemini' && (
                     <div className="mt-4 flex items-start gap-2 text-xs text-secondary bg-secondary/5 px-4 py-3 border-l-2 border-secondary">
                       <span className="material-symbols-outlined text-base flex-shrink-0">info</span>
                       <span>

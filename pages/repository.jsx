@@ -311,7 +311,7 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
                 </span>
                 <ScanTimestamp indexedAt={p.indexed_at} />
               </div>
-            ) : p.indexing_status === 'complete' ? (
+            ) : p.analysis_model === 'gemini' && p.indexing_status === 'complete' ? (
               <div className="flex flex-col items-center gap-0.5">
                 <span
                   className="px-2 py-0.5 text-[10px] font-label font-bold tracking-widest bg-secondary/10 text-secondary border border-secondary/20"
@@ -321,6 +321,13 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
                 </span>
                 <ScanTimestamp indexedAt={p.indexed_at} />
               </div>
+            ) : p.analysis_model === 'seed' ? (
+              <span
+                className="px-2 py-0.5 text-[10px] font-label font-bold tracking-widest bg-surface-container-high text-on-surface-variant border border-outline-variant/30"
+                title="Sample project — hand-curated example data."
+              >
+                SAMPLE
+              </span>
             ) : null}
             <span className={`px-2 py-0.5 text-[10px] font-label font-bold tracking-widest border ${outcomeStyle}`}>
               {outcomeLabel}
@@ -329,8 +336,10 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
         )}
       </div>
 
-      {/* Quick scan disclaimer (shows for complete-but-not-gpt projects) */}
-      {!isIndexing && !isFailed && p.indexing_status === 'complete' && p.analysis_model !== 'gpt' && (
+      {/* Quick scan disclaimer — only for genuinely Gemini-only runs.
+          Seeded sample projects (analysis_model='seed') and freshly-uploaded
+          projects (null) are deliberately excluded. */}
+      {!isIndexing && !isFailed && p.indexing_status === 'complete' && p.analysis_model === 'gemini' && (
         <div className="flex items-start gap-2 text-[10px] font-label uppercase tracking-widest text-secondary bg-secondary/5 px-2 py-1.5 -mt-2">
           <span className="material-symbols-outlined text-sm mt-[-2px]">info</span>
           <span>Quick scan only — rescan with OpenAI enabled for full thinking.</span>

@@ -868,12 +868,19 @@ export default function ProjectDetail() {
                       >
                         FULL SCAN
                       </span>
-                    ) : project.indexing_status === 'complete' ? (
+                    ) : project.analysis_model === 'gemini' && project.indexing_status === 'complete' ? (
                       <span
                         className="px-3 py-1 text-[10px] font-label font-bold tracking-widest bg-secondary/10 text-secondary border border-secondary/20 rounded-full"
                         title="Quick scan — analysed with Gemini 2.5 Flash. Rescan with OpenAI configured for full thinking."
                       >
                         QUICK SCAN
+                      </span>
+                    ) : project.analysis_model === 'seed' ? (
+                      <span
+                        className="px-3 py-1 text-[10px] font-label font-bold tracking-widest bg-surface-container-high text-on-surface-variant border border-outline-variant/30 rounded-full"
+                        title="Sample project — hand-curated example data, not AI-generated."
+                      >
+                        SAMPLE
                       </span>
                     ) : null}
                     <div className="flex gap-2">
@@ -881,7 +888,7 @@ export default function ProjectDetail() {
                     </div>
                   </div>
 
-                  {project.indexing_status === 'complete' && project.analysis_model !== 'gpt' && (
+                  {project.indexing_status === 'complete' && project.analysis_model === 'gemini' && (
                     <div className="flex items-start gap-2 text-xs text-secondary bg-secondary/5 px-4 py-3 border-l-2 border-secondary">
                       <span className="material-symbols-outlined text-base flex-shrink-0">info</span>
                       <span>

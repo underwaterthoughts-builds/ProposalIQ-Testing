@@ -40,7 +40,13 @@ export default async function handler(req, res) {
       );
     }
 
-    // Projects
+    // Projects.
+    //
+    // analysis_model = 'seed' marks these as hand-curated example data
+    // (not Gemini quick-scan, not OpenAI deep). The repository UI uses
+    // this distinction to suppress the "Quick scan — rescan with OpenAI"
+    // banner, which would mislead users into rescanning sample projects
+    // whose metadata is already curated.
     const insertProject = db.prepare(`
       INSERT OR IGNORE INTO projects
         (id, name, client, sector, contract_value, currency, outcome, user_rating, ai_weight,
@@ -48,8 +54,8 @@ export default async function handler(req, res) {
          lh_status, lh_what_committed, lh_what_delivered, lh_went_well, lh_went_poorly,
          lh_client_feedback, lh_methodology_refinements, ai_metadata, taxonomy, embedding,
          kqs_recency, kqs_outcome_quality, kqs_specificity, kqs_composite,
-         indexing_status, indexed_at)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP)
+         indexing_status, indexed_at, analysis_model)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,'seed')
     `);
 
     for (const p of PROJECTS) {
