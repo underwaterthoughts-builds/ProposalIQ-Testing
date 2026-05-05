@@ -22,13 +22,19 @@ There is no lint config (`npx next lint` will prompt to set one up — skip) and
 
 To toggle verbose pipeline / cache-hit / work-type logs at runtime: set `DEBUG=1` in the env. Errors and warnings always log; per-request `dlog()` calls are gated.
 
-## Multi-tenant deployment topology
+## Deployment topology
 
-ProposalIQ is **deployed as one Railway service per tenant**, not as one shared instance. The 6-user test cohort each has their own subdomain on `proposal-insights.com` (`james.proposal-insights.com`, `rupert.…`, etc.) backed by an isolated Railway service with its own SQLite volume at `/app/data` and its own `JWT_SECRET`. **Tenant isolation is by-construction (separate processes + DBs), not row-level** — but every user-owned table also carries `owner_user_id` so multi-user-per-instance still works for admin + member pairs.
+**Single shared Railway service** at `www.proposal-insights.com`. Consolidated 2026-05-05 from a per-tenant model (6 separate Railway services, one per user, each on a subdomain) once the cross-user audit was clean and `owner_user_id` scoping was verified across every API route.
 
-**Implication for any work touching API routes:** when adding a new endpoint that reads/writes user-owned data, scope by `owner_user_id` via `lib/tenancy.js#scope` / `ownerId` / `canAccess`. The recent audit fixed several routes (`ai-costs`, `custom-values`, `taxonomy`, `settings`) where this was missed; don't reintroduce the bug.
+- Service: `proposaliq` on Railway project `exciting-alignment` (id `18ab9c03-da32-4dde-bbd2-758d516a4388`).
+- One SQLite DB on volume `happy-volume` at `/app/data/proposaliq.db`. **WAL mode is on** — `proposaliq.db-wal` carries pending changes; checkpoint with `PRAGMA wal_checkpoint(TRUNCATE)` before any backup or the backup looks empty (this bit us during the consolidation migration).
+- Tenant isolation is now **purely row-level via `owner_user_id` scoping** in every API route. There is no separate process per user.
 
-`git push` to `main` triggers Railway autodeploy across all 6 tenant services within ~3–5 min.
+**Implication for any new API route that reads/writes user-owned data:** scope by `owner_user_id` via `lib/tenancy.js#scope` / `ownerId` / `canAccess`. The previous audit + consolidation pass closed several missed scopes (`ai-costs`, `custom-values`, `taxonomy`, `settings`, `indexing-log`); don't reintroduce them. With the per-process safety net gone, any missed scope is now a real cross-user data leak.
+
+`git push` to `main` triggers Railway autodeploy on the single service within ~3–5 min.
+
+**Migration tooling**: `scripts/migrate-tenant.js` exists to absorb a per-tenant SQLite DB into the consolidated DB. It exists for historical reasons; it forces inserted users to `role='member'` because every per-tenant instance had its target user as `admin` (admins bypass `scope()`). Don't delete the script — there may be archived per-tenant backups that need reading later.
 
 ## Architecture — what to read multiple files to understand
 
