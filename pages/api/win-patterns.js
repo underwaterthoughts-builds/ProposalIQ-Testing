@@ -34,11 +34,19 @@ const CACHE_TTL_MS = 6 * 3600 * 1000;
 // without projects masked admin's real data. Bumping invalidates all
 // existing files; the new path also keys by userId so caches no longer
 // share across tenants.
-const CACHE_VERSION = 3;
+//
+// V4: cache key now includes the user's role. When an admin gets demoted
+// to member (or vice-versa), the cache file path changes, so the stale
+// admin-era cache (which contained workspace-wide data) never gets read
+// by the member version of the same user. This bit us when joseph was
+// demoted post-migration and kept seeing admin-era win patterns until
+// the file was manually deleted.
+const CACHE_VERSION = 4;
 
-function cachePath(scope, userId) {
+function cachePath(scope, userId, role) {
   const safeId = (userId || 'anonymous').replace(/[^a-zA-Z0-9_-]/g, '_');
-  return path.join(DATA_DIR, `win_patterns_cache_${scope}_${safeId}.json`);
+  const safeRole = (role || 'member').replace(/[^a-zA-Z0-9]/g, '_');
+  return path.join(DATA_DIR, `win_patterns_cache_${scope}_${safeRole}_${safeId}.json`);
 }
 
 function readCache(file) {
@@ -118,7 +126,7 @@ async function handler(req, res) {
   // sees everything; members see only their own). Sharing the file across
   // users (the pre-Wave 6 behaviour) leaks data and silently caches stale
   // empty results for whichever tenant happened to load first.
-  const file = cachePath(scope, userId);
+  const file = cachePath(scope, userId, req.user?.role);
   if (forceRefresh) { try { fs.unlinkSync(file); } catch {} }
 
   const cached = readCache(file);
