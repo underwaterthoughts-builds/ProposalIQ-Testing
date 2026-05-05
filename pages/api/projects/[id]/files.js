@@ -12,7 +12,7 @@ import { analyzeDocument } from '../../../../lib/document-analyzers';
 import { synthesiseProject } from '../../../../lib/proposal-synthesis';
 import { detectProjectCode } from '../../../../lib/project-code';
 import { pMap } from '../../../../lib/concurrency';
-import { setCostContext } from '../../../../lib/gemini';
+import { setCostContext, hasOpenAI } from '../../../../lib/gemini';
 
 export const config = { api: { bodyParser: false } };
 
@@ -174,13 +174,18 @@ async function rebuildAndSynthesise(db, project, projectId) {
   }), 5);
 
   const synthesised = synthesiseProject(parsed.map(p => ({ filename: p.originalName, subtype: p.subtype, analysis: p.analysis })));
+  // Refresh analysis_model so the "Quick scan" banner clears once OpenAI
+  // is connected and a re-synthesis has run with it. Mirrors the same
+  // hasOpenAI() check used by upload.js and reindex.js.
+  const analysisModel = hasOpenAI() ? 'gpt' : 'gemini';
   if (synthesised) {
     try {
-      db.prepare("UPDATE projects SET ai_metadata = ?, indexing_status = 'complete', indexed_at = CURRENT_TIMESTAMP WHERE id = ?")
-        .run(JSON.stringify(synthesised), projectId);
+      db.prepare("UPDATE projects SET ai_metadata = ?, analysis_model = ?, indexing_status = 'complete', indexed_at = CURRENT_TIMESTAMP WHERE id = ?")
+        .run(JSON.stringify(synthesised), analysisModel, projectId);
     } catch {}
   } else {
-    db.prepare("UPDATE projects SET indexing_status = 'complete', indexed_at = CURRENT_TIMESTAMP WHERE id = ?").run(projectId);
+    db.prepare("UPDATE projects SET analysis_model = ?, indexing_status = 'complete', indexed_at = CURRENT_TIMESTAMP WHERE id = ?")
+      .run(analysisModel, projectId);
   }
 }
 
