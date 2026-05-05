@@ -116,6 +116,14 @@ for (const u of srcUsers) {
     usersMatched++;
     continue;
   }
+  // CRITICAL: in the per-tenant Railway model each tenant's user was admin
+  // of their own instance. When we consolidate, those admin roles MUST NOT
+  // carry across — admins on the consolidated DB bypass the scope() filter
+  // and see every other user's data. Force role='member' on inserted users.
+  // The consolidated DB's existing admin (the operator running this script)
+  // remains untouched because we only INSERT new rows; we never UPDATE.
+  u.role = 'member';
+
   // Insert preserving source id (it's a uuid, no collision risk)
   // Filter to columns that exist in target schema
   const fields = Object.keys(u).filter(k => targetUserCols.includes(k));
