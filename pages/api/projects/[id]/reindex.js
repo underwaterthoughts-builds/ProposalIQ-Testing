@@ -229,6 +229,21 @@ async function handler(req, res) {
         ]
       );
 
+      // Multi-doc synthesis pulls contract_value/currency from the
+      // pricing_schedule or commercial_proposal annex. Write those back to
+      // the projects row so the repository UI shows the real number rather
+      // than the form's default 0. Only overwrites when the row is
+      // currently 0/null/unset — never clobbers a user-entered value.
+      try {
+        const synthValue = parseFloat(metadata.contract_value);
+        const synthCurrency = metadata.currency;
+        if (Number.isFinite(synthValue) && synthValue > 0 && (!project.contract_value || project.contract_value === 0)) {
+          db.prepare("UPDATE projects SET contract_value = ?, currency = COALESCE(NULLIF(currency,''), ?) WHERE id = ?")
+            .run(synthValue, synthCurrency || null, id);
+          project.contract_value = synthValue; // so the vision-pricing fallback below skips
+        }
+      } catch {}
+
       // Vision pricing fallback — if contract_value is still 0 or null, try image extraction
       if (!project.contract_value || project.contract_value === 0) {
         try {

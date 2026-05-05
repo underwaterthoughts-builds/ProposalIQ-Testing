@@ -318,6 +318,20 @@ async function handler(req, res) {
         projectId
       );
 
+      // If the multi-doc synthesis surfaced contract_value / currency
+      // from a pricing_schedule or commercial_proposal attachment that
+      // the user didn't enter on the form, write it back to the
+      // projects row so the repository UI shows the real number.
+      // Never clobbers a user-entered non-zero value.
+      try {
+        const formContractValue = parseFloat(f('contract_value') || '0');
+        const synthValue = parseFloat(metadata.contract_value);
+        if (Number.isFinite(synthValue) && synthValue > 0 && (!formContractValue || formContractValue === 0)) {
+          db.prepare("UPDATE projects SET contract_value = ?, currency = COALESCE(NULLIF(currency,''), ?) WHERE id = ?")
+            .run(synthValue, metadata.currency || null, projectId);
+        }
+      } catch {}
+
       // Write library file
       fs.writeFileSync(path.join(uploadDir, 'library.json'), JSON.stringify({
         project_id: projectId,

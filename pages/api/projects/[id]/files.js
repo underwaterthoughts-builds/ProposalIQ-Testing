@@ -182,6 +182,16 @@ async function rebuildAndSynthesise(db, project, projectId) {
     try {
       db.prepare("UPDATE projects SET ai_metadata = ?, analysis_model = ?, indexing_status = 'complete', indexed_at = CURRENT_TIMESTAMP WHERE id = ?")
         .run(JSON.stringify(synthesised), analysisModel, projectId);
+      // Mirror reindex.js: if the synthesis surfaced contract_value /
+      // currency from a Commercial / pricing_schedule attachment, write
+      // it back to the projects row so the UI reflects the real value.
+      // Never overwrites a user-set non-zero contract_value.
+      const synthValue = parseFloat(synthesised.contract_value);
+      const synthCurrency = synthesised.currency;
+      if (Number.isFinite(synthValue) && synthValue > 0 && (!project.contract_value || project.contract_value === 0)) {
+        db.prepare("UPDATE projects SET contract_value = ?, currency = COALESCE(NULLIF(currency,''), ?) WHERE id = ?")
+          .run(synthValue, synthCurrency || null, projectId);
+      }
     } catch {}
   } else {
     db.prepare("UPDATE projects SET analysis_model = ?, indexing_status = 'complete', indexed_at = CURRENT_TIMESTAMP WHERE id = ?")

@@ -1685,10 +1685,36 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
       if (i > 0) await sleep(STAGGER_MS);
       setQueue(prev=>prev.map((q,idx)=>idx===i?{...q,status:'scanning'}:q));
       try{
-        // tempId rows can't run prescan (file is server-side only); just
-        // mark ready since classification already ran in batch-cluster.
+        // tempId rows route to /api/projects/batch-prescan which reads
+        // the primary + every attachment from the server-side temp dir
+        // and concatenates their text before extraction. Otherwise the
+        // budget hidden in a Commercial annex never gets seen because
+        // prescan only reads the primary file.
         if (!queue[i].file) {
-          setQueue(prev => prev.map((q, idx) => idx === i ? { ...q, status: 'ready' } : q));
+          const ids = [queue[i].tempId, ...((queue[i].attachments || []).map(a => a.tempId))].filter(Boolean);
+          if (ids.length === 0) {
+            setQueue(prev => prev.map((q, idx) => idx === i ? { ...q, status: 'ready' } : q));
+            continue;
+          }
+          const r = await fetch('/api/projects/batch-prescan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tempIds: ids, primaryTempId: queue[i].tempId }),
+          });
+          const d = await r.json();
+          const ex = d.extracted || {};
+          setQueue(prev => prev.map((q, idx) => {
+            if (idx !== i) return q;
+            const u = {};
+            if (ex.name && !q.form.name) u.name = ex.name;
+            if (ex.client) u.client = ex.client;
+            if (ex.sector) { u.sector = ex.sector; addSector(ex.sector); }
+            if (ex.contract_value) u.contract_value = ex.contract_value;
+            if (ex.currency) { u.currency = ex.currency; addCurrency(ex.currency); }
+            if (ex.project_type) { u.project_type = ex.project_type; addType(ex.project_type); }
+            if (ex.description) u.description = ex.description;
+            return { ...q, status: 'ready', form: { ...q.form, ...u } };
+          }));
           continue;
         }
         const fd=new FormData(); fd.append('proposal',queue[i].file);
