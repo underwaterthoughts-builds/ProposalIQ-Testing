@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useMode } from '../lib/useMode';
@@ -29,8 +29,21 @@ export default function Layout({ children, title, subtitle, actions, user }) {
   const { mode, setMode } = useMode();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
-  useEffect(() => { setMenuOpen(false); }, [router.pathname]);
+  useEffect(() => { setMenuOpen(false); setProfileOpen(false); }, [router.pathname]);
+
+  // Close the profile dropdown on outside-click. Otherwise it stays
+  // open until the user clicks the avatar again, which feels stale.
+  useEffect(() => {
+    if (!profileOpen) return;
+    function onDoc(e) {
+      if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
+    }
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [profileOpen]);
 
   useEffect(() => {
     if (menuOpen) document.body.style.overflow = 'hidden';
@@ -160,15 +173,50 @@ export default function Layout({ children, title, subtitle, actions, user }) {
             >
               New Analysis
             </Link>
-            <button
-              onClick={logout}
-              disabled={loggingOut}
-              className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface font-bold text-sm hover:bg-surface-container-highest transition-colors"
-              aria-label="Sign out"
-              title={loggingOut ? 'Signing out…' : `Sign out (${user?.name || ''})`}
-            >
-              {user?.name?.charAt(0)?.toUpperCase() || '?'}
-            </button>
+            {/* Avatar → profile dropdown. Single click no longer logs out
+                (that was a footgun); now opens a small menu with the
+                signed-in user's name + an explicit Sign out item. */}
+            <div className="relative" ref={profileRef}>
+              <button
+                onClick={() => setProfileOpen(o => !o)}
+                aria-label="Open profile menu"
+                aria-expanded={profileOpen}
+                aria-haspopup="menu"
+                className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface font-bold text-sm hover:bg-surface-container-highest transition-colors"
+              >
+                {user?.name?.charAt(0)?.toUpperCase() || '?'}
+              </button>
+              {profileOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-2 w-56 rounded-md bg-surface-container-high border border-outline-variant/30 shadow-2xl overflow-hidden z-[51]"
+                >
+                  <div className="px-4 py-3 border-b border-outline-variant/20">
+                    <div className="font-medium text-sm text-on-surface truncate">{user?.name || 'Unknown'}</div>
+                    <div className="text-xs text-on-surface-variant truncate">{user?.email || ''}</div>
+                    {user?.role === 'admin' && (
+                      <div className="mt-1 inline-block text-[10px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded bg-primary/10 text-primary">Admin</div>
+                    )}
+                  </div>
+                  <Link
+                    href="/settings"
+                    className="block px-4 py-2.5 text-sm text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors"
+                    role="menuitem"
+                    onClick={() => setProfileOpen(false)}
+                  >
+                    Settings
+                  </Link>
+                  <button
+                    onClick={() => { setProfileOpen(false); logout(); }}
+                    disabled={loggingOut}
+                    role="menuitem"
+                    className="w-full text-left px-4 py-2.5 text-sm text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors disabled:opacity-40"
+                  >
+                    {loggingOut ? 'Signing out…' : '→ Sign out'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
