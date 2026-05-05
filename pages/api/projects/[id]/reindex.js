@@ -6,6 +6,11 @@ import { canAccess } from '../../../../lib/tenancy';
 import { parseDocument } from '../../../../lib/parser';
 import { embed, analyseProposal, extractPricingFromImages, hasOpenAI } from '../../../../lib/gemini';
 import { AI_ANALYSIS_TIMEOUT_MS, PARSE_TIMEOUT_MS, EMBED_TIMEOUT_MS, VISION_TIMEOUT_MS } from '../../../../lib/timeouts';
+import { classifyDocument } from '../../../../lib/document-classifier';
+import { detectProjectCode } from '../../../../lib/project-code';
+import { analyzeDocument } from '../../../../lib/document-analyzers';
+import { synthesiseProject } from '../../../../lib/proposal-synthesis';
+import { pMap } from '../../../../lib/concurrency';
 
 // Wrap any promise with a timeout
 function withTimeout(promise, ms, label) {
@@ -44,49 +49,115 @@ async function handler(req, res) {
     };
 
     try {
-      // ── 1. GET TEXT ────────────────────────────────────────────────────────
-      let text = '';
+      // ── 1. PARSE EVERY FILE INDIVIDUALLY (so we can subtype + analyse per-doc)
+      // Skip the cached extracted_text.txt — reindex is the place we re-do
+      // text extraction so multi-doc submissions get proper subtype-tagged
+      // output even on projects uploaded before the multi-doc feature shipped.
       const txtPath = path.join(uploadDir, 'extracted_text.txt');
-      if (fs.existsSync(txtPath)) {
-        try { text = fs.readFileSync(txtPath, 'utf8'); } catch {}
-      }
-
-      if (!text || text.trim().length < 50) {
-        for (const f of files) {
-          if (!fs.existsSync(f.path)) continue;
-          try {
-            const parsed = await withTimeout(parseDocument(f.path), PARSE_TIMEOUT_MS, 'parseDocument');
-            if (parsed && parsed.trim().length > text.trim().length) {
-              text += `\n\n=== ${f.file_type.toUpperCase()} ===\n${parsed}`;
-            }
-          } catch (e) { console.error('Parse error:', f.file_type, e.message); }
-        }
-        if (text.trim().length > 50) {
-          try { fs.writeFileSync(txtPath, text, 'utf8'); } catch {}
-        }
-      }
-
-      // ── 2. AI ANALYSIS (with timeout) ─────────────────────────────────────
-      const notes = [project.went_well, project.improvements, project.lessons].filter(Boolean).join('. ');
-      let metadata;
-
-      if (text.trim().length > 200) {
+      const parsedFiles = [];
+      for (const f of files) {
+        if (!fs.existsSync(f.path)) continue;
+        let parsed = '';
         try {
-          metadata = await withTimeout(
-            analyseProposal(text, project.user_rating, notes, {
-              sector: project.sector,
-              service_industry: project.service_industry,
-            }),
-            AI_ANALYSIS_TIMEOUT_MS, // 90s timeout for OpenAI
-            'analyseProposal'
-          );
-        } catch (e) {
-          console.error('Analysis timed out or failed for', id, ':', e.message);
-          // Fall back to existing metadata rather than failing entirely
+          parsed = await withTimeout(parseDocument(f.path), PARSE_TIMEOUT_MS, 'parseDocument');
+        } catch (e) { console.error('Parse error:', f.file_type, e.message); }
+        parsedFiles.push({
+          fileRowId: f.id,
+          file_type: f.file_type,
+          originalName: f.original_name || f.filename,
+          savedPath: f.path,
+          text: parsed || '',
+          subtype: f.subtype || null,
+        });
+      }
+
+      // ── 2. CLASSIFY any file that doesn't already have a subtype
+      await pMap(parsedFiles.filter(pf => !pf.subtype).map(pf => async () => {
+        try {
+          const c = await classifyDocument(pf.savedPath, pf.originalName);
+          if (pf.file_type === 'proposal' && (!c || c.subtype === 'unknown' || c.confidence < 0.4)) {
+            pf.subtype = 'main_proposal'; pf.confidence = 0.7;
+          } else if (pf.file_type === 'rfp' && (!c || c.confidence < 0.5)) {
+            pf.subtype = 'rfp'; pf.confidence = 0.9;
+          } else if (pf.file_type === 'budget' && (!c || c.confidence < 0.5)) {
+            pf.subtype = 'pricing_schedule'; pf.confidence = 0.85;
+          } else {
+            pf.subtype = c?.subtype || 'unknown';
+            pf.confidence = c?.confidence || 0;
+          }
+        } catch {
+          pf.subtype = pf.file_type === 'proposal' ? 'main_proposal'
+                     : pf.file_type === 'rfp'      ? 'rfp'
+                     : pf.file_type === 'budget'   ? 'pricing_schedule'
+                     : 'unknown';
+          pf.confidence = 0;
+        }
+        try {
+          db.prepare('UPDATE project_files SET subtype = ?, classification_confidence = ? WHERE id = ?')
+            .run(pf.subtype, pf.confidence, pf.fileRowId);
+        } catch {}
+      }), 5);
+
+      // ── 3. WRITE subtype-tagged combined text
+      const text = parsedFiles
+        .filter(pf => pf.text && pf.text.trim().length > 20)
+        .map(pf => `\n\n=== ${(pf.subtype || 'unknown').toUpperCase()}: ${pf.originalName} ===\n${pf.text}`)
+        .join('');
+      if (text.trim().length > 50) {
+        try { fs.writeFileSync(txtPath, text, 'utf8'); } catch {}
+      }
+
+      // ── 4. PROJECT CODE detection
+      try {
+        if (!project.project_code) {
+          const codeSource = parsedFiles.find(pf => pf.subtype === 'main_proposal' && pf.text)
+                          || parsedFiles.find(pf => pf.subtype === 'rfp' && pf.text)
+                          || parsedFiles.find(pf => pf.text);
+          if (codeSource) {
+            const codeHit = await detectProjectCode({ originalName: codeSource.originalName, extractedText: codeSource.text });
+            if (codeHit?.code) {
+              db.prepare('UPDATE projects SET project_code = ? WHERE id = ?').run(codeHit.code, id);
+            }
+          }
+        }
+      } catch (e) { console.error('detectProjectCode failed:', e.message); }
+
+      // ── 5. PER-DOCUMENT AI ANALYSIS
+      const notes = [project.went_well, project.improvements, project.lessons].filter(Boolean).join('. ');
+      const projectCtx = {
+        sector: project.sector,
+        service_industry: project.service_industry,
+        user_rating: project.user_rating,
+        notes,
+        projectId: id,
+      };
+      await pMap(parsedFiles.map(pf => async () => {
+        if (!pf.text || pf.text.trim().length < 50) {
+          pf.analysis = { _error: 'text_too_short', _subtype: pf.subtype };
+          return;
+        }
+        pf.analysis = await analyzeDocument({
+          subtype: pf.subtype, text: pf.text, filename: pf.originalName, projectCtx,
+        });
+        try {
+          db.prepare('UPDATE project_files SET ai_metadata = ? WHERE id = ?')
+            .run(JSON.stringify(pf.analysis || {}), pf.fileRowId);
+        } catch {}
+      }), 5);
+
+      // ── 6. SYNTHESISE project-level metadata
+      let metadata;
+      try {
+        metadata = synthesiseProject(parsedFiles.map(pf => ({
+          filename: pf.originalName, subtype: pf.subtype, analysis: pf.analysis,
+        })));
+        if (!metadata?.executive_summary) {
+          // Synthesis failed to produce a useful spine — fall back to prior metadata
           metadata = JSON.parse(project.ai_metadata || '{}');
           if (!metadata.executive_summary) metadata.executive_summary = project.description || project.name;
         }
-      } else {
+      } catch (e) {
+        console.error('synthesis failed for', id, ':', e.message);
         metadata = JSON.parse(project.ai_metadata || '{}');
         if (!metadata.executive_summary) metadata.executive_summary = project.description || project.name;
       }

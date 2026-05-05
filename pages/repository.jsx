@@ -1149,6 +1149,8 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({name:'',client:'',sector:'',contract_value:'',currency:'GBP',outcome:'pending',user_rating:0,project_type:'',date_submitted:'',folder_id:'',description:'',went_well:'',improvements:'',lessons:''});
   const [files, setFiles] = useState({proposal:null,rfp:null,budget:null});
+  const [supportingFiles, setSupportingFiles] = useState([]);
+  const supportingRef = useRef();
   const [uploading, setUploading] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState(null);
@@ -1236,6 +1238,7 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
     if(files.proposal) fd.append('proposal',files.proposal);
     if(files.rfp) fd.append('rfp',files.rfp);
     if(files.budget) fd.append('budget',files.budget);
+    supportingFiles.forEach(sf => fd.append('supporting', sf));
     const r=await fetch('/api/projects/upload',{method:'POST',body:fd});
     setUploading(false);
     if(r.ok){setDone(true);onToast('Project uploaded — AI indexing in progress');}
@@ -1317,6 +1320,40 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
                 })}
               </div>
               {errors.files&&<p className="text-xs text-red-500">{errors.files}</p>}
+
+              {/* Other documents — multi-file. AI auto-classifies subtype on
+                  upload (technical proposal / commercial / CV / case study /
+                  methodology / compliance / cover letter). Each gets its own
+                  dedicated AI analysis pass so a CV reveals named individuals
+                  even though the main proposal doesn't, etc. */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs font-semibold" style={{color:'#d0c5b0'}}>Other documents <span className="font-mono opacity-60">— optional, multi-file</span></div>
+                  <span className="text-[10px] font-mono" style={{color:'#7fb4bc'}}>{supportingFiles.length} attached</span>
+                </div>
+                <input type="file" ref={supportingRef} className="hidden" multiple accept=".pdf,.docx,.doc,.xlsx,.csv,.txt,.md"
+                  onChange={e=>{
+                    const picked = Array.from(e.target.files || []);
+                    if(picked.length) setSupportingFiles(prev=>[...prev,...picked]);
+                    e.target.value='';
+                  }}/>
+                <button type="button" onClick={()=>supportingRef.current?.click()}
+                  className="w-full rounded-lg p-3 text-center border-2 border-dashed transition-all hover:border-teal/50"
+                  style={{borderColor:'#4d4636',background:'#1d1b19',color:'#d0c5b0'}}>
+                  <div className="text-xs">+ Attach CVs, case studies, technical / commercial annexes, compliance, cover letter…</div>
+                </button>
+                {supportingFiles.length>0&&(
+                  <div className="mt-2 space-y-1.5">
+                    {supportingFiles.map((sf, i)=>(
+                      <div key={i} className="flex items-center justify-between gap-2 px-3 py-1.5 rounded text-xs" style={{background:'#2b2a27'}}>
+                        <span className="truncate" style={{color:'#d0c5b0'}}>{sf.name}</span>
+                        <button type="button" aria-label={`Remove ${sf.name}`} onClick={()=>setSupportingFiles(prev=>prev.filter((_,j)=>j!==i))} className="opacity-60 hover:opacity-100">✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="rounded-lg p-3 text-xs" style={{background:'#2b2a27',color:'#d0c5b0'}}>
                 ⓘ By uploading documents you confirm you are authorised to do so and that this does not breach any confidentiality agreement or NDA.
               </div>

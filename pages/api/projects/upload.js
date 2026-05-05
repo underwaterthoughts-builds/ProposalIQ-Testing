@@ -9,6 +9,11 @@ import { projectDir } from '../../../lib/storage';
 import { parseDocument } from '../../../lib/parser';
 import { embed, analyseProposal, extractPricingFromImages, setCostContext, hasOpenAI } from '../../../lib/gemini';
 import { AI_ANALYSIS_TIMEOUT_MS, VISION_TIMEOUT_MS } from '../../../lib/timeouts';
+import { classifyDocument } from '../../../lib/document-classifier';
+import { detectProjectCode } from '../../../lib/project-code';
+import { analyzeDocument } from '../../../lib/document-analyzers';
+import { synthesiseProject } from '../../../lib/proposal-synthesis';
+import { pMap } from '../../../lib/concurrency';
 
 export const config = { api: { bodyParser: false } };
 
@@ -87,8 +92,13 @@ async function handler(req, res) {
     'INSERT INTO project_files (id, project_id, file_type, filename, original_name, size, path) VALUES (?, ?, ?, ?, ?, ?, ?)'
   );
   let proposalText = '';
-  let allText = '';
+  // savedFiles[i] = { fileRowId, file_type, originalName, savedPath, text, subtype, confidence }
+  // Built up here at request-handling time so the IIFE below can classify + analyse
+  // and write a subtype-tagged combined text without re-parsing.
+  const savedFiles = [];
 
+  // Existing slots: proposal / rfp / budget — single file each, behaviour unchanged
+  // beyond every saved file now also entering the supporting-doc analysis pool.
   for (const ft of ['proposal', 'rfp', 'budget']) {
     const arr = files[ft];
     const uploaded = Array.isArray(arr) ? arr[0] : arr;
@@ -96,26 +106,41 @@ async function handler(req, res) {
     const newName = `${ft}_${uuid()}${path.extname(uploaded.originalFilename || uploaded.filepath)}`;
     const newPath = path.join(uploadDir, newName);
     try { fs.renameSync(uploaded.filepath, newPath); } catch { continue; }
-    fileInsert.run(uuid(), projectId, ft, newName, uploaded.originalFilename || newName, uploaded.size || 0, newPath);
+    const rowId = uuid();
+    fileInsert.run(rowId, projectId, ft, newName, uploaded.originalFilename || newName, uploaded.size || 0, newPath);
     try {
       const text = await parseDocument(newPath);
-      if (text) {
-        allText += `\n\n=== ${ft.toUpperCase()} ===\n${text}`;
-        if (ft === 'proposal') proposalText = text;
-      }
+      savedFiles.push({
+        fileRowId: rowId, file_type: ft, originalName: uploaded.originalFilename || newName,
+        savedPath: newPath, text: text || '',
+      });
+      if (ft === 'proposal') proposalText = text || '';
     } catch (e) { console.error('Parse error:', ft, e.message); }
   }
 
-  for (const up of (Array.isArray(files['additional']) ? files['additional'] : (files['additional'] ? [files['additional']] : []))) {
+  // Additional / supporting multi-file slot — accept either form field name.
+  // Real-world submissions include CVs, case studies, technical/commercial
+  // annexes, methodology, compliance, cover letters, etc. Each gets its own
+  // subtype classification + dedicated analysis below.
+  const supportingArr = []
+    .concat(Array.isArray(files['additional']) ? files['additional'] : (files['additional'] ? [files['additional']] : []))
+    .concat(Array.isArray(files['supporting']) ? files['supporting'] : (files['supporting'] ? [files['supporting']] : []));
+  for (const up of supportingArr) {
     if (!up?.filepath) continue;
     const newName = `extra_${uuid()}${path.extname(up.originalFilename || up.filepath)}`;
     const newPath = path.join(uploadDir, newName);
-    try { fs.renameSync(up.filepath, newPath); fileInsert.run(uuid(), projectId, 'additional', newName, up.originalFilename || newName, up.size || 0, newPath); } catch {}
-  }
-
-  // Save extracted text for future reindex without re-parsing
-  if (allText.trim().length > 50) {
-    try { fs.writeFileSync(path.join(uploadDir, 'extracted_text.txt'), allText, 'utf8'); } catch {}
+    try {
+      fs.renameSync(up.filepath, newPath);
+      const rowId = uuid();
+      fileInsert.run(rowId, projectId, 'additional', newName, up.originalFilename || newName, up.size || 0, newPath);
+      try {
+        const text = await parseDocument(newPath);
+        savedFiles.push({
+          fileRowId: rowId, file_type: 'additional', originalName: up.originalFilename || newName,
+          savedPath: newPath, text: text || '',
+        });
+      } catch (e) { console.error('Parse error: supporting', e.message); }
+    } catch {}
   }
 
   res.status(201).json({ projectId, message: 'Upload received — AI indexing in progress' });
@@ -125,29 +150,108 @@ async function handler(req, res) {
     setCostContext({ category: 'proposal_analysis', scanId: null, projectId });
     logStage(projectId, name, 'upload', 'info', 'File received and saved');
     try {
-      const textToAnalyse = proposalText || allText;
-      logStage(projectId, name, 'text_extraction', textToAnalyse.length > 200 ? 'info' : 'warn',
-        textToAnalyse.length > 200 ? `${textToAnalyse.length} characters extracted` : 'Limited text extracted — manual review may be needed');
-      const notes = [f('went_well'), f('improvements'), f('lessons')].filter(Boolean).join('. ');
-
-      // Try full AI analysis — fall back gracefully on any failure
-      logStage(projectId, name, 'ai_analysis', 'info', 'Starting AI proposal analysis');
-      let metadata = buildFallbackMeta(name, f('sector'), f('description'));
-      if (textToAnalyse.length > 200) {
+      // ── 1. Classify each file's subtype (filename heuristics + AI fallback)
+      logStage(projectId, name, 'classify', 'info', `Classifying ${savedFiles.length} file(s)`);
+      await pMap(savedFiles.map(sf => async () => {
         try {
-          const analysed = await Promise.race([
-            analyseProposal(textToAnalyse, rating, notes, { sector: f('sector') }),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Analysis timeout')), AI_ANALYSIS_TIMEOUT_MS))
-          ]);
-          if (analysed && analysed.executive_summary) {
-            metadata = analysed;
-            logStage(projectId, name, 'ai_analysis', 'success', 'AI analysis complete');
+          const c = await classifyDocument(sf.savedPath, sf.originalName);
+          // Bias proposal-slot toward main_proposal when classifier returns
+          // unknown/low-conf — the user explicitly placed it in that slot.
+          if (sf.file_type === 'proposal' && (!c || c.subtype === 'unknown' || c.confidence < 0.4)) {
+            sf.subtype = 'main_proposal';
+            sf.confidence = 0.7;
+          } else if (sf.file_type === 'rfp' && (!c || c.confidence < 0.5)) {
+            sf.subtype = 'rfp';
+            sf.confidence = 0.9;
+          } else if (sf.file_type === 'budget' && (!c || c.confidence < 0.5)) {
+            sf.subtype = 'pricing_schedule';
+            sf.confidence = 0.85;
+          } else {
+            sf.subtype = c?.subtype || 'unknown';
+            sf.confidence = c?.confidence || 0;
           }
         } catch (e) {
-          console.error('analyseProposal failed, using fallback:', e.message);
-          logStage(projectId, name, 'ai_analysis', 'warn', `AI analysis failed: ${e.message} — using basic metadata`);
-          // fallback already set above — continue with basic metadata
+          sf.subtype = sf.file_type === 'proposal' ? 'main_proposal'
+                     : sf.file_type === 'rfp'      ? 'rfp'
+                     : sf.file_type === 'budget'   ? 'pricing_schedule'
+                     : 'unknown';
+          sf.confidence = 0;
         }
+        try {
+          db.prepare('UPDATE project_files SET subtype = ?, classification_confidence = ? WHERE id = ?')
+            .run(sf.subtype, sf.confidence, sf.fileRowId);
+        } catch {}
+      }), 5);
+
+      // ── 2. Build subtype-tagged combined text (replaces old allText format)
+      const combinedText = savedFiles
+        .filter(sf => sf.text && sf.text.trim().length > 20)
+        .map(sf => `\n\n=== ${(sf.subtype || 'unknown').toUpperCase()}: ${sf.originalName} ===\n${sf.text}`)
+        .join('');
+      if (combinedText.trim().length > 50) {
+        try { fs.writeFileSync(path.join(uploadDir, 'extracted_text.txt'), combinedText, 'utf8'); } catch {}
+      }
+
+      // ── 3. Detect project code from highest-text-confidence file
+      try {
+        const codeSource = savedFiles.find(sf => sf.subtype === 'main_proposal' && sf.text)
+                        || savedFiles.find(sf => sf.subtype === 'rfp' && sf.text)
+                        || savedFiles.find(sf => sf.text);
+        if (codeSource) {
+          const codeHit = await detectProjectCode({ originalName: codeSource.originalName, extractedText: codeSource.text });
+          if (codeHit?.code) {
+            db.prepare('UPDATE projects SET project_code = ? WHERE id = ?').run(codeHit.code, projectId);
+            logStage(projectId, name, 'project_code', 'info', `Detected project code "${codeHit.code}" (${codeHit.source})`);
+          }
+        }
+      } catch (e) { console.error('detectProjectCode failed:', e.message); }
+
+      // ── 4. Per-document subtype-specific analysis (concurrency-limited)
+      const projectCtx = {
+        sector: f('sector'),
+        service_industry: null, // set after main analyseProposal
+        user_rating: rating,
+        notes: [f('went_well'), f('improvements'), f('lessons')].filter(Boolean).join('. '),
+        projectId,
+      };
+      logStage(projectId, name, 'doc_analysis', 'info', `Analysing ${savedFiles.filter(sf => sf.text?.trim().length > 50).length} document(s)`);
+      await pMap(savedFiles.map(sf => async () => {
+        if (!sf.text || sf.text.trim().length < 50) {
+          sf.analysis = { _error: 'text_too_short', _subtype: sf.subtype };
+          return;
+        }
+        sf.analysis = await analyzeDocument({
+          subtype: sf.subtype,
+          text: sf.text,
+          filename: sf.originalName,
+          projectCtx,
+        });
+        try {
+          db.prepare('UPDATE project_files SET ai_metadata = ? WHERE id = ?')
+            .run(JSON.stringify(sf.analysis || {}), sf.fileRowId);
+        } catch {}
+      }), 5);
+
+      // ── 5. Synthesise project-level metadata from the per-doc analyses
+      const fallback = buildFallbackMeta(name, f('sector'), f('description'));
+      let metadata = fallback;
+      try {
+        const synthInput = savedFiles.map(sf => ({
+          filename: sf.originalName,
+          subtype: sf.subtype,
+          analysis: sf.analysis,
+        }));
+        const synthesised = synthesiseProject(synthInput);
+        // Synthesis is only useful if main_proposal analysis succeeded
+        if (synthesised && synthesised.executive_summary) {
+          metadata = synthesised;
+          logStage(projectId, name, 'ai_analysis', 'success', `AI analysis complete (${savedFiles.length} doc${savedFiles.length === 1 ? '' : 's'})`);
+        } else {
+          logStage(projectId, name, 'ai_analysis', 'warn', 'Main proposal analysis did not produce useful metadata — using basic');
+        }
+      } catch (e) {
+        console.error('synthesis failed:', e.message);
+        logStage(projectId, name, 'ai_analysis', 'warn', `Synthesis failed: ${e.message} — using basic metadata`);
       }
 
       // Build embedding — include sector/description even if AI failed
