@@ -1497,7 +1497,19 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
 
 // ─── BATCH IMPORT MODAL ───────────────────────────────────────────────────────
 
+// Subtype label map shared with the project detail page; kept inline here so
+// repository.jsx doesn't pull a new import path
+const BATCH_SUBTYPE_LABEL = {
+  main_proposal: 'Main proposal', technical_proposal: 'Technical', commercial_proposal: 'Commercial',
+  pricing_schedule: 'Pricing', cv: 'CV', case_study: 'Case study', methodology: 'Methodology',
+  compliance: 'Compliance', cover_letter: 'Cover letter', rfp: 'RFP / brief', unknown: 'Unclassified',
+};
+
 function BatchModal({ onClose, folders: initialFolders, onToast }) {
+  // phase: 'pick' → 'clustering' → 'review_clusters' (only if any) → 'queue'
+  const [phase, setPhase] = useState('pick');
+  const [clusterItems, setClusterItems] = useState([]); // [{tempId, name, size, subtype, classification_confidence, project_code}]
+  const [clusters, setClusters] = useState([]); // [{id, members, confidence, signal, project_code, suggested_primary, decision}]
   const [queue, setQueue] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -1530,13 +1542,130 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
   const STAGGER_MS = 3000;
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-  function handleFileSelect(e) {
-    const selected = Array.from(e.target.files);
-    setQueue(selected.map(f=>({
-      file:f, status:'queued',
-      form:{name:f.name.replace(/\.[^.]+$/,''),client:'',sector:'',contract_value:'',currency:'GBP',outcome:'pending',user_rating:3,project_type:'',folder_id:'',description:'',went_well:'',improvements:'',lessons:''},
-      error:null,
-    })));
+  async function handleFileSelect(e) {
+    const selected = Array.from(e.target.files || []);
+    if (!selected.length) return;
+    setPhase('clustering');
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      for (const f of selected) fd.append('files', f);
+      const r = await fetch('/api/projects/batch-cluster', { method: 'POST', body: fd });
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.error || `Clustering failed (${r.status})`);
+      }
+      const d = await r.json();
+      const items = (d.items || []);
+      const cls = (d.clusters || []).map(c => ({ ...c, decision: null, excluded: [] }));
+      setClusterItems(items);
+      setClusters(cls);
+      // If no clusters were detected, skip directly to building the queue
+      if (cls.length === 0) buildQueueFromDecisions(items, []);
+      else setPhase('review_clusters');
+    } catch (err) {
+      onToast(`AI clustering failed: ${err.message}. Falling back to one-file-per-row.`);
+      // Fallback: build a basic queue without server-side analysis (legacy behaviour)
+      setQueue(selected.map(f => ({
+        file: f, tempId: null, primaryName: f.name, attachments: [], status: 'queued',
+        form: { name: f.name.replace(/\.[^.]+$/, ''), client: '', sector: '', contract_value: '', currency: 'GBP', outcome: 'pending', user_rating: 3, project_type: '', folder_id: '', description: '', went_well: '', improvements: '', lessons: '' },
+        error: null,
+      })));
+      setPhase('queue');
+    }
+    setUploading(false);
+  }
+
+  // After the user resolves cluster suggestions, build the queue. Each row
+  // is either a single item (kept-separate) or a primary + attachments
+  // (combine confirmed). Form metadata seeds from the primary's filename;
+  // user can edit per row in the existing review step.
+  function buildQueueFromDecisions(items, cls) {
+    const used = new Set();
+    const rows = [];
+    for (const c of cls) {
+      if (c.decision !== 'combine') continue;
+      const memberIds = (c.members || []).filter(id => !c.excluded?.includes(id));
+      if (memberIds.length < 2) continue;
+      const primaryId = memberIds.includes(c.suggested_primary) ? c.suggested_primary : memberIds[0];
+      const primary = items.find(it => it.tempId === primaryId);
+      if (!primary) continue;
+      memberIds.forEach(id => used.add(id));
+      const attachments = memberIds
+        .filter(id => id !== primaryId)
+        .map(id => items.find(it => it.tempId === id))
+        .filter(Boolean);
+      rows.push({
+        tempId: primary.tempId,
+        primaryName: primary.name,
+        attachments,
+        project_code: c.project_code || primary.project_code || null,
+        status: 'queued',
+        form: {
+          name: deriveProjectName(primary.name, c.project_code),
+          client: '', sector: '', contract_value: '', currency: 'GBP', outcome: 'pending',
+          user_rating: 3, project_type: '', folder_id: '', description: '', went_well: '', improvements: '', lessons: '',
+        },
+        error: null,
+      });
+    }
+    // Anything not absorbed into a combined cluster becomes its own row.
+    // Includes files from clusters the user kept separate, files excluded
+    // per-file, and files that were never in any cluster suggestion.
+    for (const it of items) {
+      if (used.has(it.tempId)) continue;
+      rows.push({
+        tempId: it.tempId,
+        primaryName: it.name,
+        attachments: [],
+        project_code: it.project_code || null,
+        status: 'queued',
+        form: {
+          name: deriveProjectName(it.name, it.project_code),
+          client: '', sector: '', contract_value: '', currency: 'GBP', outcome: 'pending',
+          user_rating: 3, project_type: '', folder_id: '', description: '', went_well: '', improvements: '', lessons: '',
+        },
+        error: null,
+      });
+    }
+    setQueue(rows);
+    setPhase('queue');
+  }
+
+  function deriveProjectName(filename, projectCode) {
+    const stem = filename.replace(/\.[^.]+$/, '');
+    return projectCode ? `${projectCode} — ${stem}` : stem;
+  }
+
+  // Live preview of how many rows the queue will end up with given the
+  // current cluster decisions. Used by the "Apply groupings" button label.
+  function queueCountAfterDecisions(items, cls) {
+    let absorbed = 0;
+    for (const c of cls) {
+      if (c.decision === 'combine') {
+        const ms = (c.members || []).filter(id => !(c.excluded || []).includes(id));
+        if (ms.length >= 2) absorbed += ms.length;
+      }
+    }
+    const groupRows = cls.filter(c => c.decision === 'combine' && (c.members || []).filter(id => !(c.excluded || []).includes(id)).length >= 2).length;
+    return items.length - absorbed + groupRows;
+  }
+
+  function setClusterDecision(clusterId, decision) {
+    setClusters(prev => prev.map(c => c.id === clusterId ? { ...c, decision } : c));
+  }
+  function toggleClusterExclude(clusterId, tempId) {
+    setClusters(prev => prev.map(c => {
+      if (c.id !== clusterId) return c;
+      const ex = c.excluded || [];
+      return { ...c, excluded: ex.includes(tempId) ? ex.filter(x => x !== tempId) : [...ex, tempId] };
+    }));
+  }
+  function applyClusterDecisions() {
+    // Default-decide any cluster the user hasn't touched: if user dismissed
+    // the screen with no answer, treat as "keep separate" (safe default).
+    const finalised = clusters.map(c => ({ ...c, decision: c.decision || 'keep_separate' }));
+    buildQueueFromDecisions(clusterItems, finalised);
   }
 
   async function scanAll() {
@@ -1547,6 +1676,12 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
       if (i > 0) await sleep(STAGGER_MS);
       setQueue(prev=>prev.map((q,idx)=>idx===i?{...q,status:'scanning'}:q));
       try{
+        // tempId rows can't run prescan (file is server-side only); just
+        // mark ready since classification already ran in batch-cluster.
+        if (!queue[i].file) {
+          setQueue(prev => prev.map((q, idx) => idx === i ? { ...q, status: 'ready' } : q));
+          continue;
+        }
         const fd=new FormData(); fd.append('proposal',queue[i].file);
         const r=await fetch('/api/projects/prescan',{method:'POST',body:fd});
         const d=await r.json(); const ex=d.extracted||{};
@@ -1572,20 +1707,71 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
 
   async function uploadAll() {
     setUploading(true);
-    // Track how many non-done items we've already kicked off so the FIRST
-    // one doesn't wait (only subsequent ones stagger).
+    // When the queue carries tempIds (from the AI-clustering flow), commit
+    // server-side via /api/projects/batch-commit which moves the temp
+    // files into per-project dirs and creates project rows. Then
+    // reindex per project. This single round-trip is much faster than
+    // re-uploading the bytes per row.
+    const usingTempIds = queue.length > 0 && queue.every(q => q.tempId);
+    if (usingTempIds) {
+      try {
+        const rows = queue.filter(q => q.status !== 'done').map(q => ({
+          primary_temp_id: q.tempId,
+          primary_original_name: q.primaryName,
+          attachment_temp_ids: (q.attachments || []).map(a => a.tempId),
+          attachment_original_names: Object.fromEntries((q.attachments || []).map(a => [a.tempId, a.name])),
+          form: {
+            ...q.form,
+            name: q.form.name || q.primaryName.replace(/\.[^.]+$/, ''),
+            client: q.form.client || 'Unknown',
+            user_rating: q.form.user_rating || 3,
+          },
+        }));
+        if (!rows.length) { setUploading(false); return; }
+        setQueue(prev => prev.map(q => q.status === 'done' ? q : { ...q, status: 'uploading' }));
+        const r = await fetch('/api/projects/batch-commit', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rows }),
+        });
+        if (!r.ok) {
+          const body = await r.json().catch(() => ({}));
+          throw new Error(body.error || `Commit failed (${r.status})`);
+        }
+        const d = await r.json();
+        // Mark rows as done in queue order — batch-commit returns projects[]
+        // in the same order it received rows[]. Trigger background reindex
+        // per project so the multi-doc analysis pipeline runs.
+        const projectIds = (d.projects || []).map(p => p.projectId);
+        let p = 0;
+        setQueue(prev => prev.map(q => {
+          if (q.status === 'done') return q;
+          const projectId = projectIds[p++] || null;
+          return { ...q, status: 'done', error: null, projectId };
+        }));
+        for (const pid of projectIds) {
+          fetch(`/api/projects/${pid}/reindex`, { method: 'POST' }).catch(() => {});
+          await sleep(STAGGER_MS);
+        }
+        setUploading(false);
+        return;
+      } catch (e) {
+        console.error('[batch] commit failed, falling back to per-file upload:', e.message);
+        setQueue(prev => prev.map(q => q.status === 'uploading' ? { ...q, status: 'queued' } : q));
+        // Fall through to legacy per-file path below
+      }
+    }
+
+    // Legacy path: one upload per file (used when files came from the
+    // fallback handleFileSelect path, ie no temp IDs).
     let fired = 0;
     for(let i=0;i<queue.length;i++){
       const item=queue[i]; if(item.status==='done') continue;
-      // Stagger: wait before firing each call (except the first eligible one)
-      // so the server doesn't start N concurrent background analyses and
-      // hit Gemini/OpenAI rate limits.
+      if (!item.file) continue; // tempId-only items can't go through legacy path
       if (fired > 0) await sleep(STAGGER_MS);
       fired++;
       setQueue(prev=>prev.map((q,idx)=>idx===i?{...q,status:'uploading'}:q));
       try{
         const fd=new FormData();
-        // Ensure required fields have values
         const safeForm = {
           ...item.form,
           name: item.form.name || item.file.name.replace(/\.[^.]+$/,''),
@@ -1622,12 +1808,22 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
             <div><div className="text-sm font-semibold">Batch Import</div><div className="text-xs" style={{color:'#d0c5b0'}}>{queue.length} files</div></div>
             <button onClick={onClose} className="text-sm opacity-40 hover:opacity-80">✕</button>
           </div>
-          {queue.length===0?(
+          {phase==='pick'?(
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-              <input type="file" ref={fileRef} className="hidden" multiple accept=".pdf,.docx,.doc,.txt" onChange={handleFileSelect}/>
+              <input type="file" ref={fileRef} className="hidden" multiple accept=".pdf,.docx,.doc,.xlsx,.csv,.txt,.md" onChange={handleFileSelect}/>
               <div className="text-3xl mb-3 opacity-30">📄</div>
-              <p className="text-sm mb-3" style={{color:'#d0c5b0'}}>Select multiple proposal files to import at once</p>
+              <p className="text-sm mb-3" style={{color:'#d0c5b0'}}>Drop multiple files — including supporting docs, CVs, pricing schedules. AI will group files that look like they belong to the same project.</p>
               <Btn variant="teal" onClick={()=>fileRef.current?.click()}>Select Files</Btn>
+            </div>
+          ):phase==='clustering'?(
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+              <Spinner size={20}/>
+              <p className="text-sm mt-3" style={{color:'#d0c5b0'}}>AI is classifying files and detecting project codes…</p>
+            </div>
+          ):phase==='review_clusters'?(
+            <div className="flex-1 overflow-y-auto p-3 text-xs" style={{color:'#d0c5b0'}}>
+              <p className="text-[11px] uppercase tracking-widest mb-2" style={{color:'#7fb4bc'}}>{clusters.length} grouping{clusters.length===1?'':'s'} detected</p>
+              <p>Review on the right →</p>
             </div>
           ):(
             <>
@@ -1637,7 +1833,7 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
                     className={`w-full text-left px-3 py-2.5 rounded-md mb-1 text-xs transition-all ${currentIdx===i?'bg-surface-container shadow-sm':'hover:bg-surface-container/60'}`}>
                     <div className="flex items-center gap-2 mb-0.5">
                       <span style={{color:statusColor[item.status]}}>{statusIcon[item.status]}</span>
-                      <span className="font-medium truncate flex-1">{item.form.name||item.file.name}</span>
+                      <span className="font-medium truncate flex-1">{item.form.name || item.primaryName || item.file?.name}</span>
                     </div>
                     <div className="truncate pl-4" style={{color:'#d0c5b0'}}>{item.form.client||'No client'}</div>
                   </button>
@@ -1678,7 +1874,73 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
-          {currentIdx===null?(
+          {phase==='review_clusters'?(
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-headline text-xl mb-1">Review groupings</h3>
+                <p className="text-sm" style={{color:'#d0c5b0'}}>
+                  AI detected files that look like they belong to the same project. Confirm each group, or keep separate. Files dropped from a group become their own row.
+                </p>
+              </div>
+              {clusters.map(c => {
+                const memberItems = (c.members || []).map(id => clusterItems.find(it => it.tempId === id)).filter(Boolean);
+                const excluded = c.excluded || [];
+                return (
+                  <div key={c.id} className="rounded-lg p-4" style={{ background: '#1d1b19', border: `1px solid ${c.confidence === 'high' ? '#7fb4bc' : '#4d4636'}` }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: c.confidence === 'high' ? '#7fb4bc' : '#e4c366' }}>
+                          {c.confidence} confidence · {c.signal === 'shared_project_code' ? `project code ${c.project_code}` : c.signal === 'shared_filename_prefix' ? 'shared filename prefix' : c.signal}
+                        </div>
+                        <div className="text-sm mt-1" style={{ color: '#d0c5b0' }}>
+                          {memberItems.length - excluded.length} of {memberItems.length} files will combine into one project
+                        </div>
+                      </div>
+                    </div>
+                    <ul className="space-y-1.5 mb-3">
+                      {memberItems.map(it => {
+                        const isPrimary = c.suggested_primary === it.tempId;
+                        const isExcluded = excluded.includes(it.tempId);
+                        const label = BATCH_SUBTYPE_LABEL[it.subtype] || it.subtype;
+                        return (
+                          <li key={it.tempId} className="flex items-center justify-between gap-2 px-2 py-1.5 rounded text-xs" style={{ background: isExcluded ? '#2b2a27' : '#211f1d', opacity: isExcluded ? 0.5 : 1 }}>
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              {isPrimary && !isExcluded && <span className="text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded" style={{ background: '#1f3a1c', color: '#7bd07a' }}>Primary</span>}
+                              <span className="text-[10px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded flex-shrink-0" style={{ background: 'rgba(127,180,188,0.12)', color: '#7fb4bc' }}>{label}</span>
+                              <span className="truncate" style={{ color: isExcluded ? '#7a716a' : '#d0c5b0', textDecoration: isExcluded ? 'line-through' : 'none' }}>{it.name}</span>
+                            </div>
+                            <button onClick={() => toggleClusterExclude(c.id, it.tempId)} className="text-[10px] font-mono uppercase tracking-widest opacity-60 hover:opacity-100">
+                              {isExcluded ? 'Restore' : 'Move out'}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setClusterDecision(c.id, 'combine')}
+                        className={`text-xs px-3 py-1.5 rounded border ${c.decision === 'combine' ? 'bg-[#1f3a1c] border-[#7bd07a] text-[#7bd07a]' : 'border-outline-variant hover:bg-surface-container-high'}`}>
+                        ✓ Combine into one project
+                      </button>
+                      <button
+                        onClick={() => setClusterDecision(c.id, 'keep_separate')}
+                        className={`text-xs px-3 py-1.5 rounded border ${c.decision === 'keep_separate' ? 'bg-surface-container-high border-outline' : 'border-outline-variant hover:bg-surface-container-high'}`}>
+                        ✗ Keep separate
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="pt-2">
+                <Btn variant="teal" onClick={applyClusterDecisions} className="w-full justify-center">
+                  Apply groupings → review {queueCountAfterDecisions(clusterItems, clusters)} project{queueCountAfterDecisions(clusterItems, clusters)===1?'':'s'}
+                </Btn>
+                <p className="text-[10px] font-mono uppercase tracking-widest mt-2 text-center" style={{ color: '#d0c5b0' }}>
+                  Untouched groupings default to "keep separate"
+                </p>
+              </div>
+            </div>
+          ):currentIdx===null?(
             <div className="flex items-center justify-center h-full text-center">
               <div><div className="text-4xl mb-3 opacity-20">📝</div><p className="text-sm" style={{color:'#d0c5b0'}}>Click "Scan All with AI" to extract details, then click each file on the left to review before uploading.</p></div>
             </div>
@@ -1687,7 +1949,22 @@ function BatchModal({ onClose, folders: initialFolders, onToast }) {
             return(
               <div className="space-y-4">
                 <div className="flex items-center justify-between mb-2">
-                  <div><h3 className="font-serif text-base">{item.file.name}</h3><div className="text-xs font-mono" style={{color:statusColor[item.status]}}>{item.status}</div></div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-serif text-base truncate">{item.primaryName || item.file?.name}</h3>
+                    <div className="text-xs font-mono" style={{color:statusColor[item.status]}}>
+                      {item.status}{item.project_code?` · ${item.project_code}`:''}
+                      {item.attachments?.length ? ` · ${item.attachments.length} supporting doc${item.attachments.length===1?'':'s'}` : ''}
+                    </div>
+                    {item.attachments?.length>0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {item.attachments.map(a => (
+                          <span key={a.tempId} className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{background:'rgba(127,180,188,0.12)',color:'#7fb4bc'}}>
+                            {BATCH_SUBTYPE_LABEL[a.subtype] || a.subtype}: {a.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     {currentIdx>0&&<Btn variant="ghost" size="sm" onClick={()=>setCurrentIdx(i=>i-1)}>← Prev</Btn>}
                     {currentIdx<queue.length-1&&<Btn variant="ghost" size="sm" onClick={()=>setCurrentIdx(i=>i+1)}>Next →</Btn>}
