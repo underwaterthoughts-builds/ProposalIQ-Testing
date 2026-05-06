@@ -6,7 +6,7 @@ import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
 import { ownerId } from '../../../lib/tenancy';
 import { projectDir } from '../../../lib/storage';
-import { parseDocument } from '../../../lib/parser';
+import { parseDocument, RMS_SENTINEL } from '../../../lib/parser';
 import { embed, analyseProposal, extractPricingFromImages, setCostContext, hasOpenAI } from '../../../lib/gemini';
 import { AI_ANALYSIS_TIMEOUT_MS, VISION_TIMEOUT_MS } from '../../../lib/timeouts';
 import { classifyDocument } from '../../../lib/document-classifier';
@@ -91,7 +91,6 @@ async function handler(req, res) {
   const fileInsert = db.prepare(
     'INSERT INTO project_files (id, project_id, file_type, filename, original_name, size, path) VALUES (?, ?, ?, ?, ?, ?, ?)'
   );
-  let proposalText = '';
   // savedFiles[i] = { fileRowId, file_type, originalName, savedPath, text, subtype, confidence }
   // Built up here at request-handling time so the IIFE below can classify + analyse
   // and write a subtype-tagged combined text without re-parsing.
@@ -114,7 +113,6 @@ async function handler(req, res) {
         fileRowId: rowId, file_type: ft, originalName: uploaded.originalFilename || newName,
         savedPath: newPath, text: text || '',
       });
-      if (ft === 'proposal') proposalText = text || '';
     } catch (e) { console.error('Parse error:', ft, e.message); }
   }
 
@@ -183,7 +181,17 @@ async function handler(req, res) {
         } catch {}
       }), 5);
 
-      // ── 2. Build subtype-tagged combined text (replaces old allText format)
+      // ── 2. Surface RMS-encrypted files to the user before they wonder
+      //    why analysis came back empty. parseDocument returns the
+      //    RMS_SENTINEL when it detects the Microsoft IRM header.
+      const encryptedFiles = savedFiles.filter(sf => sf.text === RMS_SENTINEL);
+      for (const sf of encryptedFiles) {
+        sf.text = ''; // don't include the sentinel in combinedText
+        logStage(projectId, name, 'parse', 'warn',
+          `${sf.originalName} is protected by Microsoft Information Protection (IRM) — cannot be analysed. Please upload an unprotected copy.`);
+      }
+
+      // ── 3. Build subtype-tagged combined text (replaces old allText format)
       const combinedText = savedFiles
         .filter(sf => sf.text && sf.text.trim().length > 20)
         .map(sf => `\n\n=== ${(sf.subtype || 'unknown').toUpperCase()}: ${sf.originalName} ===\n${sf.text}`)
@@ -294,7 +302,9 @@ async function handler(req, res) {
         : 1;
       const kqsRecency = Math.max(0.2, Math.min(1, 1 - ageYears / 5));
       const kqsOutcome = outcome === 'won' ? 1.0 : outcome === 'lost' ? 0.35 : 0.6;
-      const kqsSpecificity = textToAnalyse.length > 500
+      // combinedText was built in step 2 above from the savedFiles loop;
+      // textToAnalyse no longer exists post-multidoc-refactor.
+      const kqsSpecificity = (combinedText || '').length > 500
         ? Math.min(1, 0.5 + (metadata.credibility_signals?.overall_score || 50) / 200)
         : 0.50;
       const kqsComposite = (kqsRecency + kqsOutcome + kqsSpecificity) / 3;

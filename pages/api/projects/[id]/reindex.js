@@ -3,7 +3,7 @@ import fs from 'fs';
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
 import { canAccess } from '../../../../lib/tenancy';
-import { parseDocument } from '../../../../lib/parser';
+import { parseDocument, RMS_SENTINEL } from '../../../../lib/parser';
 import { embed, analyseProposal, extractPricingFromImages, hasOpenAI } from '../../../../lib/gemini';
 import { AI_ANALYSIS_TIMEOUT_MS, PARSE_TIMEOUT_MS, EMBED_TIMEOUT_MS, VISION_TIMEOUT_MS } from '../../../../lib/timeouts';
 import { classifyDocument } from '../../../../lib/document-classifier';
@@ -55,12 +55,18 @@ async function handler(req, res) {
       // output even on projects uploaded before the multi-doc feature shipped.
       const txtPath = path.join(uploadDir, 'extracted_text.txt');
       const parsedFiles = [];
+      const encryptedNames = [];
       for (const f of files) {
         if (!fs.existsSync(f.path)) continue;
         let parsed = '';
         try {
           parsed = await withTimeout(parseDocument(f.path), PARSE_TIMEOUT_MS, 'parseDocument');
         } catch (e) { console.error('Parse error:', f.file_type, e.message); }
+        // RMS-encrypted file — record for diagnostic, drop from analysis pool.
+        if (parsed === RMS_SENTINEL) {
+          encryptedNames.push(f.original_name || f.filename);
+          parsed = '';
+        }
         parsedFiles.push({
           fileRowId: f.id,
           file_type: f.file_type,
@@ -69,6 +75,9 @@ async function handler(req, res) {
           text: parsed || '',
           subtype: f.subtype || null,
         });
+      }
+      if (encryptedNames.length) {
+        console.error(`[reindex ${id}] IRM-protected files cannot be analysed: ${encryptedNames.join(', ')}`);
       }
 
       // ── 2. CLASSIFY any file that doesn't already have a subtype
