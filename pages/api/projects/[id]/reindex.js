@@ -80,16 +80,36 @@ async function handler(req, res) {
         console.error(`[reindex ${id}] IRM-protected files cannot be analysed: ${encryptedNames.join(', ')}`);
       }
 
-      // ── 2. CLASSIFY any file that doesn't already have a subtype
+      // ── Slot-semantics correction — runs even for files that already
+      //    have a stored subtype, because pre-fix uploads stored bad
+      //    subtypes (e.g. a Technical PDF in the proposal slot was
+      //    stored as 'technical_proposal'). Forces the slot semantics
+      //    so re-analyse reliably produces scores.
+      for (const pf of parsedFiles) {
+        if (pf.file_type === 'proposal' && pf.subtype !== 'main_proposal') {
+          pf.subtype = 'main_proposal';
+        } else if (pf.file_type === 'rfp' && pf.subtype !== 'rfp') {
+          pf.subtype = 'rfp';
+        } else if (pf.file_type === 'budget' && pf.subtype !== 'pricing_schedule') {
+          pf.subtype = 'pricing_schedule';
+        }
+      }
+
+      // ── 2. CLASSIFY any file that still doesn't have a subtype.
+      //    Slot semantics override classifier — see upload.js for the
+      //    full rationale. Without this override a Technical PDF placed
+      //    in the Proposal slot gets routed through analyzeTechnical
+      //    which produces no writing/approach/credibility scores, so
+      //    the project synthesis comes back empty.
       await pMap(parsedFiles.filter(pf => !pf.subtype).map(pf => async () => {
         try {
           const c = await classifyDocument(pf.savedPath, pf.originalName);
-          if (pf.file_type === 'proposal' && (!c || c.subtype === 'unknown' || c.confidence < 0.4)) {
-            pf.subtype = 'main_proposal'; pf.confidence = 0.7;
-          } else if (pf.file_type === 'rfp' && (!c || c.confidence < 0.5)) {
-            pf.subtype = 'rfp'; pf.confidence = 0.9;
-          } else if (pf.file_type === 'budget' && (!c || c.confidence < 0.5)) {
-            pf.subtype = 'pricing_schedule'; pf.confidence = 0.85;
+          if (pf.file_type === 'proposal') {
+            pf.subtype = 'main_proposal'; pf.confidence = c?.confidence || 0.8;
+          } else if (pf.file_type === 'rfp') {
+            pf.subtype = 'rfp'; pf.confidence = c?.confidence || 0.9;
+          } else if (pf.file_type === 'budget') {
+            pf.subtype = 'pricing_schedule'; pf.confidence = c?.confidence || 0.85;
           } else {
             pf.subtype = c?.subtype || 'unknown';
             pf.confidence = c?.confidence || 0;

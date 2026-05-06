@@ -153,17 +153,24 @@ async function handler(req, res) {
       await pMap(savedFiles.map(sf => async () => {
         try {
           const c = await classifyDocument(sf.savedPath, sf.originalName);
-          // Bias proposal-slot toward main_proposal when classifier returns
-          // unknown/low-conf — the user explicitly placed it in that slot.
-          if (sf.file_type === 'proposal' && (!c || c.subtype === 'unknown' || c.confidence < 0.4)) {
+          // The user's slot choice is authoritative for the three primary
+          // slots — the classifier's opinion is overridden. Otherwise a
+          // file named "UAESA_Technical.pdf" placed in the Proposal slot
+          // would be classified as 'technical_proposal' and routed through
+          // analyzeTechnical(), which returns methodologies + tools but
+          // not writing/approach/credibility scores. The synthesis would
+          // then find no main_proposal entry and fall back to empty
+          // metadata. By forcing the slot semantics, single-file uploads
+          // always get a proper scoring pass through analyseProposal.
+          if (sf.file_type === 'proposal') {
             sf.subtype = 'main_proposal';
-            sf.confidence = 0.7;
-          } else if (sf.file_type === 'rfp' && (!c || c.confidence < 0.5)) {
+            sf.confidence = c?.confidence || 0.8;
+          } else if (sf.file_type === 'rfp') {
             sf.subtype = 'rfp';
-            sf.confidence = 0.9;
-          } else if (sf.file_type === 'budget' && (!c || c.confidence < 0.5)) {
+            sf.confidence = c?.confidence || 0.9;
+          } else if (sf.file_type === 'budget') {
             sf.subtype = 'pricing_schedule';
-            sf.confidence = 0.85;
+            sf.confidence = c?.confidence || 0.85;
           } else {
             sf.subtype = c?.subtype || 'unknown';
             sf.confidence = c?.confidence || 0;
