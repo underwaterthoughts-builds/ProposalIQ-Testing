@@ -131,7 +131,12 @@ async function handler(req, res) {
 
   const cached = readCache(file);
   if (cached) {
-    res.setHeader('Cache-Control', 'private, max-age=300');
+    // 'no-cache' + 'must-revalidate' means the browser must check with the
+    // server before reusing — Next.js's auto-etag handles the 304 short-
+    // circuit so the perf cost is low. Required because role/data changes
+    // need to reflect immediately; max-age=300 gave us a 5-min window
+    // where stale role-era data continued to render.
+    res.setHeader('Cache-Control', 'private, no-cache, must-revalidate');
     return res.status(200).json(cached);
   }
 
