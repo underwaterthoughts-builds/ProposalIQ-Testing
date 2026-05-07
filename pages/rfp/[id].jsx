@@ -227,9 +227,20 @@ export default function RFPResults() {
     const d = await r.json();
     setScan(d.scan);
     setLoading(false);
-    // Keep polling on both processing (no data yet) and fast_ready
-    // (verdict is shown but deep pass still running in background).
-    if (d.scan.status === 'processing' || d.scan.status === 'fast_ready') {
+    // Keep polling on processing (no data yet), fast_ready (deep pass
+    // running), or while the section-repair pass has any sections in
+    // 'queued' / 'retrying:*' state — those flip to 'ok'/'failed' when
+    // the repair settles, and we want the UI to reflect that live.
+    let sectionsRepairing = false;
+    try {
+      const ss = d.scan.section_status ? JSON.parse(d.scan.section_status) : null;
+      if (ss && typeof ss === 'object') {
+        sectionsRepairing = Object.values(ss).some(
+          v => typeof v === 'string' && (v === 'queued' || v.startsWith('retrying'))
+        );
+      }
+    } catch {}
+    if (d.scan.status === 'processing' || d.scan.status === 'fast_ready' || sectionsRepairing) {
       setTimeout(fetchScan, 3000);
     }
   }
@@ -591,6 +602,42 @@ ${sectionHtml('Winning Language', languageHtml)}
                 </span>
               </div>
             )}
+            {(() => {
+              // Section-repair banner. Shown when the post-pipeline repair
+              // pass is re-firing one or more sections that came back empty.
+              // Reads section_status (JSON map: section → 'queued' | 'retrying:N/M' | 'ok' | 'failed').
+              let ss = null;
+              try { ss = scan.section_status ? JSON.parse(scan.section_status) : null; } catch {}
+              if (!ss || typeof ss !== 'object') return null;
+              const inFlight = Object.entries(ss).filter(([, v]) =>
+                typeof v === 'string' && (v === 'queued' || v.startsWith('retrying'))
+              );
+              const failed = Object.entries(ss).filter(([, v]) => v === 'failed');
+              if (inFlight.length === 0 && failed.length === 0) return null;
+              const labels = {
+                gaps: 'Gap analysis',
+                news: 'Industry news',
+                winning_language: 'Winning language',
+                win_strategy: 'Win strategy',
+                narrative_advice: 'Narrative advice',
+                suggested_approach: 'Approach & budget',
+                executive_brief: 'Executive brief',
+              };
+              return (
+                <div className="flex items-center gap-3 px-5 py-3 text-xs border-b"
+                  style={{ background: 'rgba(30,107,120,.08)', borderColor: 'rgba(30,74,82,.2)', color: '#1e4a52' }}>
+                  {inFlight.length > 0 && <Spinner size={12}/>}
+                  <span className="flex-1">
+                    {inFlight.length > 0 && (
+                      <>Re-running: {inFlight.map(([k, v]) => `${labels[k] || k} (${v})`).join(' · ')}</>
+                    )}
+                    {inFlight.length === 0 && failed.length > 0 && (
+                      <>Some sections couldn't be regenerated: {failed.map(([k]) => labels[k] || k).join(', ')}. Use Re-scan to try again.</>
+                    )}
+                  </span>
+                </div>
+              );
+            })()}
             {/* Wave 3 — outcome capture banner. Shown once scan is complete
                 if no outcome has been captured yet, OR shows a small badge
                 with the captured outcome if it exists. */}
