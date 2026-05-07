@@ -44,6 +44,7 @@ export default function RFPIndex() {
   const [file, setFile] = useState(null);
   const [proposalFile, setProposalFile] = useState(null);
   const [scanName, setScanName] = useState('');
+  const [scanMode, setScanMode] = useState('fast');
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState('');
   const [deletingId, setDeletingId] = useState(null);
@@ -89,6 +90,7 @@ export default function RFPIndex() {
       const fd = new FormData();
       fd.append('rfp', file);
       fd.append('name', scanName || file.name.replace(/\.[^.]+$/, ''));
+      fd.append('scan_mode', scanMode);
       if (proposalFile) fd.append('proposal', proposalFile);
       const r = await fetch('/api/rfp/scan', { method: 'POST', body: fd });
       if (r.ok) {
@@ -208,6 +210,34 @@ export default function RFPIndex() {
                         + Attach proposal (PDF / DOCX)
                       </button>
                     )}
+                  </div>
+                )}
+
+                {/* Scan mode toggle — fast vs deep. Default fast for new uploads. */}
+                {file && (
+                  <div className="w-full max-w-sm mb-4 p-3 rounded-md border border-outline-variant/30 bg-surface-container-lowest/60 text-left">
+                    <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-2">Scan depth</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setScanMode('fast')}
+                        className={`px-3 py-2 rounded text-xs font-bold transition-all border ${scanMode === 'fast' ? 'bg-primary text-on-primary border-primary' : 'bg-transparent text-on-surface border-outline-variant/40 hover:border-outline'}`}
+                      >
+                        Fast · ~60–90s
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setScanMode('deep')}
+                        className={`px-3 py-2 rounded text-xs font-bold transition-all border ${scanMode === 'deep' ? 'bg-primary text-on-primary border-primary' : 'bg-transparent text-on-surface border-outline-variant/40 hover:border-outline'}`}
+                      >
+                        Deep · ~5–15 min
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-on-surface-variant mt-2 leading-snug">
+                      {scanMode === 'fast'
+                        ? 'gpt-4o for bulk analysis · gpt-5.5-pro for the executive brief · best for triage and first-read.'
+                        : 'gpt-5.5 for everything · gpt-5.5-pro for the executive brief · best for final go/no-go decisions.'}
+                    </p>
                   </div>
                 )}
 

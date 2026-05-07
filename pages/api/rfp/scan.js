@@ -74,14 +74,20 @@ async function handler(req, res) {
     }
   }
 
+  // Scan mode: 'fast' (gpt-4o default, ~60-90s) or 'deep' (gpt-5.5 default,
+  // ~5-15 min). Tier-1 reasoning calls and tier-5 QA hardcode their own
+  // models in lib/gemini.js so quality on those steps is identical in
+  // both modes — the difference is the bulk extraction/scoring/news layer.
+  const scanMode = f('scan_mode') === 'fast' ? 'fast' : 'deep';
+
   db.prepare(
     `INSERT INTO rfp_scans (
       id, name, rfp_filename, rfp_original_name, status, owner_user_id,
-      proposal_filename, proposal_original_name, proposal_uploaded_at, proposal_analysis_status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ${proposalSavedName ? 'CURRENT_TIMESTAMP' : 'NULL'}, ?)`
+      proposal_filename, proposal_original_name, proposal_uploaded_at, proposal_analysis_status, scan_mode
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ${proposalSavedName ? 'CURRENT_TIMESTAMP' : 'NULL'}, ?, ?)`
   ).run(
     scanId, f('name') || rfpFile.originalFilename || 'RFP Scan', newName, rfpFile.originalFilename || newName, 'processing', ownerId(req.user),
-    proposalSavedName, proposalOriginalName, proposalSavedName ? 'pending' : null
+    proposalSavedName, proposalOriginalName, proposalSavedName ? 'pending' : null, scanMode
   );
 
   res.status(202).json({ scanId, message: 'Processing started' });
@@ -90,7 +96,7 @@ async function handler(req, res) {
   // attached, the proposal-fit pass runs after the RFP scan finishes so
   // it has rfp_data.requirements available to score against.
   const userId = req.user?.id || null;
-  runRfpScanPipeline(scanId, newPath, userId)
+  runRfpScanPipeline(scanId, newPath, userId, scanMode)
     .then(() => {
       if (proposalSavedName) {
         return analyseProposalAgainstRfp(scanId).catch(e => {
