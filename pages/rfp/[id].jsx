@@ -1,4 +1,4 @@
-import { useEffect, useState, memo, useCallback } from 'react';
+import { useEffect, useState, memo, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -544,6 +544,8 @@ ${sectionHtml('Winning Language', languageHtml)}
                 onJumpTab={null}
                 scanName={scan.name}
                 scanId={id}
+                coveredRisks={scan.covered_risks || []}
+                onCoverChange={fetchScan}
                 onExport={exportBriefing}
                 onGenerateTemplate={generateTemplate}
                 exporting={exporting}
@@ -887,7 +889,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                 }
                 return null;
               })() || (activeTab === 'brief' ? (
-                <ExecutiveBrief brief={executiveBrief} bidScore={bidScore} matches={matches} onJumpTab={setActiveTab} scanName={scan.name} scanId={id} />
+                <ExecutiveBrief brief={executiveBrief} bidScore={bidScore} matches={matches} onJumpTab={setActiveTab} scanName={scan.name} scanId={id} coveredRisks={scan.covered_risks || []} onCoverChange={fetchScan} />
               ) : activeTab === 'matches' ? (
                 <div>
                   {isPro && (
@@ -2554,7 +2556,42 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
 // The default tab. Renders the verdict at the top, then top priorities,
 // risks, recommended assets, and immediate next actions. Designed so the
 // bid director can read it in 90 seconds and walk away with a decision.
-const ExecutiveBrief = memo(function ExecutiveBrief({ brief, bidScore, matches, onJumpTab, scanName, scanId, onExport, onGenerateTemplate, exporting, generatingTemplate }) {
+const ExecutiveBrief = memo(function ExecutiveBrief({ brief, bidScore, matches, onJumpTab, scanName, scanId, coveredRisks = [], onCoverChange, onExport, onGenerateTemplate, exporting, generatingTemplate }) {
+  const [coverPrompt, setCoverPrompt] = useState(null); // { risk, mitigation }
+  const [coverInFlight, setCoverInFlight] = useState(false);
+  const coveredRiskTexts = useMemo(
+    () => new Set((coveredRisks || []).map(r => (r.risk || '').trim())),
+    [coveredRisks]
+  );
+  async function applyCover(scope) {
+    if (!coverPrompt || !scanId) return;
+    setCoverInFlight(true);
+    try {
+      await fetch(`/api/rfp/${scanId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'cover_risk',
+          risk: coverPrompt.risk,
+          mitigation: coverPrompt.mitigation || null,
+          scope,
+        }),
+      });
+      onCoverChange?.();
+    } finally {
+      setCoverInFlight(false);
+      setCoverPrompt(null);
+    }
+  }
+  async function applyUncover(riskText) {
+    if (!scanId) return;
+    await fetch(`/api/rfp/${scanId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'uncover_risk', risk: riskText }),
+    });
+    onCoverChange?.();
+  }
   if (!brief) {
     return (
       <div className="py-16 text-center">
@@ -2741,17 +2778,51 @@ const ExecutiveBrief = memo(function ExecutiveBrief({ brief, bidScore, matches, 
                 <h3 className="font-headline text-2xl font-bold">Identified Risks</h3>
               </div>
               <ul className="space-y-6">
-                {risks.slice(0, 3).map((r, i) => (
-                  <li key={i} className="flex gap-4">
-                    <div className="w-1.5 h-1.5 rounded-full bg-error mt-2.5 shrink-0" />
-                    <div>
-                      <p className="font-semibold text-on-surface text-sm">{r.risk || r}</p>
-                      {r.mitigation && (
-                        <p className="text-xs text-on-surface-variant leading-relaxed mt-1">{r.mitigation}</p>
-                      )}
-                    </div>
-                  </li>
-                ))}
+                {risks.slice(0, 3).map((r, i) => {
+                  const riskText = (r.risk || r || '').toString().trim();
+                  const isCovered = coveredRiskTexts.has(riskText);
+                  return (
+                    <li key={i} className="flex gap-4 group">
+                      <div className={`w-1.5 h-1.5 rounded-full mt-2.5 shrink-0 ${isCovered ? 'bg-on-surface-variant/40' : 'bg-error'}`} />
+                      <div className="flex-1">
+                        <div className="flex items-start gap-2 flex-wrap">
+                          <p className={`font-semibold text-sm ${isCovered ? 'text-on-surface-variant/60 line-through' : 'text-on-surface'}`}>
+                            {riskText}
+                          </p>
+                          {isCovered && (
+                            <span className="text-[10px] uppercase tracking-widest font-mono text-primary px-1.5 py-0.5 rounded bg-primary/10 shrink-0">
+                              ✓ Covered
+                            </span>
+                          )}
+                        </div>
+                        {r.mitigation && (
+                          <p className={`text-xs leading-relaxed mt-1 ${isCovered ? 'text-on-surface-variant/40 line-through' : 'text-on-surface-variant'}`}>
+                            {r.mitigation}
+                          </p>
+                        )}
+                        <div className="mt-2">
+                          {isCovered ? (
+                            <button
+                              type="button"
+                              onClick={() => applyUncover(riskText)}
+                              className="text-[11px] underline text-on-surface-variant/60 hover:text-on-surface-variant"
+                            >
+                              undo cover
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setCoverPrompt({ risk: riskText, mitigation: r.mitigation || null })}
+                              className="text-[11px] font-medium px-2 py-1 rounded border border-outline-variant/40 text-on-surface-variant hover:text-on-surface hover:border-primary/60 transition-colors"
+                            >
+                              ✓ We have this
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
@@ -2847,6 +2918,56 @@ const ExecutiveBrief = memo(function ExecutiveBrief({ brief, bidScore, matches, 
             )}
           </div>
         </footer>
+      )}
+
+      {/* "We have this" scope-choice modal — appears after the user clicks
+          the cover button on a risk. They choose whether the cover applies
+          to this scan only or persists across all future RFPs. */}
+      {coverPrompt && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,.6)' }}
+          onClick={() => !coverInFlight && setCoverPrompt(null)}
+        >
+          <div
+            className="bg-surface-container rounded-xl p-6 max-w-md w-full border border-outline-variant/40"
+            onClick={e => e.stopPropagation()}
+          >
+            <p className="font-label text-[10px] uppercase tracking-widest text-primary mb-2">Mark as covered</p>
+            <h3 className="font-headline text-xl font-bold mb-3">"{coverPrompt.risk}"</h3>
+            <p className="text-sm text-on-surface-variant mb-6 leading-relaxed">
+              Apply this cover to <strong>this scan only</strong> — useful for one-off contexts —
+              or to <strong>all future RFPs</strong>, so the same risk is pre-marked covered the
+              next time it's identified.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                disabled={coverInFlight}
+                onClick={() => applyCover('scan')}
+                className="px-4 py-3 rounded-md border border-outline-variant/40 text-sm font-bold hover:border-primary/60 hover:bg-surface-container-high transition-colors disabled:opacity-40"
+              >
+                This scan only
+              </button>
+              <button
+                type="button"
+                disabled={coverInFlight}
+                onClick={() => applyCover('org')}
+                className="px-4 py-3 rounded-md bg-primary text-on-primary text-sm font-bold hover:brightness-110 transition-all disabled:opacity-40"
+              >
+                All future RFPs
+              </button>
+            </div>
+            <button
+              type="button"
+              disabled={coverInFlight}
+              onClick={() => setCoverPrompt(null)}
+              className="mt-4 w-full text-xs text-on-surface-variant/60 hover:text-on-surface-variant"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

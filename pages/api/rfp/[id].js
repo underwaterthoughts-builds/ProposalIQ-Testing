@@ -32,6 +32,46 @@ function computeTier(match, rfpClient, rfpService) {
   return { tier: 5, label: 'cross', inferred, propClient, propService };
 }
 
+// Deterministic bid-score recompute when the user marks risks as covered.
+// Each covered risk awards +5 to the composite (capped at 95) and +8 to
+// the gapScore component so the breakdown UI reflects the improved gap
+// position. Decision/confidence/colour re-derive from the new composite
+// using the same thresholds as scoreBid (lib/gemini.js).
+function recomputeBidScoreWithCovers(currentScore, coveredCount) {
+  if (!currentScore || typeof currentScore !== 'object') return null;
+  const bonus = (coveredCount || 0) * 5;
+  const baseScore = currentScore.base_score ?? currentScore.score ?? 0;
+  const newComposite = Math.min(95, Math.round(baseScore + bonus));
+  const components = currentScore.components || {};
+  const newGapScore = Math.min(100, Math.round((components.gapScore || 0) + (coveredCount * 8)));
+
+  let decision, confidence, colour;
+  if (newComposite >= 65) {
+    decision = 'Bid';
+    confidence = newComposite >= 80 ? 'high' : 'medium';
+    colour = '#3d5c3a';
+  } else if (newComposite >= 45) {
+    decision = 'Conditional Bid';
+    confidence = 'medium';
+    colour = '#b8962e';
+  } else {
+    decision = 'No Bid';
+    confidence = newComposite < 30 ? 'high' : 'medium';
+    colour = '#b04030';
+  }
+
+  return {
+    ...currentScore,
+    base_score: baseScore,
+    score: newComposite,
+    decision,
+    confidence,
+    colour,
+    components: { ...components, gapScore: newGapScore },
+    covered_bonus: bonus,
+  };
+}
+
 function handler(req, res) {
   const db = getDb();
   const { id } = req.query;
@@ -119,6 +159,7 @@ function handler(req, res) {
         bid_score: parseJsonField(scan.bid_score, null),
         executive_brief: parseJsonField(scan.executive_brief, null),
         coverage_map: parseJsonField(scan.coverage_map, null),
+        covered_risks: parseJsonField(scan.covered_risks, []),
       },
     });
   }
@@ -155,6 +196,78 @@ function handler(req, res) {
         'INSERT INTO rfp_scan_annotations (id, scan_id, section, content, created_by) VALUES (?, ?, ?, ?, ?)'
       ).run(uuid(), id, body.section || 'general', body.content, req.user?.id || 'guest');
       return res.status(200).json({ ok: true });
+    }
+
+    // "We have this" — user marks a brief-listed risk as already covered.
+    // Scope 'scan' adds it to this scan only; 'org' also persists to the
+    // user's organisation_profile.covered_capabilities so future scans
+    // pre-mark matching risks. Either scope triggers a deterministic
+    // bid_score recompute (see recomputeBidScoreWithCovers below).
+    if (body.action === 'cover_risk') {
+      const riskText = (body.risk || '').trim();
+      if (!riskText) return res.status(400).json({ error: 'risk text required' });
+      const scope = body.scope === 'org' ? 'org' : 'scan';
+      const mitigation = body.mitigation || null;
+
+      // Append to scan.covered_risks (de-duplicating by risk text)
+      const scan = db.prepare('SELECT covered_risks, bid_score FROM rfp_scans WHERE id = ?').get(id);
+      const existing = parseJsonField(scan?.covered_risks, []);
+      if (!existing.find(r => r.risk === riskText)) {
+        existing.push({ risk: riskText, mitigation, scope, covered_at: new Date().toISOString() });
+        db.prepare('UPDATE rfp_scans SET covered_risks = ? WHERE id = ?').run(JSON.stringify(existing), id);
+      }
+
+      // If org-scope, also save to organisation_profile.
+      if (scope === 'org' && req.user?.id) {
+        try {
+          const op = db.prepare('SELECT covered_capabilities FROM organisation_profile WHERE user_id = ?').get(req.user.id);
+          if (op) {
+            const orgCovered = parseJsonField(op.covered_capabilities, []);
+            if (!orgCovered.find(c => c.capability === riskText)) {
+              orgCovered.push({
+                capability: riskText, source_risk: riskText,
+                source_scan_id: id, covered_at: new Date().toISOString(),
+              });
+              db.prepare('UPDATE organisation_profile SET covered_capabilities = ? WHERE user_id = ?')
+                .run(JSON.stringify(orgCovered), req.user.id);
+            }
+          }
+        } catch (e) {
+          console.error('cover_risk org persist failed:', e.message);
+        }
+      }
+
+      // Recompute bid score: +5 composite per covered risk, capped at 95.
+      const newScore = recomputeBidScoreWithCovers(parseJsonField(scan?.bid_score, null), existing.length);
+      if (newScore) {
+        db.prepare('UPDATE rfp_scans SET bid_score = ? WHERE id = ?').run(JSON.stringify(newScore), id);
+      }
+      return res.status(200).json({ ok: true, covered_count: existing.length, bid_score: newScore });
+    }
+
+    if (body.action === 'uncover_risk') {
+      const riskText = (body.risk || '').trim();
+      if (!riskText) return res.status(400).json({ error: 'risk text required' });
+      const scan = db.prepare('SELECT covered_risks, bid_score FROM rfp_scans WHERE id = ?').get(id);
+      const remaining = parseJsonField(scan?.covered_risks, []).filter(r => r.risk !== riskText);
+      db.prepare('UPDATE rfp_scans SET covered_risks = ? WHERE id = ?').run(JSON.stringify(remaining), id);
+      // If org-scope was used, remove from organisation_profile too — undo
+      // is symmetrical, so the org-level memory disappears as well.
+      if (req.user?.id) {
+        try {
+          const op = db.prepare('SELECT covered_capabilities FROM organisation_profile WHERE user_id = ?').get(req.user.id);
+          if (op) {
+            const orgCovered = parseJsonField(op.covered_capabilities, []).filter(c => c.capability !== riskText);
+            db.prepare('UPDATE organisation_profile SET covered_capabilities = ? WHERE user_id = ?')
+              .run(JSON.stringify(orgCovered), req.user.id);
+          }
+        } catch {}
+      }
+      const newScore = recomputeBidScoreWithCovers(parseJsonField(scan?.bid_score, null), remaining.length);
+      if (newScore) {
+        db.prepare('UPDATE rfp_scans SET bid_score = ? WHERE id = ?').run(JSON.stringify(newScore), id);
+      }
+      return res.status(200).json({ ok: true, covered_count: remaining.length, bid_score: newScore });
     }
 
     return res.status(400).json({ error: 'Unknown action' });
