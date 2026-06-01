@@ -1574,10 +1574,31 @@ const QaAdjustmentsFooter = memo(function QaAdjustmentsFooter({ adjustments, cou
   );
 });
 
-const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winningLanguage, onUpdateText, onAccept, onRegenerate, onDiscard, onClose, regenerating }) {
+const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winningLanguage, onUpdateText, onAccept, onRegenerate, onAmend, onDiscard, onClose, regenerating }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(draft.draft_text || '');
   const [saving, setSaving] = useState(false);
+  // Natural-language revise: when active, an inline textarea shows under
+  // the action bar so the user can describe the change they want.
+  const [reviseOpen, setReviseOpen] = useState(false);
+  const [reviseInstruction, setReviseInstruction] = useState('');
+  const [revising, setRevising] = useState(false);
+  const [lastChangeSummary, setLastChangeSummary] = useState('');
+
+  async function handleRevise() {
+    const ins = reviseInstruction.trim();
+    if (!ins) return;
+    setRevising(true);
+    setLastChangeSummary('');
+    try {
+      const summary = await onAmend?.(ins);
+      setLastChangeSummary(summary || '');
+      setReviseInstruction('');
+      setReviseOpen(false);
+    } finally {
+      setRevising(false);
+    }
+  }
 
   // Sync text when draft changes (e.g. after regenerate)
   useEffect(() => { setText(draft.draft_text || ''); }, [draft.id, draft.draft_text]);
@@ -1734,6 +1755,17 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
                 className="text-[11px] px-2.5 py-1.5 rounded border" style={{ borderColor: '#4d4636', color: '#7fb4bc' }}>
                 {regenerating ? 'Regenerating…' : '⟳ Regenerate'}
               </button>
+              {onAmend && (
+                <button onClick={() => setReviseOpen(v => !v)} disabled={revising || regenerating}
+                  className="text-[11px] px-2.5 py-1.5 rounded border"
+                  style={{
+                    borderColor: reviseOpen ? '#7fb4bc' : '#4d4636',
+                    color: reviseOpen ? '#1e4a52' : '#d0c5b0',
+                    background: reviseOpen ? 'rgba(127,180,188,.12)' : 'transparent',
+                  }}>
+                  💬 Revise with instruction
+                </button>
+              )}
               {!isAccepted && (
                 <button onClick={onAccept}
                   className="text-[11px] px-2.5 py-1.5 rounded font-medium" style={{ background: '#3d5c3a', color: 'white' }}>
@@ -1747,6 +1779,54 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
             </>
           )}
         </div>
+
+        {/* Natural-language revise panel — opens when "Revise with instruction"
+            is clicked. The AI applies ONLY the requested change and preserves
+            citations. */}
+        {reviseOpen && !editing && (
+          <div className="mb-4 rounded-md p-3" style={{ background: 'rgba(127,180,188,.08)', border: '1px solid rgba(127,180,188,.25)' }}>
+            <div className="font-mono uppercase tracking-widest text-[10px] mb-2" style={{ color: '#7fb4bc' }}>
+              Describe the change
+            </div>
+            <textarea
+              value={reviseInstruction}
+              onChange={e => setReviseInstruction(e.target.value)}
+              placeholder="e.g. Add a paragraph about our Arabic-speaking team · Make the opening more confident · Remove the second case study · Cite [#2] earlier"
+              rows={3}
+              disabled={revising}
+              className="w-full text-sm font-serif rounded p-2 bg-transparent border focus:outline-none focus:border-primary"
+              style={{ borderColor: '#4d4636', color: '#e6e2de' }}
+            />
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <button
+                onClick={handleRevise}
+                disabled={revising || !reviseInstruction.trim()}
+                className="text-[11px] px-3 py-1.5 rounded font-medium disabled:opacity-40"
+                style={{ background: '#1e4a52', color: 'white' }}
+              >
+                {revising ? 'Applying…' : 'Apply revision'}
+              </button>
+              <button
+                onClick={() => { setReviseOpen(false); setReviseInstruction(''); }}
+                disabled={revising}
+                className="text-[11px] px-3 py-1.5 rounded"
+                style={{ color: '#d0c5b0' }}
+              >
+                Cancel
+              </button>
+              <span className="text-[10px] ml-auto" style={{ color: '#99907d' }}>
+                Citations and untouched text are preserved.
+              </span>
+            </div>
+          </div>
+        )}
+        {lastChangeSummary && !reviseOpen && (
+          <div className="mb-4 text-[11px] flex items-center gap-2 px-3 py-2 rounded" style={{ background: 'rgba(127,180,188,.06)', color: '#7fb4bc' }}>
+            <span>✓</span>
+            <span>{lastChangeSummary}</span>
+            <button onClick={() => setLastChangeSummary('')} className="ml-auto opacity-60 hover:opacity-100">✕</button>
+          </div>
+        )}
 
         {/* Sources panel */}
         {(citedMatches.length > 0 || citedLanguage.length > 0 || (draft.evidence_needed || []).length > 0) && (
@@ -2040,6 +2120,38 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
       }
     } catch (e) {
       onToast('Save failed');
+    }
+  }
+
+  // Natural-language revise. Sends the user's instruction to the
+  // amend-section endpoint, which returns the revised draft text. We
+  // replace the cached draft on success and surface the change summary
+  // back to the panel for inline confirmation.
+  async function amendDraft(section, instruction) {
+    const draft = drafts[section.id];
+    if (!draft) return '';
+    try {
+      const r = await fetch(`/api/rfp/${scan.id}/amend-section`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draft_id: draft.id, instruction }),
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        onToast(err.error || 'Revision failed');
+        return '';
+      }
+      const d = await r.json();
+      if (d.changed && d.draft) {
+        setDrafts(prev => ({ ...prev, [section.id]: { ...prev[section.id], ...d.draft } }));
+        onToast(d.change_summary ? `✓ ${d.change_summary}` : '✓ Draft revised');
+      } else {
+        onToast(d.change_summary || 'No change applied');
+      }
+      return d.change_summary || '';
+    } catch (e) {
+      onToast('Revision failed: ' + e.message);
+      return '';
     }
   }
 
@@ -2529,6 +2641,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
                 onUpdateText={(text) => updateDraft(s, { draft_text: text })}
                 onAccept={() => updateDraft(s, { status: 'accepted' })}
                 onRegenerate={() => generateDraft(s, true)}
+                onAmend={(instruction) => amendDraft(s, instruction)}
                 onDiscard={() => discardDraft(s)}
                 onClose={() => setOpenDraftId(null)}
                 regenerating={generating === s.id}
