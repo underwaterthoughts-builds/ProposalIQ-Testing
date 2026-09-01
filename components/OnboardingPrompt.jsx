@@ -38,7 +38,7 @@ export default function OnboardingPrompt() {
         if (clientTypes.length === 0) missing.push('client sectors');
         if (missing.length > 0) setState({ show: true, missing });
       })
-      .catch(() => {});
+      .catch(e => console.error('[onboarding-prompt] profile check failed:', e.message));
     return () => { alive = false; };
   }, []);
 

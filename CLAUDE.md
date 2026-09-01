@@ -16,6 +16,12 @@ node scripts/seed-admin.js <adminEmail> <adminPass> [memberEmail] [memberPass]
 bash scripts/provision-instance.sh
                  # Bash automation for spinning up a new per-tenant Railway service
                  # (generates JWT_SECRET + passwords, sets env vars, redeploys, retries seed).
+
+node scripts/backup-db.js
+                 # WAL-checkpoints then snapshots the DB into data/backups/ (online backup,
+                 # safe while the app runs). Keeps last 14 (BACKUP_KEEP overrides). Intended
+                 # for a daily Railway cron. Backups live on the same volume — download
+                 # periodically for off-platform copies.
 ```
 
 There is no lint config (`npx next lint` will prompt to set one up — skip) and no test suite. **`npm run build` is the gate** — every change must compile cleanly before commit.

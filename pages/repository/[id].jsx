@@ -605,7 +605,7 @@ export default function ProjectDetail() {
     };
   }, [id]);
   useEffect(() => {
-    fetch('/api/taxonomy').then(r => r.json()).then(d => setTaxItems(d.items || [])).catch(() => {});
+    fetch('/api/taxonomy').then(r => r.json()).then(d => setTaxItems(d.items || [])).catch(e => console.error('[repository] taxonomy fetch failed:', e.message));
   }, []);
   useEffect(() => {
     if (project && narrativeEntries !== null) {
@@ -746,7 +746,15 @@ export default function ProjectDetail() {
         } else if (attempts >= 40) {
           clearInterval(poll); setReindexing(false); setToast('Taking longer than expected — refresh in a minute');
         }
-      }).catch(() => {});
+      }).catch(e => {
+        // Network blip mid-poll: log and let the interval retry; surface it
+        // if we've been failing long enough that the user will notice.
+        console.error('[repository] reindex poll failed:', e.message);
+        if (attempts >= 40) {
+          clearInterval(poll); setReindexing(false);
+          setToast('Lost connection while checking analysis — refresh to see status');
+        }
+      });
     }, 3000);
   }
 

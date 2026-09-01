@@ -5,6 +5,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // ── Brand accent — the muted teal used across the RFP/repository
+        // surfaces. Historically hardcoded as inline hex (#7fb4bc) in 40+
+        // sites; new code should use `accent` / `text-accent` / `bg-accent`
+        // so it can be re-themed centrally. Deep variant is the #1e4a52
+        // teal used for filled buttons on those pages.
+        accent: '#7fb4bc',
+        'accent-deep': '#1e4a52',
+
         // ── Brand primary (new site-wide tokens from Stitch) ─────────────
         primary: '#e8c357',
         'primary-container': '#b8962e',

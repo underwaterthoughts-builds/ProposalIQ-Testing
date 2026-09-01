@@ -41,7 +41,7 @@ export default function AssistantChat({ variant = 'full', onClose, onOpenFull })
             })));
           }
         })
-        .catch(() => {});
+        .catch(e => console.error('[assistant] history restore failed:', e.message));
     }
   }, []);
 
