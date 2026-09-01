@@ -1,12 +1,9 @@
 import { getDb } from '../../lib/db';
 import { embed } from '../../lib/gemini';
 import { FOLDERS, TEAM, PROJECTS } from '../../data/seed-data';
-import { getUserFromReq } from '../../lib/auth';
+import { requireAuth } from '../../lib/auth';
 
-export default async function handler(req, res) {
-  const user = getUserFromReq(req);
-  if (!user) return res.status(401).json({ error: 'Sign in first, then visit this URL.' });
-
+async function handler(req, res) {
   const db = getDb();
   const count = db.prepare('SELECT COUNT(*) as n FROM projects').get();
   if (count.n > 0) {
@@ -113,3 +110,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: e.message });
   }
 }
+
+export default requireAuth(handler);

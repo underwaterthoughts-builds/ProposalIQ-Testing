@@ -1,10 +1,18 @@
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
+import { canAccess } from '../../../../lib/tenancy';
 import { v4 as uuid } from 'uuid';
 
 async function handler(req, res) {
   const db = getDb();
   const { id } = req.query;
+
+  // Tenant gate — every method targets a specific project, so enforce
+  // ownership once up front.
+  const ownerRow = db.prepare('SELECT owner_user_id FROM projects WHERE id = ?').get(id);
+  if (!ownerRow || !canAccess(req.user, ownerRow)) {
+    return res.status(404).json({ error: 'Not found' });
+  }
 
   if (req.method === 'GET') {
     const fields = db.prepare('SELECT * FROM project_overview_fields WHERE project_id = ? ORDER BY sort_order, created_at').all(id);

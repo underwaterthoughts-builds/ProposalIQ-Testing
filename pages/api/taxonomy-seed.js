@@ -1,5 +1,5 @@
 import { getDb } from '../../lib/db';
-import { requireAuth } from '../../lib/auth';
+import { requireAdmin } from '../../lib/auth';
 import seedItems from '../../lib/taxonomy-seed-data.json';
 
 // Destructive taxonomy sync — replaces the entire taxonomy_items table with
@@ -74,4 +74,5 @@ async function handler(req, res) {
   });
 }
 
-export default requireAuth(handler);
+// Destructive reset of a workspace-global table — admin only.
+export default requireAdmin(handler);

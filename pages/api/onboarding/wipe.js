@@ -1,5 +1,6 @@
 import { getDb } from '../../../lib/db';
 import { requireAuth } from '../../../lib/auth';
+import { isAdmin } from '../../../lib/tenancy';
 
 // POST /api/onboarding/wipe
 //
@@ -32,10 +33,16 @@ async function handler(req, res) {
     return res.status(500).json({ error: 'Failed to delete profile: ' + e.message });
   }
 
-  // Reset only the org_name in settings, leave everything else untouched
-  try {
-    db.prepare("UPDATE settings SET value = '' WHERE key = 'org_name'").run();
-  } catch {}
+  // settings.org_name is WORKSPACE-GLOBAL (key/value table, no owner
+  // column) — only an admin's wipe may reset it. A member clearing their
+  // own profile must not blank the shared org name for everyone.
+  if (isAdmin(req.user)) {
+    try {
+      db.prepare("UPDATE settings SET value = '' WHERE key = 'org_name'").run();
+    } catch (e) {
+      console.error('[onboarding/wipe] org_name reset failed:', e.message);
+    }
+  }
 
   return res.status(200).json({
     ok: true,

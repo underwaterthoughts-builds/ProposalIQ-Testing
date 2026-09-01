@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
+import { canAccess } from '../../../../lib/tenancy';
 
 // Returns the plain-text extraction that was saved during indexing.
 // Looks for `extracted_text.txt` in the upload directory of the first file.
@@ -9,6 +10,13 @@ async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end();
   const { id } = req.query;
   const db = getDb();
+
+  // Tenant gate — enforce project ownership before exposing its text
+  // (same pattern as the sibling download.js).
+  const ownerRow = db.prepare('SELECT owner_user_id FROM projects WHERE id = ?').get(id);
+  if (!ownerRow || !canAccess(req.user, ownerRow)) {
+    return res.status(404).json({ error: 'Not found' });
+  }
 
   const file = db.prepare(
     "SELECT * FROM project_files WHERE project_id = ? ORDER BY created_at LIMIT 1"

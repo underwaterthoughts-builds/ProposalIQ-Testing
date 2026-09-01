@@ -1,4 +1,4 @@
-import { requireAuth } from '../../lib/auth';
+import { requireAdmin } from '../../lib/auth';
 
 async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end();
@@ -25,4 +25,5 @@ async function handler(req, res) {
   return res.status(200).json(vars);
 }
 
-export default requireAuth(handler);
+// Exposes secret metadata (key prefixes/lengths) — admin only.
+export default requireAdmin(handler);

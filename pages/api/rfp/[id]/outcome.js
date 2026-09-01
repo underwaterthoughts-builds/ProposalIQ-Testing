@@ -1,5 +1,6 @@
 import { getDb } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/auth';
+import { canAccess } from '../../../../lib/tenancy';
 import { getScanUsageSummary } from '../../../../lib/feedback';
 
 // Outcome capture for a scan — was it submitted, won/lost, what helped,
@@ -13,6 +14,13 @@ async function handler(req, res) {
   const db = getDb();
   const { id } = req.query;
   if (!id) return res.status(400).json({ error: 'Scan id required' });
+
+  // Tenant gate — every method targets a specific scan, so enforce
+  // ownership once up front (same pattern as rfp/[id].js).
+  const ownerRow = db.prepare('SELECT owner_user_id FROM rfp_scans WHERE id = ?').get(id);
+  if (!ownerRow || !canAccess(req.user, ownerRow)) {
+    return res.status(404).json({ error: 'Not found' });
+  }
 
   if (req.method === 'GET') {
     const row = db.prepare('SELECT * FROM scan_outcomes WHERE scan_id = ?').get(id);
