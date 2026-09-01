@@ -8,7 +8,7 @@ import Link from 'next/link';
 // in Overview & Insights — without it, several downstream AI calls
 // operate without the "stay inside our confirmed offerings" guardrail.
 //
-// Dismissible per-session via localStorage. Lightweight one-shot fetch;
+// Dismissible per-session via sessionStorage. Lightweight one-shot fetch;
 // shown as a soft primary-tinted banner so it reads as guidance, not
 // as an error.
 
@@ -20,7 +20,7 @@ export default function OnboardingPrompt() {
   useEffect(() => {
     // Respect a prior dismiss for this session
     let dismissed = false;
-    try { dismissed = localStorage.getItem(DISMISS_KEY) === '1'; } catch {}
+    try { dismissed = sessionStorage.getItem(DISMISS_KEY) === '1'; } catch {}
     if (dismissed) return;
 
     let alive = true;
@@ -45,7 +45,7 @@ export default function OnboardingPrompt() {
   if (!state.show) return null;
 
   function dismiss() {
-    try { localStorage.setItem(DISMISS_KEY, '1'); } catch {}
+    try { sessionStorage.setItem(DISMISS_KEY, '1'); } catch {}
     setState(s => ({ ...s, show: false }));
   }
 

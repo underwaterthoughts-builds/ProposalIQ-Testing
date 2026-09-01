@@ -7,6 +7,7 @@ import { useState, useMemo, memo } from 'react';
 const ExecutiveBrief = memo(function ExecutiveBrief({ brief, bidScore, matches, onJumpTab, scanName, scanId, coveredRisks = [], onCoverChange, onExport, onGenerateTemplate, exporting, generatingTemplate }) {
   const [coverPrompt, setCoverPrompt] = useState(null); // { risk, mitigation }
   const [coverInFlight, setCoverInFlight] = useState(false);
+  const [showWhy, setShowWhy] = useState(false); // "Why this score" disclosure
   const coveredRiskTexts = useMemo(
     () => new Set((coveredRisks || []).map(r => (r.risk || '').trim())),
     [coveredRisks]
@@ -73,6 +74,21 @@ const ExecutiveBrief = memo(function ExecutiveBrief({ brief, bidScore, matches, 
 
   // Project code — derived from scanId for the editorial label
   const projectCode = scanId ? `CODE: ${String(scanId).slice(0, 8).toUpperCase()}` : null;
+
+  // "Why this score" breakdown — scoreBid's deterministic components +
+  // rationale. Render only the parts the payload actually carries so old
+  // scans (pre-components) degrade gracefully.
+  const scoreComponents = bidScore?.components || {};
+  const componentRows = [
+    { label: 'Top match strength', value: scoreComponents.matchScore },
+    { label: 'Experience depth', value: scoreComponents.experienceScore },
+    { label: 'Gap exposure', value: scoreComponents.gapScore },
+    { label: 'Win rate', value: scoreComponents.winRateScore },
+    { label: 'Won similar work', value: scoreComponents.wonMatchScore },
+  ].filter(r => typeof r.value === 'number' && !Number.isNaN(r.value));
+  const scoreRationale = Array.isArray(bidScore?.rationale) ? bidScore.rationale : [];
+  const scoreConditions = Array.isArray(bidScore?.conditions) ? bidScore.conditions : [];
+  const hasScoreDetail = componentRows.length > 0 || scoreRationale.length > 0;
 
   return (
     <div className="max-w-4xl mx-auto py-8 md:py-12">
@@ -153,6 +169,75 @@ const ExecutiveBrief = memo(function ExecutiveBrief({ brief, bidScore, matches, 
             )}
           </div>
         </div>
+
+        {/* "Why this score" — collapsed breakdown of the deterministic bid score */}
+        {hasScoreDetail && (
+          <div className="mt-1 rounded-lg bg-surface-container-high/40 border border-outline-variant/10 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setShowWhy(v => !v)}
+              aria-expanded={showWhy}
+              className="w-full flex items-center justify-between px-8 py-3 font-label text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors"
+            >
+              <span>Why this score</span>
+              <span aria-hidden="true">{showWhy ? '▴' : '▾'}</span>
+            </button>
+            {showWhy && (
+              <div className="px-8 pb-6 space-y-5">
+                {componentRows.length > 0 && (
+                  <div className="space-y-2.5">
+                    {componentRows.map(row => (
+                      <div key={row.label} className="flex items-center gap-3">
+                        <span className="w-36 shrink-0 font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
+                          {row.label}
+                        </span>
+                        <div className="flex-1 h-1 rounded-full bg-surface-variant/40 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-primary"
+                            style={{ width: `${Math.max(0, Math.min(100, row.value))}%` }}
+                          />
+                        </div>
+                        <span className="w-8 text-right font-label text-xs font-bold text-on-surface">
+                          {Math.round(row.value)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {scoreRationale.length > 0 && (
+                  <ul className="space-y-1.5">
+                    {scoreRationale.map((r, i) => (
+                      <li key={i} className="flex gap-2 text-xs leading-relaxed text-on-surface-variant">
+                        <span className="text-primary shrink-0">·</span>
+                        <span>{r}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {scoreConditions.length > 0 && (
+                  <div>
+                    <div className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/70 mb-1.5">
+                      Conditions
+                    </div>
+                    <ul className="space-y-1.5">
+                      {scoreConditions.map((c, i) => (
+                        <li key={i} className="flex gap-2 text-xs leading-relaxed text-on-surface-variant">
+                          <span className="text-secondary shrink-0">·</span>
+                          <span>{c}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {bidScore?.basis && (
+                  <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/50">
+                    Win-rate basis: {String(bidScore.basis).replace(/_/g, ' ')}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       {/* ── WINNING THESIS + FIT ASSESSMENT ─────────────────────── */}

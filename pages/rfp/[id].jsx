@@ -172,7 +172,7 @@ export default function RFPResults() {
   }
 
   async function rescan() {
-    if (!confirm('Re-run the full intelligence pipeline against this RFP?\n\nExisting results stay visible until the new ones are ready (~60 seconds).')) return;
+    if (!confirm('Re-run the full analysis against this RFP?\n\nExisting results stay visible until the new ones are ready.')) return;
     setRescanning(true);
     try {
       const r = await fetch(`/api/rfp/${id}/rescan`, { method: 'POST' });
@@ -441,7 +441,7 @@ ${sectionHtml('Winning Language', languageHtml)}
               <div className="py-24 text-center max-w-4xl mx-auto">
                 <div className="w-12 h-12 mx-auto rounded-full border-2 border-primary border-t-transparent animate-spin" />
                 <p className="font-body text-sm mt-6 text-on-surface-variant">
-                  Running intelligence pipeline — fast brief in ~60s…
+                  Analysing your RFP — quick brief in about a minute…
                 </p>
               </div>
             ) : (
@@ -504,12 +504,28 @@ ${sectionHtml('Winning Language', languageHtml)}
                 <Spinner size={14}/>
                 <span className="flex-1">
                   {scan.status_detail || (scan.status === 'fast_ready'
-                    ? 'Verdict ready — deep analysis running…'
-                    : 'Starting intelligence pipeline…')}
+                    ? 'Verdict ready — full analysis running…'
+                    : 'Starting analysis…')}
                 </span>
-                <span className="text-[10px] font-mono opacity-60 flex-shrink-0">
-                  {scan.status === 'fast_ready' ? 'deep pass' : 'fast pass'}
-                </span>
+                {(() => {
+                  // The pipeline prefixes status_detail with circled step
+                  // numbers ①–⑫ — parse them into determinate progress.
+                  const STEPS = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫';
+                  const idx = STEPS.indexOf((scan.status_detail || '').charAt(0));
+                  if (idx === -1) return (
+                    <span className="text-[10px] font-mono opacity-60 flex-shrink-0">
+                      {scan.status === 'fast_ready' ? 'full analysis' : 'quick brief'}
+                    </span>
+                  );
+                  return (
+                    <span className="flex items-center gap-2 flex-shrink-0">
+                      <span className="w-24 h-1 rounded-full overflow-hidden" style={{ background:'rgba(0,0,0,.2)' }}>
+                        <span className="block h-full rounded-full transition-all duration-500" style={{ width:`${Math.round(((idx + 1) / 12) * 100)}%`, background:'currentColor', opacity:.7 }} />
+                      </span>
+                      <span className="text-[10px] font-mono opacity-60">step {idx + 1} of 12</span>
+                    </span>
+                  );
+                })()}
               </div>
             )}
             {(() => {
@@ -542,7 +558,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                       <>Re-running: {inFlight.map(([k, v]) => `${labels[k] || k} (${v})`).join(' · ')}</>
                     )}
                     {inFlight.length === 0 && failed.length > 0 && (
-                      <>Some sections couldn't be regenerated: {failed.map(([k]) => labels[k] || k).join(', ')}. Use Re-scan to try again.</>
+                      <>Some sections couldn't be regenerated: {failed.map(([k]) => labels[k] || k).join(', ')}. Use Re-analyse to try again.</>
                     )}
                   </span>
                 </div>
@@ -588,7 +604,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                 <span style={{ fontSize: 16 }}>⚠</span>
                 <span className="flex-1">
                   {scan.status_detail || 'Deep analysis failed after retries.'}{' '}
-                  Fast verdict is available above; use Re-scan to try again.
+                  Your quick verdict is available above; use Re-analyse to try again.
                 </span>
               </div>
             )}
@@ -622,16 +638,16 @@ ${sectionHtml('Winning Language', languageHtml)}
                     {scan.analysis_model === 'gpt' ? (
                       <span
                         className="px-3 py-1 text-[10px] font-label font-bold tracking-widest bg-[#1f3a1c] text-[#7bd07a] border border-[#7bd07a]/30 rounded-full"
-                        title="Full scan — analysed with OpenAI (deep reasoning)"
+                        title="Full analysis — every section generated with deep reasoning"
                       >
-                        FULL SCAN
+                        FULL ANALYSIS
                       </span>
                     ) : (scan.status === 'complete' || scan.status === 'fast_ready') ? (
                       <span
                         className="px-3 py-1 text-[10px] font-label font-bold tracking-widest bg-secondary/10 text-secondary border border-secondary/20 rounded-full"
-                        title="Quick scan — analysed with Gemini 2.5 Flash. Rescan with OpenAI configured for full thinking."
+                        title="Quick analysis — re-analyse with full AI enabled for the deeper sections"
                       >
-                        QUICK SCAN
+                        QUICK ANALYSIS
                       </span>
                     ) : null}
                   </div>
@@ -644,10 +660,10 @@ ${sectionHtml('Winning Language', languageHtml)}
                     <div className="mt-4 flex items-start gap-2 text-xs text-secondary bg-secondary/5 px-4 py-3 border-l-2 border-secondary">
                       <span className="material-symbols-outlined text-base flex-shrink-0 animate-pulse">sync</span>
                       <span>
-                        <strong className="text-on-surface">Deep pass running.</strong>{' '}
-                        Verdict and matches are ready; Opportunity Gaps, Win Strategy, Winning Language,
-                        Suggested Approach, Narrative Advice and Proposal Assembly will populate over the next
-                        2–3 minutes. Refresh the page if they don't appear after that.
+                        <strong className="text-on-surface">Full analysis running.</strong>{' '}
+                        Your verdict and matches are ready now; Opportunity Gaps, Win Strategy, Winning Language,
+                        Suggested Approach, Narrative Advice and Proposal Assembly will fill in over the next
+                        few minutes. You can leave this page — the analysis continues in the background.
                       </span>
                     </div>
                   )}
@@ -655,12 +671,14 @@ ${sectionHtml('Winning Language', languageHtml)}
                     <div className="mt-4 flex items-start gap-2 text-xs text-secondary bg-secondary/5 px-4 py-3 border-l-2 border-secondary">
                       <span className="material-symbols-outlined text-base flex-shrink-0">info</span>
                       <span>
-                        <strong className="text-on-surface">Pipeline finished — quick scan only.</strong>{' '}
-                        The deep tabs (Opportunity Gaps, Win Strategy, Winning Language, Suggested Approach,
-                        Narrative Advice, Proposal Assembly) need OpenAI to generate quality content; on Gemini
-                        alone they finish empty. Set <code className="px-1 bg-surface-container-highest text-primary">OPENAI_API_KEY</code> in
-                        Railway, then click <strong className="text-on-surface">Rescan</strong> on this page to
-                        regenerate everything.
+                        <strong className="text-on-surface">Analysis finished — quick mode only.</strong>{' '}
+                        The deeper sections (Opportunity Gaps, Win Strategy, Winning Language, Suggested
+                        Approach, Narrative Advice, Proposal Assembly) need the full AI configuration,
+                        which isn't currently enabled. {user?.role === 'admin'
+                          ? <>Check the AI settings in <strong className="text-on-surface">Settings</strong>, then click{' '}
+                            <strong className="text-on-surface">Re-analyse</strong> to regenerate everything.</>
+                          : <>Ask your workspace admin to enable it, then click{' '}
+                            <strong className="text-on-surface">Re-analyse</strong> to regenerate everything.</>}
                       </span>
                     </div>
                   )}
@@ -672,13 +690,13 @@ ${sectionHtml('Winning Language', languageHtml)}
                     onClick={rescan}
                     disabled={rescanning || scan?.status === 'processing'}
                     className="bg-primary text-on-primary px-4 py-3 text-[10px] font-label font-bold uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                    title="Re-run the full intelligence pipeline"
+                    title="Re-run the full analysis"
                   >
                     <span className="material-symbols-outlined text-sm">refresh</span>
-                    {rescanning || scan?.status === 'processing' ? 'Rescanning…' : 'Rescan'}
+                    {rescanning || scan?.status === 'processing' ? 'Re-analysing…' : 'Re-analyse'}
                   </button>
                   <button
-                    onClick={() => setActiveTab('proposal_fit')}
+                    onClick={() => { setActiveTab('proposal_fit'); logUsage('tab_viewed', { target_type: 'tab', target_id: 'proposal_fit' }); }}
                     className={`border px-4 py-3 text-[10px] font-label font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
                       activeTab === 'proposal_fit'
                         ? 'border-primary bg-primary/10 text-primary'
@@ -729,7 +747,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                 {tabs.map(t => (
                   <button
                     key={t.id}
-                    onClick={() => setActiveTab(t.id)}
+                    onClick={() => { setActiveTab(t.id); logUsage('tab_viewed', { target_type: 'tab', target_id: t.id }); }}
                     className={`py-4 text-xs font-label uppercase tracking-widest whitespace-nowrap transition-colors flex items-center gap-2 ${
                       activeTab === t.id
                         ? 'text-primary border-b-2 border-primary font-bold'
@@ -771,7 +789,7 @@ ${sectionHtml('Winning Language', languageHtml)}
             </div>
             <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-surface-container-lowest">
               {scan.status === 'processing' ? (
-                <div className="py-16 text-center"><Spinner size={32}/><p className="text-sm mt-4" style={{ color:'#d0c5b0' }}>Running intelligence pipeline — fast brief in ~60s…</p></div>
+                <div className="py-16 text-center"><Spinner size={32}/><p className="text-sm mt-4" style={{ color:'#d0c5b0' }}>Analysing your RFP — quick brief in about a minute…</p></div>
               ) : (() => {
                 // Deep-pass tabs depend on output the deep pass produces
                 // after the fast brief lands. If the user opens one of
@@ -1312,6 +1330,21 @@ ${sectionHtml('Winning Language', languageHtml)}
                           <blockquote className="text-sm italic leading-relaxed border-l-3 pl-3 mb-3" style={{ borderLeft:'3px solid #e8c357', color:'#e6e2de' }}>
                             "{s.text}"
                           </blockquote>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(s.text).then(() => {
+                                setToast('✓ Copied to clipboard');
+                                // Same normalisation as lib/feedback.js#snippetHash so the
+                                // usage event keys match the snippet-ranking boost.
+                                const norm = String(s.text).trim().toLowerCase().replace(/\s+/g, ' ');
+                                logUsage('snippet_copied', { target_type: 'snippet', target_id: norm.slice(0, 64) + ':' + norm.length });
+                              }).catch(e => console.error('[rfp] snippet copy failed:', e.message));
+                            }}
+                            className="text-[10px] font-mono uppercase tracking-widest px-2 py-1 rounded mb-3 transition-colors"
+                            style={{ background:'rgba(30,107,120,.15)', color:'#7fb4bc' }}
+                          >
+                            ⧉ Copy
+                          </button>
                           <div className="flex items-start gap-3">
                             <div className="flex-1">
                               <div className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color:'#d0c5b0' }}>Why it works</div>

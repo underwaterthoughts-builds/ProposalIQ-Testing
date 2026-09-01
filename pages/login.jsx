@@ -185,8 +185,21 @@ export default function Auth() {
                     >
                       {ctaText}
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => { setMode(isSetup ? 'login' : 'setup'); setError(''); }}
+                      className="mt-4 w-full text-center font-label text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors"
+                    >
+                      {altLinkText}
+                    </button>
                   </div>
                 </form>
+
+                {!isSetup && (
+                  <p className="text-xs text-on-surface-variant/60 text-center !mt-6">
+                    Forgotten password? Ask your workspace admin to reset it.
+                  </p>
+                )}
 
                 {/* Alt action + footer links */}
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-6 border-t border-outline-variant/10">

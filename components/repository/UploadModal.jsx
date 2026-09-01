@@ -102,7 +102,7 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
     supportingFiles.forEach(sf => fd.append('supporting', sf));
     const r=await fetch('/api/projects/upload',{method:'POST',body:fd});
     setUploading(false);
-    if(r.ok){setDone(true);onToast('Project uploaded — AI indexing in progress');}
+    if(r.ok){setDone(true);onToast('Project uploaded — analysis in progress');}
     else{const d=await r.json();setErrors({submit:d.error||'Upload failed'});}
   }
 
@@ -155,7 +155,7 @@ function UploadModal({ onClose, folders: initialFolders, onToast }) {
             <div className="text-center py-8">
               <div className="text-5xl mb-4">✅</div>
               <h3 className="font-serif text-xl mb-2">Project Added</h3>
-              <p className="text-sm mb-3" style={{color:'#d0c5b0'}}>AI is indexing your documents (~60 seconds). A library file is saved so future loads are instant — no re-scanning needed.</p>
+              <p className="text-sm mb-3" style={{color:'#d0c5b0'}}>AI is analysing your documents (~60 seconds). The results are saved, so future loads are instant.</p>
             </div>
           ):step===1?(
             <div className="space-y-4">

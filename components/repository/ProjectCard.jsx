@@ -145,9 +145,9 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
               <div className="flex flex-col items-center gap-0.5">
                 <span
                   className="px-2 py-0.5 text-[10px] font-label font-bold tracking-widest bg-[#1f3a1c] text-[#7bd07a] border border-[#7bd07a]/30"
-                  title="Full scan — analysed with OpenAI (deep reasoning)"
+                  title="Full analysis — analysed with deep reasoning"
                 >
-                  FULL SCAN
+                  FULL ANALYSIS
                 </span>
                 <ScanTimestamp indexedAt={p.indexed_at} />
               </div>
@@ -155,9 +155,9 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
               <div className="flex flex-col items-center gap-0.5">
                 <span
                   className="px-2 py-0.5 text-[10px] font-label font-bold tracking-widest bg-secondary/10 text-secondary border border-secondary/20"
-                  title="Quick scan — analysed with Gemini 2.5 Flash. Rescan with OpenAI configured for full thinking."
+                  title="Quick analysis — re-analyse with full AI enabled for deeper insight"
                 >
-                  QUICK SCAN
+                  QUICK ANALYSIS
                 </span>
                 <ScanTimestamp indexedAt={p.indexed_at} />
               </div>
@@ -205,7 +205,7 @@ const ProjectCard = memo(function ProjectCard({ project: p, onToast, onDeleted, 
             {liveStage?.stage === 'upload' ? '① File received'
               : liveStage?.stage === 'text_extraction' ? '② Extracting text'
               : liveStage?.stage === 'ai_analysis' ? '③ AI analysing'
-              : liveStage?.stage === 'embedding' ? '④ Building index'
+              : liveStage?.stage === 'embedding' ? '④ Preparing search'
               : 'Analysing…'}
           </div>
         </div>

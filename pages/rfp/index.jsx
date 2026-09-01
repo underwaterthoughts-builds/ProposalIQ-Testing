@@ -52,6 +52,17 @@ export default function RFPIndex() {
   const fileRef = useRef();
   const proposalRef = useRef();
 
+  // Pre-flight: an empty repository means matches / winning language /
+  // writing insights will all come back empty — warn before the user
+  // pays for a full analysis of nothing.
+  const [repoCount, setRepoCount] = useState(null);
+  useEffect(() => {
+    fetch('/api/projects')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setRepoCount((d.projects || []).length); })
+      .catch(e => console.error('[rfp] repo count fetch failed:', e.message));
+  }, []);
+
   useEffect(() => { loadScans(); }, []);
 
   async function loadScans() {
@@ -64,6 +75,9 @@ export default function RFPIndex() {
 
   async function startScan() {
     if (!file) { setToast('Please select an RFP file first'); return; }
+    if (repoCount === 0 && !confirm(
+      'Your library has no past proposals yet, so this analysis will have nothing to match against — matched proposals, winning language and writing insights will be empty.\n\nAdd past proposals to your library first for much better results.\n\nAnalyse anyway?'
+    )) return;
     const allowedExt = ['pdf', 'docx', 'doc', 'txt', 'md'];
     const ext = (file.name.split('.').pop() || '').toLowerCase();
     if (!allowedExt.includes(ext)) {
@@ -235,9 +249,21 @@ export default function RFPIndex() {
                     </div>
                     <p className="text-[11px] text-on-surface-variant mt-2 leading-snug">
                       {scanMode === 'fast'
-                        ? 'gpt-4o for bulk analysis · gpt-5.5-pro for the executive brief · best for triage and first-read.'
-                        : 'gpt-5.5 for everything · gpt-5.5-pro for the executive brief · best for final go/no-go decisions.'}
+                        ? 'Faster turnaround with deep reasoning reserved for the executive brief · best for triage and first-read.'
+                        : 'Deep reasoning applied to every section · best for final go/no-go decisions.'}
                     </p>
+                  </div>
+                )}
+
+                {repoCount === 0 && (
+                  <div className="flex items-start gap-2 text-xs text-secondary bg-secondary/5 px-4 py-3 border-l-2 border-secondary mb-4 text-left">
+                    <span className="material-symbols-outlined text-base flex-shrink-0">info</span>
+                    <span>
+                      <strong className="text-on-surface">Your library is empty.</strong>{' '}
+                      Analyses work by matching the RFP against your past proposals — add some in{' '}
+                      <Link href="/repository" className="underline text-on-surface hover:text-primary">the repository</Link>{' '}
+                      first for much better results.
+                    </span>
                   </div>
                 )}
 

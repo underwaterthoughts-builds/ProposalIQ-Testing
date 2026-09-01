@@ -86,9 +86,27 @@ const MatchCard = memo(function MatchCard({ match: m, expanded, onToggle, onSupp
               {m.outcome}
             </span>
           )}
+          {(m.won_count || 0) > 0 && (
+            <span
+              className="px-2 py-0.5 uppercase border"
+              style={{
+                background: 'rgba(79,209,197,.1)',
+                color: '#4fd1c5',
+                borderColor: 'rgba(79,209,197,.2)',
+              }}
+              title="A bid that used this reference was marked won"
+            >
+              ✓ You won with this{m.won_count > 1 ? ` ×${m.won_count}` : ''}
+            </span>
+          )}
           {m.sanity_warning && (
             <span className="px-2 py-0.5 uppercase border bg-secondary/10 text-secondary border-secondary/20">
               Adjustment needed
+            </span>
+          )}
+          {(m.used_count || 0) > 0 && (
+            <span className="text-on-surface-variant/60" title="Times this reference was pulled into past bids">
+              Used in {m.used_count} bid{m.used_count === 1 ? '' : 's'}
             </span>
           )}
           <span className="text-on-surface-variant/60 flex items-center gap-1">
