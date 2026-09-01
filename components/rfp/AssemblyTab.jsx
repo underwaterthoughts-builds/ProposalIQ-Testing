@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Spinner } from '../ui';
 import { DebouncedTextarea } from '../../lib/useDebounce';
 import SectionDraftPanel from './SectionDraftPanel';
@@ -45,6 +45,11 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
   const [editingFull, setEditingFull] = useState(false);
   const [fullProposalText, setFullProposalText] = useState('');
   const [coverageReport, setCoverageReport] = useState(null);
+  // Autosave state for the full proposal: 'idle' | 'saving' | 'saved' | 'error'.
+  // lastSavedFullRef holds the last text confirmed persisted so hydration and
+  // fresh generations don't trigger a redundant autosave PUT.
+  const [fullSaveState, setFullSaveState] = useState('idle');
+  const lastSavedFullRef = useRef('');
 
   // Load existing drafts on mount
   useEffect(() => {
@@ -60,6 +65,58 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
       })
       .catch(e => console.error('[rfp] drafts fetch failed:', e.message));
   }, [scan?.id]);
+
+  // Load the saved full proposal on mount — the generation takes ~12-16 min,
+  // so the user must get their draft (including edits) back after tab
+  // switches and reloads.
+  useEffect(() => {
+    if (!scan?.id) return;
+    fetch(`/api/rfp/${scan.id}/full-proposal`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.text) {
+          lastSavedFullRef.current = d.text;
+          setFullProposal(d.text);
+          setFullProposalText(d.text);
+        }
+      })
+      .catch(e => console.error('[rfp] full proposal fetch failed:', e.message));
+  }, [scan?.id]);
+
+  // Persist the full proposal text. Used after generation and by the
+  // autosave effect below. Errors surface via toast — never silent.
+  async function saveFullProposal(text) {
+    setFullSaveState('saving');
+    try {
+      const r = await fetch(`/api/rfp/${scan.id}/full-proposal`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${r.status}`);
+      }
+      lastSavedFullRef.current = text;
+      setFullSaveState('saved');
+    } catch (e) {
+      console.error('[rfp] full proposal save failed:', e.message);
+      setFullSaveState('error');
+      onToast('Failed to save proposal edits: ' + e.message);
+    }
+  }
+
+  // Autosave user edits to the full proposal — debounced 1.5s after the
+  // text last changed (on top of the textarea's own commit debounce).
+  useEffect(() => {
+    if (!scan?.id || !fullProposalText) return;
+    if (fullProposalText === lastSavedFullRef.current) return;
+    setFullSaveState('saving');
+    const t = setTimeout(() => {
+      if (fullProposalText !== lastSavedFullRef.current) saveFullProposal(fullProposalText);
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [fullProposalText]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function generateDraft(section, force = false) {
     if (scan.status !== 'complete') {
@@ -216,6 +273,7 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
       onToast('Wait for the full scan to complete before generating a proposal.');
       return;
     }
+    if (fullProposalText && !confirm('This will replace your current proposal text, including any edits. Regenerate anyway?')) return;
     setGeneratingFull(true);
     try {
       const r = await fetch(`/api/rfp/${scan.id}/generate-proposal`, { method: 'POST' });
@@ -228,6 +286,9 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
       const d = await r.json();
       setFullProposal(d.proposal);
       setFullProposalText(d.proposal);
+      // Persist immediately — this generation cost ~15 minutes; don't let a
+      // tab switch inside the autosave debounce window lose it.
+      saveFullProposal(d.proposal);
       setCoverageReport(d.coverage || null);
       setFullProposalQa({ count: d.qa_adjustments_count || 0, adjustments: d.qa_adjustments || [] });
       const qaNote = d.qa_adjustments_count ? ` · ${d.qa_adjustments_count} QA adjustment${d.qa_adjustments_count === 1 ? '' : 's'} applied` : '';
@@ -313,6 +374,11 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
             className="text-xs px-3 py-1.5 rounded border" style={{ borderColor: '#4d4636', color: '#7fb4bc' }}>
             {generatingFull ? 'Regenerating…' : '⟳ Regenerate'}
           </button>
+          {fullSaveState !== 'idle' && (
+            <span className="text-[10px] font-mono" style={{ color: fullSaveState === 'error' ? '#ffb4ab' : '#99907d' }}>
+              {fullSaveState === 'saving' ? 'Saving…' : fullSaveState === 'error' ? '⚠ Save failed' : 'Saved ✓'}
+            </span>
+          )}
           <span className="text-[10px] font-mono ml-auto" style={{ color: '#99907d' }}>
             {fullProposalText.split(/\s+/).length.toLocaleString()} words
           </span>
@@ -484,6 +550,20 @@ function AssemblyTab({ scan, matches, winStrategy, suggestedApproach, onToast,
 
   return (
     <div className="space-y-4">
+      {/* Saved full proposal exists but the user clicked back to sections —
+          give them a way to reopen it without regenerating */}
+      {fullProposalText && (
+        <div className="rounded-lg p-3 text-xs flex items-center gap-2"
+          style={{ background: 'rgba(30,74,82,.06)', border: '1px solid rgba(30,74,82,.3)', color: '#7fb4bc' }}>
+          <span className="flex-shrink-0">✦</span>
+          <span className="flex-1">You have a saved full proposal draft for this scan.</span>
+          <button onClick={() => setFullProposal(fullProposalText)}
+            className="text-xs px-3 py-1.5 rounded border flex-shrink-0" style={{ borderColor: '#7fb4bc', color: '#7fb4bc' }}>
+            → Open saved draft
+          </button>
+        </div>
+      )}
+
       {/* Generate full proposal CTA */}
       {scan.status === 'complete' && (
         <div className="rounded-xl overflow-hidden border-2" style={{ borderColor: '#b8962e' }}>

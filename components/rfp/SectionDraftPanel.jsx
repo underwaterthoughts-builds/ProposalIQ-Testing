@@ -70,6 +70,13 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
     setEditing(false);
   }
 
+  // Regenerate overwrites the draft (and any edits the user made to it,
+  // saved or not) — always confirm when there's existing text.
+  function handleRegenerate() {
+    if (text && !confirm('This will replace your current draft text, including any edits. Regenerate anyway?')) return;
+    onRegenerate();
+  }
+
   // Build a list of past project + client name tokens we want to
   // highlight in the draft prose so the user can spot every reference
   // at a glance and verify it's the right one. Sorted longest-first so
@@ -193,7 +200,7 @@ const SectionDraftPanel = memo(function SectionDraftPanel({ draft, matches, winn
                 className="text-[11px] px-2.5 py-1.5 rounded border" style={{ borderColor: '#4d4636', color: '#d0c5b0' }}>
                 ⎘ Copy
               </button>
-              <button onClick={onRegenerate} disabled={regenerating}
+              <button onClick={handleRegenerate} disabled={regenerating}
                 className="text-[11px] px-2.5 py-1.5 rounded border" style={{ borderColor: '#4d4636', color: '#7fb4bc' }}>
                 {regenerating ? 'Regenerating…' : '⟳ Regenerate'}
               </button>
