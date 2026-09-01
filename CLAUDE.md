@@ -38,7 +38,7 @@ To toggle verbose pipeline / cache-hit / work-type logs at runtime: set `DEBUG=1
 
 **Implication for any new API route that reads/writes user-owned data:** scope by `owner_user_id` via `lib/tenancy.js#scope` / `ownerId` / `canAccess`. The previous audit + consolidation pass closed several missed scopes (`ai-costs`, `custom-values`, `taxonomy`, `settings`, `indexing-log`); don't reintroduce them. With the per-process safety net gone, any missed scope is now a real cross-user data leak.
 
-`git push` to `main` triggers Railway autodeploy on the single service within ~3–5 min.
+**Railway autodeploys from the `design` remote (`underwaterthoughts-builds/ProposalIQ-Testing`), NOT from `origin` (`ProposalIQ-020426-01`).** Pushing only to `origin` deploys nothing — this silently stranded a release in Sep 2026. To deploy: `git push design main` (deploys within ~3–5 min). Keep `origin` in sync as the archive: `git push origin main`.
 
 **Migration tooling**: `scripts/migrate-tenant.js` exists to absorb a per-tenant SQLite DB into the consolidated DB. It exists for historical reasons; it forces inserted users to `role='member'` because every per-tenant instance had its target user as `admin` (admins bypass `scope()`). Don't delete the script — there may be archived per-tenant backups that need reading later.
 
