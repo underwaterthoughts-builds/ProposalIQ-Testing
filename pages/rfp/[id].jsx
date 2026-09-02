@@ -635,7 +635,10 @@ ${sectionHtml('Winning Language', languageHtml)}
                     <h1 className="text-3xl md:text-4xl font-headline font-medium tracking-tight text-on-surface">
                       Intelligence Workbench
                     </h1>
-                    {scan.analysis_model === 'gpt' ? (
+                    {/* Badge keys off actual output depth, not vendor: a scan
+                        with a win strategy got the full deep pass regardless
+                        of which model family produced it. */}
+                    {(scan.analysis_model === 'gpt' || winStrategy) ? (
                       <span
                         className="px-3 py-1 text-[10px] font-label font-bold tracking-widest bg-[#1f3a1c] text-[#7bd07a] border border-[#7bd07a]/30 rounded-full"
                         title="Full analysis — every section generated with deep reasoning"
@@ -667,7 +670,10 @@ ${sectionHtml('Winning Language', languageHtml)}
                       </span>
                     </div>
                   )}
-                  {scan.status === 'complete' && scan.analysis_model === 'gemini' && (
+                  {/* Only warn about quick mode when the deep sections actually
+                      came back empty — with a strong Gemini model as primary,
+                      a 'gemini' label alone no longer implies degraded output. */}
+                  {scan.status === 'complete' && scan.analysis_model === 'gemini' && gaps.length === 0 && !winStrategy && (
                     <div className="mt-4 flex items-start gap-2 text-xs text-secondary bg-secondary/5 px-4 py-3 border-l-2 border-secondary">
                       <span className="material-symbols-outlined text-base flex-shrink-0">info</span>
                       <span>
