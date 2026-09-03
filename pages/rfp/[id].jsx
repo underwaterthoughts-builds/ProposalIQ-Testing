@@ -8,7 +8,7 @@ import { useMode } from '../../lib/useMode';
 import { useUser } from '../../lib/useUser';
 import { formatMoney, currencySymbol } from '../../lib/format';
 import ProposalFitTab from '../../components/ProposalFitTab';
-import { buildSectionMarkdown, buildFullMarkdown, downloadMarkdown, SECTION_LABELS } from '../../lib/scan-export';
+import { buildSectionMarkdown, buildFullMarkdown, downloadHtml, SECTION_LABELS } from '../../lib/scan-export';
 import RfpTaxonomyBar from '../../components/rfp/RfpTaxonomyBar';
 import CheckpointBanner from '../../components/rfp/CheckpointBanner';
 import OutcomeCaptureModal from '../../components/rfp/OutcomeCaptureModal';
@@ -170,11 +170,11 @@ export default function RFPResults() {
       };
       const safe = (scan.name || 'scan').replace(/[^\w\- ]+/g, '').slice(0, 60).trim();
       if (kind === 'full') {
-        downloadMarkdown(`${safe} — complete summary.md`, await buildFullMarkdown(ctx));
+        downloadHtml(`${safe} — complete summary.html`, await buildFullMarkdown(ctx), `${scan.name} — Complete Summary`);
         logUsage('briefing_exported', { target_type: 'briefing', target_id: 'complete_summary' });
       } else {
         const label = SECTION_LABELS[activeTab] || activeTab;
-        downloadMarkdown(`${safe} — ${label}.md`, await buildSectionMarkdown(activeTab, ctx));
+        downloadHtml(`${safe} — ${label}.html`, await buildSectionMarkdown(activeTab, ctx), `${scan.name} — ${label}`);
         logUsage('briefing_exported', { target_type: 'briefing', target_id: `tab_${activeTab}` });
       }
       setToast('✓ Downloaded');
@@ -793,7 +793,7 @@ ${sectionHtml('Winning Language', languageHtml)}
                           className="w-full text-left px-3 py-2.5 text-xs text-on-surface hover:bg-surface-container-highest transition-colors border-t border-outline-variant/20"
                         >
                           <span className="font-bold">This tab only</span>
-                          <span className="block text-[10px] text-on-surface-variant">{SECTION_LABELS[activeTab] || activeTab} (.md)</span>
+                          <span className="block text-[10px] text-on-surface-variant">{SECTION_LABELS[activeTab] || activeTab} — readable doc, print to PDF</span>
                         </button>
                       </div>
                     )}
