@@ -659,6 +659,31 @@ ${sectionHtml('Winning Language', languageHtml)}
                     <RfpTaxonomyBar scan={scan} rfpData={rfpData} scanId={id} />
                   </div>
 
+                  {/* Partnership bid strip — partners + named CVs attached to
+                      this scan. Their capabilities count as available in the
+                      gap/strategy analysis. */}
+                  {((scan.bid_partners?.length || 0) > 0 || (scan.bid_cvs?.length || 0) > 0) && (
+                    <div className="mt-3 flex items-center gap-2 flex-wrap">
+                      <span className="font-label text-xs text-on-surface-variant uppercase">Bid Team:</span>
+                      {(scan.bid_partners || []).map(p => (
+                        <span key={p.id}
+                          className="px-2.5 py-1 text-[10px] font-label font-bold tracking-widest rounded-full bg-primary/10 text-primary border border-primary/20"
+                          title={p.capabilities ? `Brings: ${p.capabilities}` : 'Delivery partner'}
+                        >
+                          🤝 {p.name}
+                        </span>
+                      ))}
+                      {(scan.bid_cvs || []).map(cv => (
+                        <span key={cv.id}
+                          className="px-2.5 py-1 text-[10px] font-label tracking-widest rounded-full bg-surface-container-high text-on-surface-variant border border-outline/20"
+                          title={cv.original_name}
+                        >
+                          📄 {cv.person_name || cv.original_name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
                   {scan.status === 'fast_ready' && (
                     <div className="mt-4 flex items-start gap-2 text-xs text-secondary bg-secondary/5 px-4 py-3 border-l-2 border-secondary">
                       <span className="material-symbols-outlined text-base flex-shrink-0 animate-pulse">sync</span>

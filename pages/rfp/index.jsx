@@ -45,6 +45,10 @@ export default function RFPIndex() {
   const [proposalFile, setProposalFile] = useState(null);
   const [scanName, setScanName] = useState('');
   const [scanMode, setScanMode] = useState('fast');
+  // Partnership bids: co-delivery agencies + named CVs for this pitch
+  const [partners, setPartners] = useState([]);
+  const [cvFiles, setCvFiles] = useState([]);
+  const cvRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState('');
   const [deletingId, setDeletingId] = useState(null);
@@ -99,6 +103,17 @@ export default function RFPIndex() {
         return;
       }
     }
+    for (const cv of cvFiles) {
+      const cext = (cv.name.split('.').pop() || '').toLowerCase();
+      if (!['pdf', 'docx', 'doc', 'txt'].includes(cext)) {
+        setToast(`CV "${cv.name}": use PDF, DOCX, DOC, or TXT`);
+        return;
+      }
+      if (cv.size > 15 * 1024 * 1024) {
+        setToast(`CV "${cv.name}" too large — maximum is 15MB`);
+        return;
+      }
+    }
     setUploading(true);
     try {
       const fd = new FormData();
@@ -106,6 +121,9 @@ export default function RFPIndex() {
       fd.append('name', scanName || file.name.replace(/\.[^.]+$/, ''));
       fd.append('scan_mode', scanMode);
       if (proposalFile) fd.append('proposal', proposalFile);
+      const validPartners = partners.filter(p => p.name.trim());
+      if (validPartners.length) fd.append('partners', JSON.stringify(validPartners));
+      cvFiles.forEach(cv => fd.append('cvs', cv));
       const r = await fetch('/api/rfp/scan', { method: 'POST', body: fd });
       if (r.ok) {
         const d = await r.json();
@@ -224,6 +242,70 @@ export default function RFPIndex() {
                         + Attach proposal (PDF / DOCX)
                       </button>
                     )}
+                  </div>
+                )}
+
+                {/* Partnership bid — co-delivery agencies + named CVs. All
+                    capabilities/personnel listed here count as available to
+                    the bid, so the analysis stops flagging gaps a partner
+                    covers. */}
+                {file && (
+                  <div className="w-full max-w-sm mb-4 p-3 rounded-md border border-outline-variant/30 bg-surface-container-lowest/60 text-left">
+                    <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Optional — Partnership Bid</p>
+                    <p className="text-xs text-on-surface mb-2">
+                      Bidding with partner agencies? Add them (and any named CVs) so the analysis counts their capabilities as yours.
+                    </p>
+
+                    {partners.map((p, i) => (
+                      <div key={i} className="mb-2 p-2 rounded border border-outline-variant/20 bg-surface-container-lowest">
+                        <div className="flex items-center gap-2">
+                          <input
+                            value={p.name}
+                            onChange={e => setPartners(ps => ps.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
+                            placeholder="Partner agency name"
+                            className="flex-1 bg-transparent border-0 border-b border-outline-variant/40 py-1 text-xs text-on-surface placeholder:text-on-surface-variant/40 focus:ring-0 focus:border-primary focus:outline-none"
+                          />
+                          <button onClick={() => setPartners(ps => ps.filter((_, j) => j !== i))}
+                            className="text-on-surface-variant hover:text-error opacity-70 text-xs" aria-label="Remove partner">✕</button>
+                        </div>
+                        <input
+                          value={p.capabilities}
+                          onChange={e => setPartners(ps => ps.map((x, j) => j === i ? { ...x, capabilities: e.target.value } : x))}
+                          placeholder="What they bring (e.g. dome projection, Arabic VO studio, ISO 27001)"
+                          className="w-full mt-1 bg-transparent border-0 border-b border-outline-variant/40 py-1 text-xs text-on-surface placeholder:text-on-surface-variant/40 focus:ring-0 focus:border-primary focus:outline-none"
+                        />
+                      </div>
+                    ))}
+                    {partners.length < 6 && (
+                      <button type="button" onClick={() => setPartners(ps => [...ps, { name: '', capabilities: '' }])}
+                        className="text-xs text-primary hover:underline block">
+                        + Add partner agency
+                      </button>
+                    )}
+
+                    <div className="mt-3 pt-2 border-t border-outline-variant/20">
+                      <input
+                        type="file" ref={cvRef} className="hidden" multiple
+                        accept=".pdf,.docx,.doc,.txt"
+                        onChange={e => {
+                          const picked = Array.from(e.target.files || []);
+                          setCvFiles(prev => [...prev, ...picked].slice(0, 8));
+                          e.target.value = '';
+                        }}
+                      />
+                      {cvFiles.map((cv, i) => (
+                        <div key={i} className="flex items-center justify-between gap-2 text-xs mb-1">
+                          <span className="truncate text-on-surface-variant">📄 {cv.name} · {(cv.size / 1024).toFixed(0)} KB</span>
+                          <button onClick={() => setCvFiles(fs => fs.filter((_, j) => j !== i))}
+                            className="text-on-surface-variant hover:text-error opacity-70" aria-label="Remove CV">✕</button>
+                        </div>
+                      ))}
+                      {cvFiles.length < 8 && (
+                        <button type="button" onClick={() => cvRef.current.click()} className="text-xs text-primary hover:underline">
+                          + Attach team CVs (PDF / DOCX)
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
 

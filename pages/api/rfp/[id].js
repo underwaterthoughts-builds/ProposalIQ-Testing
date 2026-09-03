@@ -139,9 +139,18 @@ function handler(req, res) {
       return (b.match_score || 0) - (a.match_score || 0);
     });
 
+    // Partnership-bid attachments (empty arrays when not a partnership bid)
+    let bidPartners = [], bidCvs = [];
+    try {
+      bidPartners = db.prepare('SELECT id, name, capabilities, website FROM rfp_scan_partners WHERE scan_id = ?').all(id);
+      bidCvs = db.prepare('SELECT id, person_name, original_name FROM rfp_scan_cvs WHERE scan_id = ?').all(id);
+    } catch (e) { console.error('[rfp] bid team load failed:', e.message); }
+
     return res.status(200).json({
       scan: {
         ...scan,
+        bid_partners: bidPartners,
+        bid_cvs: bidCvs,
         rfp_data: parseJsonField(scan.rfp_data, {}),
         matched_proposals: matchedProposals,
         gaps: parseJsonField(scan.gaps, []),
@@ -283,9 +292,23 @@ function handler(req, res) {
       const filePath = path.join(process.cwd(), 'data', 'uploads', 'rfp_scans', scan.rfp_filename);
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     } catch {}
+    // Delete partnership-bid CV files from disk before dropping their rows
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const cvRows = db.prepare('SELECT filename FROM rfp_scan_cvs WHERE scan_id = ?').all(id);
+      for (const r of cvRows) {
+        const p = path.join(process.cwd(), 'data', 'uploads', 'rfp_scans', r.filename);
+        if (fs.existsSync(p)) fs.unlinkSync(p);
+      }
+    } catch (e) { console.error('[rfp] CV cleanup failed:', e.message); }
     // Delete from DB (suppressions cascade)
     db.prepare('DELETE FROM rfp_scan_suppressions WHERE scan_id = ?').run(id);
     db.prepare('DELETE FROM rfp_scan_annotations WHERE scan_id = ?').run(id);
+    try {
+      db.prepare('DELETE FROM rfp_scan_partners WHERE scan_id = ?').run(id);
+      db.prepare('DELETE FROM rfp_scan_cvs WHERE scan_id = ?').run(id);
+    } catch {}
     db.prepare('DELETE FROM rfp_scans WHERE id = ?').run(id);
     return res.status(200).json({ ok: true });
   }

@@ -8,6 +8,7 @@ import { ensureDir } from '../../../lib/storage';
 import { runRfpScanPipeline } from '../../../lib/rfp-pipeline';
 import { analyseProposalAgainstRfp } from '../../../lib/proposal-fit';
 import { scope, ownerId } from '../../../lib/tenancy';
+import { parseDocument } from '../../../lib/parser';
 
 export const config = { api: { bodyParser: false } };
 
@@ -80,6 +81,42 @@ async function handler(req, res) {
   // both modes — the difference is the bulk extraction/scoring/news layer.
   const scanMode = f('scan_mode') === 'fast' ? 'fast' : 'deep';
 
+  // Delivery partners for a partnership bid — JSON array of
+  // { name, capabilities, website? }. Stored per-scan; the pipeline folds
+  // them into the org-context block so partner capabilities count as
+  // available when detecting gaps.
+  let partners = [];
+  try {
+    const raw = JSON.parse(f('partners') || '[]');
+    if (Array.isArray(raw)) {
+      partners = raw
+        .filter(p => p && String(p.name || '').trim())
+        .slice(0, 6)
+        .map(p => ({
+          name: String(p.name).trim().slice(0, 200),
+          capabilities: String(p.capabilities || '').trim().slice(0, 2000),
+          website: String(p.website || '').trim().slice(0, 300),
+        }));
+    }
+  } catch {}
+
+  // Named CVs for this bid (PDF/DOCX/DOC/TXT, up to 8). Saved now; text
+  // extraction happens in the fire-and-forget block before the pipeline
+  // starts so the analysis can read them.
+  const ALLOWED_CV_EXT = new Set(['.pdf', '.docx', '.doc', '.txt']);
+  const cvArr = files['cvs'] ? (Array.isArray(files['cvs']) ? files['cvs'] : [files['cvs']]) : [];
+  const savedCvs = [];
+  for (const cv of cvArr.slice(0, 8)) {
+    if (!cv?.filepath) continue;
+    const cvExt = path.extname(cv.originalFilename || cv.filepath).toLowerCase();
+    if (!ALLOWED_CV_EXT.has(cvExt)) { try { fs.unlinkSync(cv.filepath); } catch {} continue; }
+    const cvName = `cv_${scanId}_${uuid()}${cvExt}`;
+    try {
+      fs.renameSync(cv.filepath, path.join(uploadDir, cvName));
+      savedCvs.push({ filename: cvName, original: cv.originalFilename || cvName });
+    } catch {}
+  }
+
   db.prepare(
     `INSERT INTO rfp_scans (
       id, name, rfp_filename, rfp_original_name, status, owner_user_id,
@@ -90,13 +127,38 @@ async function handler(req, res) {
     proposalSavedName, proposalOriginalName, proposalSavedName ? 'pending' : null, scanMode
   );
 
+  // Persist partner rows before responding — cheap inserts.
+  for (const p of partners) {
+    db.prepare('INSERT INTO rfp_scan_partners (id, scan_id, name, capabilities, website) VALUES (?, ?, ?, ?, ?)')
+      .run(uuid(), scanId, p.name, p.capabilities, p.website);
+  }
+
   res.status(202).json({ scanId, message: 'Processing started' });
 
   // Fire-and-forget the main RFP pipeline. When a companion proposal is
   // attached, the proposal-fit pass runs after the RFP scan finishes so
   // it has rfp_data.requirements available to score against.
+  // CV text extraction runs first (a few seconds each) so the pipeline's
+  // org-context load sees the extracted text.
   const userId = req.user?.id || null;
-  runRfpScanPipeline(scanId, newPath, userId, scanMode)
+  (async () => {
+    for (const cv of savedCvs) {
+      let text = '';
+      try {
+        text = (await parseDocument(path.join(uploadDir, cv.filename)))?.slice(0, 20000) || '';
+      } catch (e) {
+        console.error(`[scan ${scanId}] CV parse failed for ${cv.original}:`, e.message);
+      }
+      const personName = cv.original.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim().slice(0, 120);
+      try {
+        db.prepare('INSERT INTO rfp_scan_cvs (id, scan_id, filename, original_name, person_name, extracted_text) VALUES (?, ?, ?, ?, ?, ?)')
+          .run(uuid(), scanId, cv.filename, cv.original, personName, text);
+      } catch (e) {
+        console.error(`[scan ${scanId}] CV insert failed:`, e.message);
+      }
+    }
+  })()
+    .then(() => runRfpScanPipeline(scanId, newPath, userId, scanMode))
     .then(() => {
       if (proposalSavedName) {
         return analyseProposalAgainstRfp(scanId).catch(e => {
