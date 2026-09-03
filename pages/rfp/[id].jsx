@@ -8,6 +8,7 @@ import { useMode } from '../../lib/useMode';
 import { useUser } from '../../lib/useUser';
 import { formatMoney, currencySymbol } from '../../lib/format';
 import ProposalFitTab from '../../components/ProposalFitTab';
+import { buildSectionMarkdown, buildFullMarkdown, downloadMarkdown, SECTION_LABELS } from '../../lib/scan-export';
 import RfpTaxonomyBar from '../../components/rfp/RfpTaxonomyBar';
 import CheckpointBanner from '../../components/rfp/CheckpointBanner';
 import OutcomeCaptureModal from '../../components/rfp/OutcomeCaptureModal';
@@ -34,6 +35,8 @@ export default function RFPResults() {
   const [templateDraftMode, setTemplateDraftMode] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [rescanning, setRescanning] = useState(false);
+  const [downloadOpen, setDownloadOpen] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [clientIntel, setClientIntel] = useState(null);
   const [checkpoints, setCheckpoints] = useState({ rfp: false, gaps: false, strategy: false });
   const [editingRfp, setEditingRfp] = useState(false);
@@ -152,6 +155,34 @@ export default function RFPResults() {
       clearTimeout(pollTimerRef.current);
       pollTimerRef.current = setTimeout(fetchScan, 3000);
     }
+  }
+
+  // Download the workbench state as Markdown — either the active tab or the
+  // complete summary. Serialises CURRENT state (covered risks + adjusted
+  // score, suppressed matches excluded, accepted drafts fetched fresh).
+  async function doDownload(kind) {
+    setDownloadOpen(false);
+    setDownloading(true);
+    try {
+      const ctx = {
+        scan, rfpData, matches, gaps, news, winningLanguage, winStrategy,
+        suggestedApproach, teamSuggestions, bidScore, executiveBrief, writingInsights,
+      };
+      const safe = (scan.name || 'scan').replace(/[^\w\- ]+/g, '').slice(0, 60).trim();
+      if (kind === 'full') {
+        downloadMarkdown(`${safe} — complete summary.md`, await buildFullMarkdown(ctx));
+        logUsage('briefing_exported', { target_type: 'briefing', target_id: 'complete_summary' });
+      } else {
+        const label = SECTION_LABELS[activeTab] || activeTab;
+        downloadMarkdown(`${safe} — ${label}.md`, await buildSectionMarkdown(activeTab, ctx));
+        logUsage('briefing_exported', { target_type: 'briefing', target_id: `tab_${activeTab}` });
+      }
+      setToast('✓ Downloaded');
+    } catch (e) {
+      console.error('[rfp] download failed:', e.message);
+      setToast('Download failed: ' + e.message);
+    }
+    setDownloading(false);
   }
 
   async function suppress(projectId) {
@@ -738,6 +769,35 @@ ${sectionHtml('Winning Language', languageHtml)}
                     <span className="material-symbols-outlined text-sm">{scan.proposal_filename ? 'task' : 'upload_file'}</span>
                     Your Proposal
                   </button>
+                  <div className="relative">
+                    <button
+                      onClick={() => setDownloadOpen(o => !o)}
+                      disabled={downloading || scan?.status === 'processing'}
+                      className="w-full border border-outline/30 text-on-surface-variant px-4 py-3 text-[10px] font-label font-bold uppercase tracking-widest hover:bg-surface-container-high hover:text-on-surface transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                      title="Download the current workbench state as Markdown"
+                    >
+                      <span className="material-symbols-outlined text-sm">download</span>
+                      {downloading ? 'Preparing…' : 'Download'}
+                    </button>
+                    {downloadOpen && (
+                      <div className="absolute right-0 top-full mt-1 w-52 z-30 bg-surface-container-high border border-outline-variant/40 rounded-md shadow-xl overflow-hidden">
+                        <button
+                          onClick={() => doDownload('full')}
+                          className="w-full text-left px-3 py-2.5 text-xs text-on-surface hover:bg-surface-container-highest transition-colors"
+                        >
+                          <span className="font-bold">Complete summary</span>
+                          <span className="block text-[10px] text-on-surface-variant">Every section, final state, one file</span>
+                        </button>
+                        <button
+                          onClick={() => doDownload('tab')}
+                          className="w-full text-left px-3 py-2.5 text-xs text-on-surface hover:bg-surface-container-highest transition-colors border-t border-outline-variant/20"
+                        >
+                          <span className="font-bold">This tab only</span>
+                          <span className="block text-[10px] text-on-surface-variant">{SECTION_LABELS[activeTab] || activeTab} (.md)</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   <Link
                     href="/rfp"
                     className="border border-outline/30 text-on-surface-variant px-4 py-3 text-[10px] font-label font-bold uppercase tracking-widest hover:bg-surface-container-high hover:text-on-surface transition-all flex items-center justify-center gap-2"
