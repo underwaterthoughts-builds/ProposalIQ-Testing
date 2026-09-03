@@ -47,8 +47,36 @@ export default function RFPIndex() {
   const [scanMode, setScanMode] = useState('fast');
   // Partnership bids: co-delivery agencies + named CVs for this pitch
   const [partners, setPartners] = useState([]);
+  const [scanningPartner, setScanningPartner] = useState(null); // index being site-scanned
   const [cvFiles, setCvFiles] = useState([]);
   const cvRef = useRef(null);
+
+  // Scrape a partner's website and auto-fill their competencies line.
+  // The result is editable — it just saves typing.
+  async function scanPartnerSite(i) {
+    const p = partners[i];
+    if (!p?.website?.trim()) { setToast('Add the partner\'s website URL first'); return; }
+    setScanningPartner(i);
+    try {
+      const r = await fetch('/api/rfp/partner-scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: p.website.trim() }),
+      });
+      const d = await r.json();
+      if (d.capabilities) {
+        setPartners(ps => ps.map((x, j) => j === i
+          ? { ...x, capabilities: x.capabilities?.trim() ? x.capabilities + '; ' + d.capabilities : d.capabilities }
+          : x));
+        setToast(`✓ Found ${d.offerings_found} competencies from ${d.hostname} — edit as needed`);
+      } else {
+        setToast(d.error ? `Site scan: ${d.error}${d.suggest_manual ? ' — type their competencies manually' : ''}` : 'Site scan failed');
+      }
+    } catch (e) {
+      setToast('Site scan failed: ' + e.message);
+    }
+    setScanningPartner(null);
+  }
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState('');
   const [deletingId, setDeletingId] = useState(null);
@@ -268,6 +296,23 @@ export default function RFPIndex() {
                           <button onClick={() => setPartners(ps => ps.filter((_, j) => j !== i))}
                             className="text-on-surface-variant hover:text-error opacity-70 text-xs" aria-label="Remove partner">✕</button>
                         </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <input
+                            value={p.website || ''}
+                            onChange={e => setPartners(ps => ps.map((x, j) => j === i ? { ...x, website: e.target.value } : x))}
+                            placeholder="Their website (for auto competency scan)"
+                            className="flex-1 bg-transparent border-0 border-b border-outline-variant/40 py-1 text-xs text-on-surface placeholder:text-on-surface-variant/40 focus:ring-0 focus:border-primary focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => scanPartnerSite(i)}
+                            disabled={scanningPartner !== null || !p.website?.trim()}
+                            className="text-[10px] font-label font-bold uppercase tracking-widest text-primary hover:underline disabled:opacity-40 disabled:no-underline whitespace-nowrap"
+                            title="Scrape their site and auto-fill competencies"
+                          >
+                            {scanningPartner === i ? 'Scanning…' : '⚡ Scan site'}
+                          </button>
+                        </div>
                         <input
                           value={p.capabilities}
                           onChange={e => setPartners(ps => ps.map((x, j) => j === i ? { ...x, capabilities: e.target.value } : x))}
@@ -277,7 +322,7 @@ export default function RFPIndex() {
                       </div>
                     ))}
                     {partners.length < 6 && (
-                      <button type="button" onClick={() => setPartners(ps => [...ps, { name: '', capabilities: '' }])}
+                      <button type="button" onClick={() => setPartners(ps => [...ps, { name: '', capabilities: '', website: '' }])}
                         className="text-xs text-primary hover:underline block">
                         + Add partner agency
                       </button>
