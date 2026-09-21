@@ -6,7 +6,15 @@ const STATUS_BADGE = {
   partial:   { bg: '#5b4419', fg: '#e4c366', label: 'Partial' },
   missing:   { bg: '#5a1e1a', fg: '#e8a59f', label: 'Missing' },
   unanalyzed:{ bg: '#3a3a3a', fg: '#c8c8c8', label: 'Unanalyzed' },
+  asserted:  { bg: '#173f46', fg: '#7fb4bc', label: 'Covered — you have this' },
 };
+
+// Effective status: a user assertion ("we have this") counts as covered in
+// every count, filter, and score, while the AI's original grading is kept
+// visible underneath.
+function effStatus(r) {
+  return r.user_override === 'covered' ? 'addressed' : r.status;
+}
 
 function StatusBadge({ status }) {
   const p = STATUS_BADGE[status] || STATUS_BADGE.unanalyzed;
@@ -48,7 +56,34 @@ export default function ProposalFitTab({ scanId }) {
   const [data, setData] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+  const [statusFilter, setStatusFilter] = useState(null); // 'addressed' | 'partial' | 'missing' | 'mandatory_missing'
+  const [overriding, setOverriding] = useState(null);     // requirement_index in flight
   const fileRef = useRef();
+  const matrixRef = useRef();
+
+  // "We have this" / undo — asserts a capability the response text doesn't
+  // evidence; the fit score regrades immediately server-side.
+  async function setCovered(r, covered) {
+    setOverriding(r.requirement_index);
+    try {
+      const resp = await fetch(`/api/rfp/${scanId}/coverage-override`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requirement_index: r.requirement_index, covered }),
+      });
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        throw new Error(body.error || `Failed (${resp.status})`);
+      }
+      await load();
+    } catch (e) { setError(e.message); }
+    setOverriding(null);
+  }
+
+  function filterAndScroll(f) {
+    setStatusFilter(cur => (cur === f ? null : f));
+    setTimeout(() => matrixRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
 
   const load = useCallback(async () => {
     try {
@@ -214,14 +249,20 @@ export default function ProposalFitTab({ scanId }) {
   const dimsUsed = Array.isArray(meta._dimensions_used) ? meta._dimensions_used : [];
   const missingDims = meta._missing_dimensions || {};
 
-  const addressed = coverage.filter(r => r.status === 'addressed').length;
-  const partial   = coverage.filter(r => r.status === 'partial').length;
-  const missing   = coverage.filter(r => r.status === 'missing').length;
-  const mandatoriesMissing = coverage.filter(r => r.status === 'missing' && r.requirement_mandatory).length;
+  const addressed = coverage.filter(r => effStatus(r) === 'addressed').length;
+  const partial   = coverage.filter(r => effStatus(r) === 'partial').length;
+  const missing   = coverage.filter(r => effStatus(r) === 'missing').length;
+  const mandatoriesMissing = coverage.filter(r => effStatus(r) === 'missing' && r.requirement_mandatory).length;
 
   const gaps = coverage
-    .filter(r => r.status === 'missing' || r.status === 'partial')
+    .filter(r => effStatus(r) === 'missing' || effStatus(r) === 'partial')
     .sort((a, b) => (b.requirement_mandatory ? 1 : 0) - (a.requirement_mandatory ? 1 : 0));
+
+  const visibleCoverage = coverage.filter(r => {
+    if (!statusFilter) return true;
+    if (statusFilter === 'mandatory_missing') return effStatus(r) === 'missing' && r.requirement_mandatory;
+    return effStatus(r) === statusFilter;
+  });
 
   const genericHits = Array.isArray(meta?.writing_quality?.generic_phrase_hits)
     ? meta.writing_quality.generic_phrase_hits
@@ -296,25 +337,31 @@ export default function ProposalFitTab({ scanId }) {
         )}
       </Card>
 
-      {/* ── At-a-glance counts ──────────────────────────────────────── */}
+      {/* ── At-a-glance counts — click a tile to filter the matrix ──── */}
       {coverage.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Card className="p-4">
-            <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Addressed</p>
-            <p className="font-headline text-2xl font-bold" style={{ color: '#7bd07a' }}>{addressed}<span className="text-sm font-normal opacity-60">/{coverage.length}</span></p>
-          </Card>
-          <Card className="p-4">
-            <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Partial</p>
-            <p className="font-headline text-2xl font-bold" style={{ color: '#e4c366' }}>{partial}<span className="text-sm font-normal opacity-60">/{coverage.length}</span></p>
-          </Card>
-          <Card className="p-4">
-            <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Missing</p>
-            <p className="font-headline text-2xl font-bold" style={{ color: '#e8a59f' }}>{missing}<span className="text-sm font-normal opacity-60">/{coverage.length}</span></p>
-          </Card>
-          <Card className="p-4">
-            <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Mandatories missing</p>
-            <p className="font-headline text-2xl font-bold" style={{ color: mandatoriesMissing > 0 ? '#e8a59f' : '#7bd07a' }}>{mandatoriesMissing}</p>
-          </Card>
+          {[
+            { key: 'addressed', label: 'Addressed', value: addressed, of: coverage.length, colour: '#7bd07a' },
+            { key: 'partial', label: 'Partial', value: partial, of: coverage.length, colour: '#e4c366' },
+            { key: 'missing', label: 'Missing', value: missing, of: coverage.length, colour: '#e8a59f' },
+            { key: 'mandatory_missing', label: 'Mandatories missing', value: mandatoriesMissing, of: null, colour: mandatoriesMissing > 0 ? '#e8a59f' : '#7bd07a' },
+          ].map(t => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => filterAndScroll(t.key)}
+              className={`text-left rounded-lg transition-all ${statusFilter === t.key ? 'ring-2 ring-primary' : 'hover:ring-1 hover:ring-outline/50'}`}
+              title={statusFilter === t.key ? 'Clear filter' : `Show these requirements in the matrix`}
+            >
+              <Card className="p-4 h-full">
+                <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">{t.label}</p>
+                <p className="font-headline text-2xl font-bold" style={{ color: t.colour }}>
+                  {t.value}{t.of != null && <span className="text-sm font-normal opacity-60">/{t.of}</span>}
+                </p>
+                <p className="text-[10px] text-on-surface-variant/50 mt-1">{statusFilter === t.key ? 'Filtering — click to clear' : 'Click for details'}</p>
+              </Card>
+            </button>
+          ))}
         </div>
       )}
 
@@ -331,7 +378,18 @@ export default function ProposalFitTab({ scanId }) {
                     {r.requirement_mandatory ? <span className="text-error font-bold mr-1">●</span> : null}
                     {r.requirement_text}
                   </p>
-                  <StatusBadge status={r.status} />
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <StatusBadge status={r.status} />
+                    <button
+                      type="button"
+                      onClick={() => setCovered(r, true)}
+                      disabled={overriding !== null}
+                      className="text-[10px] font-label font-bold uppercase tracking-widest px-2 py-1 rounded border border-primary/40 text-primary hover:bg-primary/10 disabled:opacity-40 whitespace-nowrap"
+                      title="We have this capability even though it's not evidenced in the response — count it as covered and regrade the fit score"
+                    >
+                      {overriding === r.requirement_index ? 'Regrading…' : '✓ We have this'}
+                    </button>
+                  </div>
                 </div>
                 {r.rationale && <p className="text-xs text-on-surface-variant italic">{r.rationale}</p>}
               </li>
@@ -342,8 +400,20 @@ export default function ProposalFitTab({ scanId }) {
 
       {/* ── Coverage matrix ─────────────────────────────────────────── */}
       {coverage.length > 0 && (
+        <div ref={matrixRef}>
         <Card className="p-6">
-          <h3 className="font-headline text-xl font-bold text-on-surface mb-4">Requirement coverage matrix</h3>
+          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+            <h3 className="font-headline text-xl font-bold text-on-surface">Requirement coverage matrix</h3>
+            {statusFilter && (
+              <button
+                type="button"
+                onClick={() => setStatusFilter(null)}
+                className="text-[10px] font-label font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20"
+              >
+                Showing: {statusFilter === 'mandatory_missing' ? 'Mandatories missing' : statusFilter} ({visibleCoverage.length}) ✕ clear
+              </button>
+            )}
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
@@ -351,32 +421,73 @@ export default function ProposalFitTab({ scanId }) {
                   <th className="py-2 pr-3">Requirement</th>
                   <th className="py-2 pr-3">Status</th>
                   <th className="py-2 pr-3">Strength</th>
-                  <th className="py-2">Evidence</th>
+                  <th className="py-2 pr-3">Evidence</th>
+                  <th className="py-2"></th>
                 </tr>
               </thead>
               <tbody>
-                {coverage.map(r => (
+                {visibleCoverage.map(r => {
+                  const asserted = r.user_override === 'covered';
+                  return (
                   <tr key={r.requirement_index} className="border-b border-outline-variant/10 align-top">
                     <td className="py-3 pr-3 text-sm max-w-[280px]">
                       {r.requirement_mandatory ? <span className="text-error font-bold mr-1" title="Mandatory">●</span> : null}
                       {r.requirement_text}
                       {r.requirement_section ? <span className="block text-[10px] uppercase tracking-widest text-on-surface-variant/60 mt-0.5">{r.requirement_section}</span> : null}
                     </td>
-                    <td className="py-3 pr-3"><StatusBadge status={r.status} /></td>
-                    <td className="py-3 pr-3"><StrengthBar score={r.strength_score} /></td>
-                    <td className="py-3 text-xs text-on-surface-variant max-w-[360px]">
+                    <td className="py-3 pr-3">
+                      {asserted ? (
+                        <div className="space-y-1">
+                          <StatusBadge status="asserted" />
+                          <span className="block text-[10px] text-on-surface-variant/60" title="The AI's original grading of the response text">AI graded: {r.status}</span>
+                        </div>
+                      ) : (
+                        <StatusBadge status={r.status} />
+                      )}
+                    </td>
+                    <td className="py-3 pr-3"><StrengthBar score={asserted ? Math.max(85, r.strength_score || 0) : r.strength_score} /></td>
+                    <td className="py-3 pr-3 text-xs text-on-surface-variant max-w-[360px]">
                       {r.evidence_quote ? (
                         <span className="italic">"{r.evidence_quote.slice(0, 280)}{r.evidence_quote.length > 280 ? '…' : ''}"</span>
+                      ) : asserted ? (
+                        <span className="opacity-70">Covered by your assertion — consider writing it into the response.</span>
                       ) : (
                         <span className="opacity-50">—</span>
                       )}
                     </td>
+                    <td className="py-3">
+                      {asserted ? (
+                        <button
+                          type="button"
+                          onClick={() => setCovered(r, false)}
+                          disabled={overriding !== null}
+                          className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant hover:text-error disabled:opacity-40 whitespace-nowrap"
+                        >
+                          {overriding === r.requirement_index ? '…' : 'Undo'}
+                        </button>
+                      ) : (effStatus(r) === 'missing' || effStatus(r) === 'partial') ? (
+                        <button
+                          type="button"
+                          onClick={() => setCovered(r, true)}
+                          disabled={overriding !== null}
+                          className="text-[10px] font-label font-bold uppercase tracking-widest px-2 py-1 rounded border border-primary/40 text-primary hover:bg-primary/10 disabled:opacity-40 whitespace-nowrap"
+                          title="We have this capability — count it as covered and regrade the fit score"
+                        >
+                          {overriding === r.requirement_index ? '…' : '✓ We have this'}
+                        </button>
+                      ) : null}
+                    </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
+            {visibleCoverage.length === 0 && (
+              <p className="text-sm text-on-surface-variant py-6 text-center">No requirements match this filter.</p>
+            )}
           </div>
         </Card>
+        </div>
       )}
 
       {/* ── Generic-phrase hits ─────────────────────────────────────── */}

@@ -11,7 +11,7 @@ async function handler(req, res) {
 
   if (req.method === 'GET') {
     const coverage = db.prepare(
-      'SELECT requirement_index, requirement_text, requirement_section, requirement_mandatory, status, evidence_quote, strength_score, rationale FROM proposal_coverage WHERE scan_id = ? ORDER BY requirement_index'
+      'SELECT requirement_index, requirement_text, requirement_section, requirement_mandatory, status, evidence_quote, strength_score, rationale, user_override, override_note FROM proposal_coverage WHERE scan_id = ? ORDER BY requirement_index'
     ).all(id);
     let metadata = null;
     try { metadata = scan.proposal_metadata ? JSON.parse(scan.proposal_metadata) : null; } catch {}
