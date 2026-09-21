@@ -53,27 +53,24 @@ async function handler(req, res) {
   // Optional companion proposal — user can attach their draft response
   // alongside the RFP at scan creation. Validated and stored here; the
   // proposal-fit pass kicks off after the main scan is up.
+  // A response may be split across several documents (commercial, technical,
+  // annexes) — accept up to 6; each becomes a row in rfp_scan_proposal_docs
+  // and the legacy columns track the first for compatibility.
   const ALLOWED_PROPOSAL_EXT = new Set(['.pdf', '.docx', '.doc', '.txt', '.md']);
-  const propArr = files['proposal'];
-  const propFile = Array.isArray(propArr) ? propArr[0] : propArr;
-  let proposalSavedName = null;
-  let proposalOriginalName = null;
-  if (propFile?.filepath) {
+  const propArr = files['proposal'] ? (Array.isArray(files['proposal']) ? files['proposal'] : [files['proposal']]) : [];
+  const savedProposalDocs = [];
+  for (const propFile of propArr.slice(0, 6)) {
+    if (!propFile?.filepath) continue;
     const propExt = path.extname(propFile.originalFilename || propFile.filepath).toLowerCase();
-    if (ALLOWED_PROPOSAL_EXT.has(propExt)) {
-      proposalSavedName = `proposal_${scanId}_${uuid()}${propExt}`;
-      const propPath = path.join(uploadDir, proposalSavedName);
-      try {
-        fs.renameSync(propFile.filepath, propPath);
-        proposalOriginalName = propFile.originalFilename || proposalSavedName;
-      } catch {
-        proposalSavedName = null;
-        proposalOriginalName = null;
-      }
-    } else {
-      try { fs.unlinkSync(propFile.filepath); } catch {}
-    }
+    if (!ALLOWED_PROPOSAL_EXT.has(propExt)) { try { fs.unlinkSync(propFile.filepath); } catch {} continue; }
+    const savedName = `proposal_${scanId}_${uuid()}${propExt}`;
+    try {
+      fs.renameSync(propFile.filepath, path.join(uploadDir, savedName));
+      savedProposalDocs.push({ filename: savedName, original: propFile.originalFilename || savedName });
+    } catch {}
   }
+  const proposalSavedName = savedProposalDocs[0]?.filename || null;
+  const proposalOriginalName = savedProposalDocs[0]?.original || null;
 
   // Scan mode: 'fast' (gpt-4o default, ~60-90s) or 'deep' (gpt-5.5 default,
   // ~5-15 min). Tier-1 reasoning calls and tier-5 QA hardcode their own
@@ -131,6 +128,10 @@ async function handler(req, res) {
   for (const p of partners) {
     db.prepare('INSERT INTO rfp_scan_partners (id, scan_id, name, capabilities, website) VALUES (?, ?, ?, ?, ?)')
       .run(uuid(), scanId, p.name, p.capabilities, p.website);
+  }
+  for (const doc of savedProposalDocs) {
+    db.prepare('INSERT INTO rfp_scan_proposal_docs (id, scan_id, filename, original_name) VALUES (?, ?, ?, ?)')
+      .run(uuid(), scanId, doc.filename, doc.original);
   }
 
   res.status(202).json({ scanId, message: 'Processing started' });

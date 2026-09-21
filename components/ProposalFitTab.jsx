@@ -73,18 +73,23 @@ export default function ProposalFitTab({ scanId }) {
     }
   }, [data, load]);
 
-  async function uploadFile(file) {
-    if (!file) return;
-    const ext = (file.name.split('.').pop() || '').toLowerCase();
-    if (!['pdf', 'docx', 'doc', 'txt', 'md'].includes(ext)) {
-      setError(`Unsupported file type ".${ext}"`); return;
+  // Accepts one or many files — a response is often split into commercial +
+  // technical (+ annexes). New uploads APPEND to any docs already attached.
+  async function uploadFiles(fileList) {
+    const chosen = Array.from(fileList || []).slice(0, 6);
+    if (!chosen.length) return;
+    for (const file of chosen) {
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      if (!['pdf', 'docx', 'doc', 'txt', 'md'].includes(ext)) {
+        setError(`"${file.name}": unsupported type — use PDF, DOCX, DOC, TXT, or MD`); return;
+      }
+      if (file.size > 50 * 1024 * 1024) { setError(`"${file.name}" too large — maximum 50MB`); return; }
     }
-    if (file.size > 50 * 1024 * 1024) { setError('File too large — maximum 50MB'); return; }
     setError(null);
     setUploading(true);
     try {
       const fd = new FormData();
-      fd.append('proposal', file);
+      chosen.forEach(f => fd.append('proposal', f));
       const r = await fetch(`/api/rfp/${scanId}/proposal`, { method: 'POST', body: fd });
       if (!r.ok) {
         const body = await r.json().catch(() => ({}));
@@ -97,8 +102,17 @@ export default function ProposalFitTab({ scanId }) {
     setUploading(false);
   }
 
+  async function removeDoc(docId, name) {
+    if (!docId) { return removeProposal(); }
+    if (!confirm(`Remove "${name}" from this response? The fit analysis will re-run on the remaining documents.`)) return;
+    try {
+      await fetch(`/api/rfp/${scanId}/proposal?doc=${encodeURIComponent(docId)}`, { method: 'DELETE' });
+      await load();
+    } catch (e) { setError(e.message); }
+  }
+
   async function removeProposal() {
-    if (!confirm('Remove this proposal and its analysis? This cannot be undone.')) return;
+    if (!confirm('Remove ALL response documents and the analysis? This cannot be undone.')) return;
     try {
       await fetch(`/api/rfp/${scanId}/proposal`, { method: 'DELETE' });
       await load();
@@ -127,14 +141,16 @@ export default function ProposalFitTab({ scanId }) {
           <h3 className="font-headline text-2xl font-bold text-on-surface mb-2">Score your draft</h3>
           <p className="font-body text-on-surface-variant mb-6 text-sm leading-relaxed">
             Upload your proposal response to this RFP and we'll evaluate it against every requirement,
-            evaluation criterion, and the methodology / evidence bar.
+            evaluation criterion, and the methodology / evidence bar. Split across several files
+            (commercial, technical, annexes)? Select them all — they're analysed as one response.
           </p>
           <input
             type="file"
             ref={fileRef}
             className="hidden"
+            multiple
             accept=".pdf,.docx,.doc,.txt,.md"
-            onChange={e => { if (e.target.files[0]) uploadFile(e.target.files[0]); }}
+            onChange={e => { if (e.target.files?.length) uploadFiles(e.target.files); e.target.value = ''; }}
           />
           <button
             type="button"
@@ -142,9 +158,9 @@ export default function ProposalFitTab({ scanId }) {
             disabled={uploading}
             className="bg-primary text-on-primary font-bold px-8 py-3 rounded-md hover:brightness-110 transition-all active:scale-95 disabled:opacity-40"
           >
-            {uploading ? 'Uploading…' : 'Upload proposal'}
+            {uploading ? 'Uploading…' : 'Upload proposal document(s)'}
           </button>
-          <p className="mt-3 text-[11px] font-mono uppercase tracking-widest text-on-surface-variant/60">PDF · DOCX · DOC · TXT · MD · max 50MB</p>
+          <p className="mt-3 text-[11px] font-mono uppercase tracking-widest text-on-surface-variant/60">PDF · DOCX · DOC · TXT · MD · max 50MB each · up to 6 documents</p>
           {error && <p className="mt-4 text-xs text-error">{error}</p>}
         </div>
       </Card>
@@ -163,7 +179,7 @@ export default function ProposalFitTab({ scanId }) {
           {data.progress ? `Progress: ${data.progress}` : 'Reading the proposal and matching against the RFP.'}
         </p>
         <p className="text-[11px] font-mono uppercase tracking-widest text-on-surface-variant/60">
-          {data.proposal_original_name}
+          {(data.docs || []).map(d => d.original_name).join(' · ') || data.proposal_original_name}
         </p>
       </Card>
     );
@@ -221,21 +237,36 @@ export default function ProposalFitTab({ scanId }) {
             <h2 className="font-headline text-3xl font-bold text-on-surface mb-1">
               {overall}<span className="text-lg font-normal opacity-60">/100 fit</span>
             </h2>
-            <p className="text-sm text-on-surface-variant">
-              {data.proposal_original_name}
-              {data.last_analyzed_at ? ` · Analysed ${new Date(data.last_analyzed_at).toLocaleDateString()}` : ''}
-            </p>
+            <div className="flex items-center gap-2 flex-wrap mt-1">
+              {(data.docs || []).map((doc, i) => (
+                <span key={doc.id || i}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] bg-surface-container-high text-on-surface-variant border border-outline-variant/30"
+                  title={doc.created_at ? `Added ${new Date(doc.created_at).toLocaleDateString()}` : undefined}
+                >
+                  📄 {doc.original_name}
+                  {doc.id && (data.docs || []).length > 1 && (
+                    <button onClick={() => removeDoc(doc.id, doc.original_name)}
+                      className="hover:text-error opacity-60 hover:opacity-100" aria-label={`Remove ${doc.original_name}`}>✕</button>
+                  )}
+                </span>
+              ))}
+              {data.last_analyzed_at && (
+                <span className="text-[11px] text-on-surface-variant/60">Analysed {new Date(data.last_analyzed_at).toLocaleDateString()}</span>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <input
               type="file"
               ref={fileRef}
               className="hidden"
+              multiple
               accept=".pdf,.docx,.doc,.txt,.md"
-              onChange={e => { if (e.target.files[0]) uploadFile(e.target.files[0]); }}
+              onChange={e => { if (e.target.files?.length) uploadFiles(e.target.files); e.target.value = ''; }}
             />
-            <button onClick={() => fileRef.current.click()} disabled={uploading} className="border border-outline-variant px-4 py-2 rounded text-xs hover:bg-surface-container-high disabled:opacity-40">
-              {uploading ? 'Uploading…' : 'Re-upload draft'}
+            <button onClick={() => fileRef.current.click()} disabled={uploading} className="border border-outline-variant px-4 py-2 rounded text-xs hover:bg-surface-container-high disabled:opacity-40"
+              title="Add another document (commercial, technical, annex) — analysed together as one response">
+              {uploading ? 'Uploading…' : '+ Add document'}
             </button>
             <button onClick={rerun} className="border border-outline-variant px-4 py-2 rounded text-xs hover:bg-surface-container-high">
               Re-run analysis

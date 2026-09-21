@@ -15,8 +15,18 @@ async function handler(req, res) {
     ).all(id);
     let metadata = null;
     try { metadata = scan.proposal_metadata ? JSON.parse(scan.proposal_metadata) : null; } catch {}
+    // Multi-doc: list every attached response document. Legacy scans that
+    // pre-date the docs table surface their single file as a synthetic row.
+    let docs = [];
+    try {
+      docs = db.prepare('SELECT id, original_name, created_at FROM rfp_scan_proposal_docs WHERE scan_id = ? ORDER BY created_at').all(id);
+    } catch {}
+    if (docs.length === 0 && scan.proposal_filename) {
+      docs = [{ id: null, original_name: scan.proposal_original_name || scan.proposal_filename, created_at: scan.proposal_uploaded_at }];
+    }
     return res.status(200).json({
-      proposal_attached: !!scan.proposal_filename,
+      proposal_attached: docs.length > 0,
+      docs,
       proposal_original_name: scan.proposal_original_name || null,
       proposal_uploaded_at: scan.proposal_uploaded_at || null,
       status: scan.proposal_analysis_status || null,

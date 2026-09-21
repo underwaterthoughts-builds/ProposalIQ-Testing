@@ -42,7 +42,7 @@ export default function RFPIndex() {
   const { user, loading: authLoading } = useUser();
   const [scans, setScans] = useState([]);
   const [file, setFile] = useState(null);
-  const [proposalFile, setProposalFile] = useState(null);
+  const [proposalFiles, setProposalFiles] = useState([]);
   const [scanName, setScanName] = useState('');
   const [scanMode, setScanMode] = useState('fast');
   // Partnership bids: co-delivery agencies + named CVs for this pitch
@@ -120,14 +120,14 @@ export default function RFPIndex() {
       setToast('File too large — maximum is 50MB');
       return;
     }
-    if (proposalFile) {
-      const pext = (proposalFile.name.split('.').pop() || '').toLowerCase();
+    for (const pf of proposalFiles) {
+      const pext = (pf.name.split('.').pop() || '').toLowerCase();
       if (!allowedExt.includes(pext)) {
-        setToast(`Proposal: unsupported file type ".${pext}"`);
+        setToast(`Proposal "${pf.name}": unsupported file type ".${pext}"`);
         return;
       }
-      if (proposalFile.size > 50 * 1024 * 1024) {
-        setToast('Proposal file too large — maximum is 50MB');
+      if (pf.size > 50 * 1024 * 1024) {
+        setToast(`Proposal "${pf.name}" too large — maximum is 50MB`);
         return;
       }
     }
@@ -148,7 +148,7 @@ export default function RFPIndex() {
       fd.append('rfp', file);
       fd.append('name', scanName || file.name.replace(/\.[^.]+$/, ''));
       fd.append('scan_mode', scanMode);
-      if (proposalFile) fd.append('proposal', proposalFile);
+      proposalFiles.forEach(pf => fd.append('proposal', pf));
       const validPartners = partners.filter(p => p.name.trim());
       if (validPartners.length) fd.append('partners', JSON.stringify(validPartners));
       cvFiles.forEach(cv => fd.append('cvs', cv));
@@ -245,29 +245,37 @@ export default function RFPIndex() {
                   type="file"
                   ref={proposalRef}
                   className="hidden"
+                  multiple
                   accept=".pdf,.docx,.doc,.txt,.md"
-                  onChange={e => { if (e.target.files[0]) setProposalFile(e.target.files[0]); }}
+                  onChange={e => {
+                    const picked = Array.from(e.target.files || []);
+                    setProposalFiles(prev => [...prev, ...picked].slice(0, 6));
+                    e.target.value = '';
+                  }}
                 />
 
-                {/* Optional companion proposal */}
+                {/* Optional companion proposal — one or several documents
+                    (commercial / technical / annexes) analysed as one response */}
                 {file && (
                   <div className="w-full max-w-sm mb-4 mt-2 p-3 rounded-md border border-outline-variant/30 bg-surface-container-lowest/60 text-left">
                     <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Optional</p>
                     <p className="text-xs text-on-surface mb-2">
                       Have a draft response? Add it to score your proposal against this RFP.
+                      Split into commercial / technical files? Add them all.
                     </p>
-                    {proposalFile ? (
-                      <div className="flex items-center justify-between gap-2 text-xs">
-                        <span className="truncate text-on-surface-variant">{proposalFile.name} · {(proposalFile.size / 1024).toFixed(0)} KB</span>
-                        <button onClick={() => setProposalFile(null)} className="text-on-surface-variant hover:text-error opacity-70" aria-label="Remove proposal">✕</button>
+                    {proposalFiles.map((pf, i) => (
+                      <div key={i} className="flex items-center justify-between gap-2 text-xs mb-1">
+                        <span className="truncate text-on-surface-variant">📄 {pf.name} · {(pf.size / 1024).toFixed(0)} KB</span>
+                        <button onClick={() => setProposalFiles(fs => fs.filter((_, j) => j !== i))} className="text-on-surface-variant hover:text-error opacity-70" aria-label={`Remove ${pf.name}`}>✕</button>
                       </div>
-                    ) : (
+                    ))}
+                    {proposalFiles.length < 6 && (
                       <button
                         type="button"
                         onClick={() => proposalRef.current.click()}
                         className="text-xs text-primary hover:underline"
                       >
-                        + Attach proposal (PDF / DOCX)
+                        {proposalFiles.length ? '+ Add another document' : '+ Attach proposal (PDF / DOCX)'}
                       </button>
                     )}
                   </div>

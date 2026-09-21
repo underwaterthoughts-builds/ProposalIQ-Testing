@@ -302,12 +302,28 @@ function handler(req, res) {
         if (fs.existsSync(p)) fs.unlinkSync(p);
       }
     } catch (e) { console.error('[rfp] CV cleanup failed:', e.message); }
+    // Delete proposal response documents (multi-doc table + legacy column —
+    // the legacy file was never cleaned up before this)
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const dir = path.join(process.cwd(), 'data', 'uploads', 'rfp_scans');
+      const propRows = db.prepare('SELECT filename FROM rfp_scan_proposal_docs WHERE scan_id = ?').all(id);
+      const legacy = db.prepare('SELECT proposal_filename FROM rfp_scans WHERE id = ?').get(id);
+      const names = new Set(propRows.map(r => r.filename));
+      if (legacy?.proposal_filename) names.add(legacy.proposal_filename);
+      for (const n of names) {
+        const p = path.join(dir, n);
+        if (fs.existsSync(p)) fs.unlinkSync(p);
+      }
+    } catch (e) { console.error('[rfp] proposal doc cleanup failed:', e.message); }
     // Delete from DB (suppressions cascade)
     db.prepare('DELETE FROM rfp_scan_suppressions WHERE scan_id = ?').run(id);
     db.prepare('DELETE FROM rfp_scan_annotations WHERE scan_id = ?').run(id);
     try {
       db.prepare('DELETE FROM rfp_scan_partners WHERE scan_id = ?').run(id);
       db.prepare('DELETE FROM rfp_scan_cvs WHERE scan_id = ?').run(id);
+      db.prepare('DELETE FROM rfp_scan_proposal_docs WHERE scan_id = ?').run(id);
     } catch {}
     db.prepare('DELETE FROM rfp_scans WHERE id = ?').run(id);
     return res.status(200).json({ ok: true });
