@@ -56,7 +56,7 @@ export default function Team() {
 
   async function deleteSelected() {
     if (!selectedIds.size) return;
-    if (!confirm(`Remove ${selectedIds.size} team member${selectedIds.size>1?'s':''}?`)) return;
+    if (!confirm(`Remove ${selectedIds.size} team member${selectedIds.size>1?'s':''}?\n\nTheir CVs and project participation history will be deleted. Past scan results are unaffected.`)) return;
     let removed = 0;
     for (const id of selectedIds) {
       const r = await fetch(`/api/team/${id}`, { method:'DELETE' });
@@ -149,7 +149,7 @@ export default function Team() {
   }
 
   async function deleteMember(id, name) {
-    if (!confirm(`Remove ${name}?`)) return;
+    if (!confirm(`Remove ${name} from the team?\n\nTheir CV and project participation history will be deleted. Past scan results that already suggested them are unaffected.`)) return;
     await fetch(`/api/team/${id}`, { method: 'DELETE' });
     loadTeam();
     setToast(`${name} removed`);
@@ -246,9 +246,9 @@ export default function Team() {
                 </label>
                 {members.length > 0 && (
                   <button onClick={() => setSelectMode(true)}
-                    className="text-xs px-3 py-1.5 rounded-md border transition-all hover:bg-gray-50"
-                    style={{borderColor:'#4d4636',color:'#9b8e80'}}>
-                    ☐ Select
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12.5px] font-medium rounded-md border border-outline-variant/40 text-on-surface hover:bg-surface-container-high transition-all"
+                    title="Select several members to remove in bulk">
+                    ☑ Select members
                   </button>
                 )}
                 <Btn variant="teal" onClick={() => { setEditMember(null); setShowAdd(true); }}>⊕ Add Member</Btn>
@@ -485,13 +485,23 @@ export default function Team() {
                             style={{ accentColor: '#e8c357' }}
                           />
                         ) : (
-                          <button
-                            onClick={() => { setEditMember(m); setShowAdd(true); }}
-                            className="text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-all mt-1"
-                            title="Edit member"
-                          >
-                            <span className="material-symbols-outlined text-base">arrow_forward</span>
-                          </button>
+                          <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-all">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); deleteMember(m.id, m.name); }}
+                              className="text-on-surface-variant hover:text-error transition-colors"
+                              title={`Remove ${m.name}`}
+                              aria-label={`Remove ${m.name}`}
+                            >
+                              <span className="material-symbols-outlined text-base">delete</span>
+                            </button>
+                            <button
+                              onClick={() => { setEditMember(m); setShowAdd(true); }}
+                              className="text-on-surface-variant hover:text-primary transition-colors"
+                              title="Edit member"
+                            >
+                              <span className="material-symbols-outlined text-base">arrow_forward</span>
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>

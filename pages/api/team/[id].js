@@ -97,6 +97,15 @@ async function handler(req, res) {
   }
 
   if (req.method === 'DELETE') {
+    // Remove the CV file from disk before dropping the row (previously
+    // orphaned). project_team rows cascade via FK.
+    try {
+      const m = db.prepare('SELECT cv_filename FROM team_members WHERE id=?').get(id);
+      if (m?.cv_filename) {
+        const p = path.join(process.cwd(), 'data', 'uploads', 'team_cvs', m.cv_filename);
+        if (fs.existsSync(p)) fs.unlinkSync(p);
+      }
+    } catch (e) { console.error('[team] CV cleanup failed:', e.message); }
     db.prepare('DELETE FROM team_members WHERE id=?').run(id);
     return res.status(200).json({ ok:true });
   }
